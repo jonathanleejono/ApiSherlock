@@ -1,7 +1,7 @@
 {
-  "name": "issue-sherlock",
+  "name": "api-sherlock",
   "version": "1.0.0",
-  "description": "#### Track and Manage Your Tickets",
+  "description": "#### Track and Manage Your Apis",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -13,13 +13,19 @@
     "server": "nodemon server --ignore client",
     "client": "npm start --prefix client",
     "start": "concurrently --kill-others-on-fail \" npm run server\" \" npm run client\"",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ./"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.30.5",
+    "@typescript-eslint/parser": "^5.30.5",
     "concurrently": "^6.4.0",
+    "eslint": "^8.19.0",
+    "eslint-plugin-react": "^7.30.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "jest": "^27.5.1",
     "nodemon": "^2.0.15"
   },
@@ -37,11 +43,10 @@
     "moment": "^2.29.1",
     "mongoose": "^6.0.13",
     "morgan": "^1.10.0",
-    "nanoid": "^3.3.0",
     "validator": "^13.7.0",
     "xss-clean": "^0.1.1"
   },
   "engines": {
-    "node": "17.x"
+    "node": "16.x"
   }
 }
