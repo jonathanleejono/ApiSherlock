@@ -1,7 +1,4 @@
 import mongoose from "mongoose";
-import { nanoid } from "nanoid";
-
-const generateTicketId = () => nanoid();
 
 const TicketSchema = new mongoose.Schema(
   {
@@ -39,10 +36,6 @@ const TicketSchema = new mongoose.Schema(
       type: String,
       enum: ["Issue", "Bug", "Feature Request"],
       default: "Issue",
-    },
-    ticketID: {
-      type: String,
-      default: generateTicketId,
     },
     createdBy: {
       type: mongoose.Types.ObjectId,

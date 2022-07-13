@@ -1,14 +1,21 @@
-import User from "../models/User.js";
+import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, UnAuthenticatedError } from "../errors/index.js";
+import { BadRequestError, UnAuthenticatedError } from "../errors/index";
+import User from "../models/User";
 
-const register = async (req, res) => {
+export interface UserResponse {
+  user: { name: string; email: string };
+  token: string;
+}
+
+const register = async (req: Request, res: Response): Promise<UserResponse> => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
     throw new BadRequestError("please provide all values");
   }
   const userAlreadyExists = await User.findOne({ email });
+
   if (userAlreadyExists) {
     throw new BadRequestError("Email already in use");
   }
@@ -16,16 +23,18 @@ const register = async (req, res) => {
 
   const token = user.createJWT();
 
-  res.status(StatusCodes.CREATED).json({
+  res.status(StatusCodes.CREATED);
+
+  return {
     user: {
       email: user.email,
       name: user.name,
     },
     token,
-  });
+  };
 };
 
-const login = async (req, res) => {
+const login = async (req: Request, res: Response): Promise<UserResponse> => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -46,15 +55,26 @@ const login = async (req, res) => {
 
   const token = user.createJWT();
   user.password = undefined;
-  res.status(StatusCodes.OK).json({ user, token });
+  res.status(StatusCodes.OK);
+
+  return {
+    user: {
+      email: user.email,
+      name: user.name,
+    },
+    token,
+  };
 };
 
-const updateUser = async (req, res) => {
+const updateUser = async (
+  req: Request,
+  res: Response
+): Promise<UserResponse> => {
   const { email, name } = req.body;
   if (!email || !name) {
     throw new BadRequestError("Please provide all values");
   }
-  const user = await User.findOne({ _id: req.user.userId });
+  const user = await User.findOne({ _id: req?.user?.userId });
 
   user.email = email;
   user.name = name;
@@ -63,7 +83,15 @@ const updateUser = async (req, res) => {
 
   const token = user.createJWT();
 
-  res.status(StatusCodes.OK).json({ user, token });
+  res.status(StatusCodes.OK);
+
+  return {
+    user: {
+      email: user.email,
+      name: user.name,
+    },
+    token,
+  };
 };
 
 export { register, login, updateUser };

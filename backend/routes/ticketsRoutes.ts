@@ -7,14 +7,13 @@ import {
   deleteTicket,
   getAllTickets,
   updateTicket,
-  showStats,
-} from "../controllers/ticketsController.js";
+  // showStats,
+} from "../controllers/ticketsController";
 
 const apiCreateLimiter = rateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10,
-  message: "Too many requests from this IP, please try again after 15 minutes",
-  handler: (req, res) => {
+  handler: (_, res) => {
     res.status(429).json({
       msg: "Too many requests from this IP, please try again after 15 minutes",
     });
@@ -23,7 +22,7 @@ const apiCreateLimiter = rateLimiter({
 
 router.route("/").post(apiCreateLimiter, createTicket).get(getAllTickets);
 // remember about :id
-router.route("/stats").get(showStats);
+// router.route("/stats").get(showStats);
 router.route("/:id").delete(deleteTicket).patch(updateTicket);
 
 export default router;

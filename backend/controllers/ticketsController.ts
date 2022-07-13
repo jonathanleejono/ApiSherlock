@@ -1,11 +1,11 @@
-import Ticket from "../models/Ticket.js";
+import Ticket from "../models/Ticket";
 import { StatusCodes } from "http-status-codes";
 import {
   BadRequestError,
   NotFoundError,
   UnAuthenticatedError,
-} from "../errors/index.js";
-import checkPermissions from "../utils/checkPermissions.js";
+} from "../errors/index";
+import checkPermissions from "../utils/checkPermissions";
 import mongoose from "mongoose";
 import moment from "moment";
 
@@ -30,10 +30,21 @@ const createTicket = async (req, res) => {
 };
 
 const getAllTickets = async (req, res) => {
-  const { ticketStatus, ticketPriority, ticketType, sort, search } = req.query;
+  const {
+    ticketStatus,
+    ticketPriority,
+    ticketType,
+    ticketTitle,
+    sort,
+    search,
+  } = req.query;
 
   const queryObject = {
     createdBy: req.user.userId,
+    ticketStatus,
+    ticketPriority,
+    ticketType,
+    ticketTitle,
   };
 
   // can add more stuff based on condition
@@ -48,7 +59,7 @@ const getAllTickets = async (req, res) => {
     queryObject.ticketType = ticketType;
   }
   if (search) {
-    queryObject.ticketID = { $regex: search, $options: "i" };
+    queryObject.ticketTitle = { $regex: search, $options: "i" };
   }
 
   // NO AWAIT
@@ -135,75 +146,81 @@ const deleteTicket = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Success! Ticket removed" });
 };
 
-const showStats = async (req, res) => {
-  let statsStatus = await Ticket.aggregate([
-    { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-    { $group: { _id: "$ticketStatus", count: { $sum: 1 } } },
-  ]);
+// const showStats = async (req, res) => {
+//   let statsStatus = await Ticket.aggregate([
+//     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+//     { $group: { _id: "$ticketStatus", count: { $sum: 1 } } },
+//   ]);
 
-  let statsType = await Ticket.aggregate([
-    { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-    { $group: { _id: "$ticketType", count: { $sum: 1 } } },
-  ]);
+//   let statsType = await Ticket.aggregate([
+//     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+//     { $group: { _id: "$ticketType", count: { $sum: 1 } } },
+//   ]);
 
-  let statsPriority = await Ticket.aggregate([
-    { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-    { $group: { _id: "$ticketPriority", count: { $sum: 1 } } },
-  ]);
+//   let statsPriority = await Ticket.aggregate([
+//     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+//     { $group: { _id: "$ticketPriority", count: { $sum: 1 } } },
+//   ]);
 
-  // accumulator, currentValue
-  statsStatus = statsStatus.reduce((acc, curr) => {
-    const { _id: title, count } = curr;
-    acc[title] = count;
-    return acc;
-  }, {});
+//   // accumulator, currentValue
+//   statsStatus = statsStatus.reduce((acc, curr) => {
+//     const { _id: title, count } = curr;
+//     acc[title] = count;
+//     return acc;
+//   }, {});
 
-  statsType = statsType.reduce((acc, curr) => {
-    const { _id: title, count } = curr;
-    acc[title] = count;
-    return acc;
-  }, {});
+//   statsType = statsType.reduce((acc, curr) => {
+//     const { _id: title, count } = curr;
+//     acc[title] = count;
+//     return acc;
+//   }, {});
 
-  statsPriority = statsPriority.reduce((acc, curr) => {
-    const { _id: title, count } = curr;
-    acc[title] = count;
-    return acc;
-  }, {});
+//   statsPriority = statsPriority.reduce((acc, curr) => {
+//     const { _id: title, count } = curr;
+//     acc[title] = count;
+//     return acc;
+//   }, {});
 
-  const defaultStats = {
-    Open: statsStatus.Open || 0,
-    High: statsPriority.High || 0,
-    Bug: statsType.Bug || 0,
-  };
+//   const defaultStats = {
+//     Open: statsStatus.Open || 0,
+//     High: statsPriority.High || 0,
+//     Bug: statsType.Bug || 0,
+//   };
 
-  let monthlyApplications = await Ticket.aggregate([
-    { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-    {
-      $group: {
-        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
-        count: { $sum: 1 },
-      },
-    },
-    { $sort: { "_id.year": -1, "_id.month": -1 } },
-    { $limit: 6 },
-  ]);
+//   let monthlyApplications = await Ticket.aggregate([
+//     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+//     {
+//       $group: {
+//         _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+//         count: { $sum: 1 },
+//       },
+//     },
+//     { $sort: { "_id.year": -1, "_id.month": -1 } },
+//     { $limit: 6 },
+//   ]);
 
-  monthlyApplications = monthlyApplications
-    .map((item) => {
-      const {
-        _id: { year, month },
-        count,
-      } = item;
+//   monthlyApplications = monthlyApplications
+//     .map((item) => {
+//       const {
+//         _id: { year, month },
+//         count,
+//       } = item;
 
-      const date = moment()
-        .month(month - 1)
-        .year(year)
-        .format("MMM Y");
-      return { date, count };
-    })
-    .reverse();
+//       const date = moment()
+//         .month(month - 1)
+//         .year(year)
+//         .format("MMM Y");
+//       return { date, count };
+//     })
+//     .reverse();
 
-  res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
+//   res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
+// };
+
+export {
+  createTicket,
+  deleteTicket,
+  getAllTickets,
+  updateTicket,
+  // showStats
 };
-
-export { createTicket, deleteTicket, getAllTickets, updateTicket, showStats };
