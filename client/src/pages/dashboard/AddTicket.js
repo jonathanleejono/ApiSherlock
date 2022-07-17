@@ -13,10 +13,10 @@ const AddTicket = () => {
     isEditing,
     showAlert,
     displayAlert,
-    ticketTitle,
-    ticketDescription,
+    url,
+    host,
     ticketAssignees,
-    ticketDueDate,
+    monitoring,
     ticketPriority,
     ticketPriorityOptions,
     ticketStatus,
@@ -25,7 +25,7 @@ const AddTicket = () => {
     ticketTypeOptions,
     handleChange,
     clearValues,
-    createTicket,
+    createApi,
     editTicket,
   } = useAppContext();
 
@@ -33,7 +33,7 @@ const AddTicket = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!ticketTitle || !ticketDescription || !ticketAssignees) {
+    if (!url || !host || !ticketAssignees) {
       displayAlert();
       return;
     }
@@ -41,7 +41,7 @@ const AddTicket = () => {
       editTicket();
       return;
     }
-    createTicket();
+    createApi();
   };
 
   const handleTicketInput = (e) => {
@@ -60,16 +60,16 @@ const AddTicket = () => {
           <FormRow
             type="text"
             labelText="ticket title"
-            name="ticketTitle"
-            value={ticketTitle}
+            name="url"
+            value={url}
             handleChange={handleTicketInput}
           />
           {/* ticket description */}
-          <TicketDescriptionText
+          <FormRow
             type="text"
             labelText="ticket description"
-            name="ticketDescription"
-            value={ticketDescription}
+            name="host"
+            value={host}
             handleChange={handleTicketInput}
           />
           {/* ticket assignees */}
@@ -84,8 +84,8 @@ const AddTicket = () => {
           <FormRow
             type="text"
             labelText="due date"
-            name="ticketDueDate"
-            value={ticketDueDate}
+            name="monitoring"
+            value={monitoring}
             handleChange={handleTicketInput}
           />
           {/* ticket type */}

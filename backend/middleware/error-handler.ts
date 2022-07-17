@@ -1,6 +1,16 @@
+import { Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
-const errorHandlerMiddleware = (err, req, res, next) => {
+interface ErrorResponse {
+  statusCode: number;
+  message: string;
+  name: string;
+  errors: string[];
+  code: number;
+  keyValue: number;
+}
+
+const errorHandlerMiddleware = (err: ErrorResponse, _, res: Response) => {
   const defaultError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err.message || "Something went wrong, try again later",

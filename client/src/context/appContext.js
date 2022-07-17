@@ -44,9 +44,9 @@ const initialState = {
   showSidebar: false,
   isEditing: false,
   editTicketId: "",
-  ticketTitle: "",
-  ticketDescription: "",
-  ticketDueDate: "",
+  url: "",
+  host: "",
+  monitoring: "",
   ticketAssignees: "",
   ticketPriorityOptions: ["High", "Medium", "Low"],
   ticketPriority: "High",
@@ -190,23 +190,23 @@ const AppProvider = ({ children }) => {
     dispatch({ type: CLEAR_VALUES });
   };
 
-  const createTicket = async () => {
+  const createApi = async () => {
     dispatch({ type: CREATE_TICKET_BEGIN });
     try {
       const {
-        ticketTitle,
-        ticketDescription,
+        url,
+        host,
         ticketAssignees,
-        ticketDueDate,
+        monitoring,
         ticketPriority,
         ticketType,
         ticketStatus,
       } = state;
       await authFetch.post("/tickets", {
-        ticketTitle,
-        ticketDescription,
+        url,
+        host,
         ticketAssignees,
-        ticketDueDate,
+        monitoring,
         ticketPriority,
         ticketType,
         ticketStatus,
@@ -265,19 +265,19 @@ const AppProvider = ({ children }) => {
 
     try {
       const {
-        ticketTitle,
-        ticketDescription,
+        url,
+        host,
         ticketAssignees,
-        ticketDueDate,
+        monitoring,
         ticketPriority,
         ticketType,
         ticketStatus,
       } = state;
       await authFetch.patch(`/tickets/${state.editTicketId}`, {
-        ticketDescription,
-        ticketTitle,
+        host,
+        url,
         ticketAssignees,
-        ticketDueDate,
+        monitoring,
         ticketPriority,
         ticketType,
         ticketStatus,
@@ -294,7 +294,7 @@ const AppProvider = ({ children }) => {
     clearAlert();
   };
 
-  const deleteTicket = async (ticketId) => {
+  const deleteApi = async (ticketId) => {
     dispatch({ type: DELETE_TICKET_BEGIN });
     try {
       await authFetch.delete(`/tickets/${ticketId}`);
@@ -342,10 +342,10 @@ const AppProvider = ({ children }) => {
         updateUser,
         handleChange,
         clearValues,
-        createTicket,
+        createApi,
         getTickets,
         setEditTicket,
-        deleteTicket,
+        deleteApi,
         editTicket,
         showStats,
         clearFilters,

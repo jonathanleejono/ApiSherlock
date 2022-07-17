@@ -1,9 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, { Model, Schema } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import UserDocument from "./UserDocument";
 
-const UserSchema = new mongoose.Schema({
+const UserSchema: Schema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please provide name"],
@@ -40,11 +41,13 @@ UserSchema.methods.createJWT = function () {
   });
 };
 
-UserSchema.methods.comparePassword = async function (
-  candidatePassword: string
-) {
+const comparePassword = async function (this: any, candidatePassword: string) {
   const isMatch = await bcrypt.compare(candidatePassword, this.password);
   return isMatch;
 };
 
-export default mongoose.model("User", UserSchema);
+UserSchema.methods.comparePassword = comparePassword;
+
+const UserCollection: Model<UserDocument> = mongoose.model("User", UserSchema);
+
+export default UserCollection;

@@ -20,9 +20,9 @@ import TicketPriority from "./TicketPriority";
 
 const Ticket = ({
   _id,
-  ticketTitle,
-  ticketDescription,
-  ticketDueDate,
+  url,
+  host,
+  monitoring,
   ticketAssignees,
   ticketPriority,
   ticketType,
@@ -30,7 +30,7 @@ const Ticket = ({
   createdAt,
   ticketStatus,
 }) => {
-  const { setEditTicket, deleteTicket } = useAppContext();
+  const { setEditTicket, deleteApi } = useAppContext();
 
   let date = moment(createdAt);
   date = date.format("MMM Do, YYYY");
@@ -43,7 +43,7 @@ const Ticket = ({
 
   const assignedPeople = "Assignees: " + ticketAssignees;
 
-  const ticketDeadline = "Due Date: " + ticketDueDate;
+  const ticketDeadline = "Due Date: " + monitoring;
 
   const ticketTyping = "Ticket Type: " + ticketType;
 
@@ -52,10 +52,10 @@ const Ticket = ({
   return (
     <Wrapper>
       <header>
-        <div className="main-icon">{ticketTitle.charAt(0)}</div>
+        <div className="main-icon">{url.charAt(0)}</div>
         <div className="info">
-          <h4>{ticketTitle}</h4>
-          <p>{ticketDescription}</p>
+          <h4>{url}</h4>
+          <p>{host}</p>
         </div>
       </header>
       <div className="content">
@@ -89,7 +89,7 @@ const Ticket = ({
             <button
               type="button"
               className="btn delete-btn"
-              onClick={() => deleteTicket(_id)}
+              onClick={() => deleteApi(_id)}
             >
               Delete
             </button>

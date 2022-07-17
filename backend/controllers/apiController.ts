@@ -1,4 +1,5 @@
-import Ticket from "../models/Ticket";
+import Api from "../models/ApiCollection";
+import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import {
   BadRequestError,
@@ -9,62 +10,60 @@ import checkPermissions from "../utils/checkPermissions";
 import mongoose from "mongoose";
 import moment from "moment";
 
-const createTicket = async (req, res) => {
-  const { ticketTitle, ticketDescription, ticketDueDate, ticketAssignees } =
-    req.body;
+const createApi = async (req: Request, res: Response): Promise<void> => {
+  const { url, host, monitoring } = req.body;
 
-  if (
-    !ticketTitle ||
-    !ticketDescription ||
-    !ticketDueDate ||
-    !ticketAssignees
-  ) {
+  if (!url || !host || !monitoring) {
     throw new BadRequestError("Please provide all values");
   }
 
-  req.body.createdBy = req.user.userId;
+  req.body.createdBy = req?.user?.userId;
 
-  const ticket = await Ticket.create(req.body);
+  const api = await Api.create(req.body);
 
-  res.status(StatusCodes.CREATED).json({ ticket });
+  res.status(StatusCodes.CREATED).json({ api });
 };
 
-const getAllTickets = async (req, res) => {
-  const {
-    ticketStatus,
-    ticketPriority,
-    ticketType,
-    ticketTitle,
-    sort,
-    search,
-  } = req.query;
+// -------------------------------------------
+
+export interface AllApisResponse {
+  tickets: any[];
+  totalTickets: number;
+  numOfPages: number;
+}
+
+const getAllApis = async (
+  req: Request,
+  res: Response
+): Promise<AllApisResponse> => {
+  const { url, status, lastPinged, monitoring, sort, search } = req.query;
 
   const queryObject = {
-    createdBy: req.user.userId,
-    ticketStatus,
-    ticketPriority,
-    ticketType,
-    ticketTitle,
+    createdBy: req?.user?.userId,
+    url: url,
+    status: status,
+    lastPinged: lastPinged,
+    monitoring: monitoring,
   };
 
   // can add more stuff based on condition
 
-  if (ticketStatus && ticketStatus !== "All") {
-    queryObject.ticketStatus = ticketStatus;
+  if (status && status !== "All") {
+    queryObject.status = status;
   }
-  if (ticketPriority && ticketPriority !== "All") {
-    queryObject.ticketPriority = ticketPriority;
+  if (lastPinged && lastPinged !== "All") {
+    queryObject.lastPinged = lastPinged;
   }
-  if (ticketType && ticketType !== "All") {
-    queryObject.ticketType = ticketType;
+  if (monitoring && monitoring !== "All") {
+    queryObject.monitoring = monitoring;
   }
   if (search) {
-    queryObject.ticketTitle = { $regex: search, $options: "i" };
+    queryObject.url = { $regex: search, $options: "i" };
   }
 
   // NO AWAIT
 
-  let result = Ticket.find(queryObject);
+  let result = Api.find(queryObject);
 
   // chain sort conditions
 
@@ -75,10 +74,10 @@ const getAllTickets = async (req, res) => {
     result = result.sort("createdAt");
   }
   if (sort === "A-Z") {
-    result = result.sort("ticketTitle");
+    result = result.sort("url");
   }
   if (sort === "Z-A") {
-    result = result.sort("-ticketTitle");
+    result = result.sort("-url");
   }
 
   // setup pagination
@@ -90,74 +89,73 @@ const getAllTickets = async (req, res) => {
 
   const tickets = await result;
 
-  const totalTickets = await Ticket.countDocuments(queryObject);
+  const totalTickets = await Api.countDocuments(queryObject);
   const numOfPages = Math.ceil(totalTickets / limit);
 
-  res.status(StatusCodes.OK).json({ tickets, totalTickets, numOfPages });
+  res.status(StatusCodes.OK);
+
+  return { tickets, totalTickets, numOfPages };
 };
 
-const updateTicket = async (req, res) => {
-  const { id: ticketId } = req.params;
-  const { ticketDescription, ticketTitle, ticketDueDate, ticketAssignees } =
-    req.body;
+// ------------------------------------------
 
-  if (
-    !ticketTitle ||
-    !ticketDescription ||
-    !ticketDueDate ||
-    !ticketAssignees
-  ) {
+const updateApi = async (req: Request, res: Response): Promise<void> => {
+  const { id: apiId } = req.params;
+
+  const { host, url, monitoring } = req.body;
+
+  if (!url || !host || !monitoring) {
     throw new BadRequestError("Please provide all values");
   }
-  const ticket = await Ticket.findOne({ _id: ticketId });
+  const api = await Api.findOne({ _id: apiId });
 
-  if (!ticket) {
-    throw new NotFoundError(`No ticket with id :${ticketId}`);
+  if (!api) {
+    throw new NotFoundError(`No API with id :${apiId}`);
   }
 
   // check authorization
-  checkPermissions(req.user, ticket.createdBy);
+  checkPermissions(req.user, api.createdBy);
 
-  const updatedTicket = await Ticket.findOneAndUpdate(
-    { _id: ticketId },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+  const updatedApi = await Api.findOneAndUpdate({ _id: apiId }, req.body, {
+    new: true,
+    runValidators: true,
+  });
 
-  res.status(StatusCodes.OK).json({ updatedTicket });
+  res.status(StatusCodes.OK).json(updatedApi);
 };
 
-const deleteTicket = async (req, res) => {
-  const { id: ticketId } = req.params;
+// ----------------------------------
 
-  const ticket = await Ticket.findOne({ _id: ticketId });
+const deleteApi = async (req: Request, res: Response): Promise<void> => {
+  const { id: apiId } = req.params;
 
-  if (!ticket) {
-    throw new NotFoundError(`No ticket with id :${ticketId}`);
+  const api = await Api.findOne({ _id: apiId });
+
+  if (!api) {
+    throw new NotFoundError(`No api with id :${apiId}`);
   }
 
-  checkPermissions(req.user, ticket.createdBy);
+  checkPermissions(req.user, api.createdBy);
 
-  await ticket.remove();
+  await api.remove();
 
-  res.status(StatusCodes.OK).json({ msg: "Success! Ticket removed" });
+  res.status(StatusCodes.OK).json({ msg: "Success! Api removed" });
 };
 
-// const showStats = async (req, res) => {
-//   let statsStatus = await Ticket.aggregate([
+// ----------------------------------
+
+// const showStats = async (req: Request, res: Response) => {
+//   let statsStatus = await Api.aggregate([
 //     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-//     { $group: { _id: "$ticketStatus", count: { $sum: 1 } } },
+//     { $group: { _id: "$status", count: { $sum: 1 } } },
 //   ]);
 
-//   let statsType = await Ticket.aggregate([
+//   let statsType = await Api.aggregate([
 //     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-//     { $group: { _id: "$ticketType", count: { $sum: 1 } } },
+//     { $group: { _id: "$ApiType", count: { $sum: 1 } } },
 //   ]);
 
-//   let statsPriority = await Ticket.aggregate([
+//   let statsPriority = await Api.aggregate([
 //     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
 //     { $group: { _id: "$ticketPriority", count: { $sum: 1 } } },
 //   ]);
@@ -218,9 +216,9 @@ const deleteTicket = async (req, res) => {
 // };
 
 export {
-  createTicket,
-  deleteTicket,
-  getAllTickets,
-  updateTicket,
+  createApi,
+  deleteApi,
+  getAllApis,
+  updateApi,
   // showStats
 };

@@ -13,8 +13,8 @@ import xss from "xss-clean";
 import connectDB from "./db/connect";
 
 // routers
-import authRouter from "./routes/authRoutes";
-import ticketsRouter from "./routes/ticketsRoutes";
+import usersRouter from "./routes/userRoutes";
+import apiRouter from "./routes/apiRoutes";
 
 // middleware
 import authenticateUser from "./middleware/auth";
@@ -33,12 +33,15 @@ app.use(helmet());
 app.use(xss());
 app.use(mongoSanitize());
 
-app.use("/ping", (req, res) => {
-  res.send("hello world!");
+// app.set("Accept", "application/json");
+// app.set("Content-Type", "application/json");
+
+app.use("/ping", (_, res) => {
+  res.send("hello world!2");
 });
 
-app.use("/api/auth", authRouter);
-app.use("/api/tickets", authenticateUser, ticketsRouter);
+app.use("/api/auth", usersRouter);
+app.use("/api/api", authenticateUser, apiRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
