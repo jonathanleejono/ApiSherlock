@@ -15,6 +15,7 @@ import connectDB from "./db/connect";
 // routers
 import usersRouter from "./routes/userRoutes";
 import apiRouter from "./routes/apiRoutes";
+import monitorRouter from "./routes/monitorRoutes";
 
 // middleware
 import authenticateUser from "./middleware/auth";
@@ -36,12 +37,13 @@ app.use(mongoSanitize());
 // app.set("Accept", "application/json");
 // app.set("Content-Type", "application/json");
 
-app.use("/ping", (_, res) => {
+app.use("/api/ping", (_, res) => {
   res.send("hello world!2");
 });
 
 app.use("/api/auth", usersRouter);
 app.use("/api/api", authenticateUser, apiRouter);
+app.use("/api/monitors", authenticateUser, monitorRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
