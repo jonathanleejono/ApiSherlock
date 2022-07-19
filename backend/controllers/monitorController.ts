@@ -4,6 +4,7 @@ import { BadRequestError, NotFoundError } from "../errors/index";
 import Monitor from "../models/MonitorCollection";
 import Api from "../models/ApiCollection";
 import checkPermissions from "../utils/checkPermissions";
+import axios from "axios";
 
 const createMonitor = async (req: Request, res: Response): Promise<void> => {
   const { intervalSetting, intervalSchedule, time, dayOfWeek } = req.body;
@@ -22,18 +23,6 @@ const createMonitor = async (req: Request, res: Response): Promise<void> => {
 };
 
 // -------------------------------------------
-
-const getMonitor = async (req: Request, res: Response): Promise<any> => {
-  const monitor = Monitor.findOne({
-    createdBy: req?.user?.userId,
-  });
-
-  res.status(StatusCodes.OK);
-
-  return { monitor };
-};
-
-// ------------------------------------------
 
 const updateMonitor = async (req: Request, res: Response): Promise<void> => {
   const { id: monitorId } = req.params;
@@ -86,49 +75,68 @@ const deleteMonitor = async (req: Request, res: Response): Promise<void> => {
 // ----------------------------------
 
 const activateMonitor = async (req: Request, res: Response): Promise<void> => {
-  // make the get request to array of Apis's URLS <- THE URLS OF THE APIS (ie. api.url) <--- use axios (think of frontend call, but make it to the backend) <- look at Backend assessment axios example
-  // to know which Apis, find all that have monitoring set to on
-  // make it based on the time of a monitor <- query to find the monitor (ie. get monitor)
-
-  const queryObject = {
-    createdBy: req?.user?.userId,
-    monitoring: "on",
-  };
-
-  let result = Api.find(queryObject);
-
-  const allApisToMonitor = await result;
-
-  const monitor = await Monitor.findOne({
+  let monitor = await Monitor.findOne({
     createdBy: req?.user?.userId,
   });
 
-  const seconds = 1000;
-  const minutes = seconds * 60;
-  const hourly = minutes * 60;
-  const daily = hourly * 24;
-  const weekly = daily * 7;
+  const apiCall = async () => {
+    const queryObject = {
+      createdBy: req?.user?.userId,
+      monitoring: "on",
+    };
 
-  if (monitor?.intervalSchedule && monitor?.intervalSchedule === "seconds") {
-    function doStuff() {
-      console.log("hello71");
+    const allApisToMonitor = await Api.find(queryObject);
+
+    Object.keys(allApisToMonitor).forEach(async (api) => {
+      try {
+        const res = await axios.get(allApisToMonitor[api].url);
+        if (res) {
+          Monitor.updateOne;
+          // update api status
+          // update api last pinged
+        }
+      } catch (error) {
+        // update api status to unhealthy
+        // update api last pinged
+      }
+    });
+  };
+
+  if (monitor?.setting && monitor?.intervalSetting) {
+    const intervalSchedule = monitor?.intervalSchedule;
+    let time: number | undefined;
+
+    switch (intervalSchedule) {
+      case "weekly":
+        time = 604800000;
+        break;
+      case "daily":
+        time = 86400000;
+        break;
+      case "hourly":
+        time = 3600000;
+        break;
+      case "seconds":
+        time = 1000;
+        break;
+      default:
+        time = undefined;
     }
-    setInterval(doStuff, 5000);
+
+    let interval = setInterval(async () => {
+      apiCall();
+      monitor = await Monitor.findOne({
+        createdBy: req?.user?.userId,
+      });
+    }, time);
+
+    if (!monitor?.setting) {
+      clearInterval(interval);
+    }
+  } else if (monitor?.intervalSetting === false) {
   }
 
-  // Object.keys(allApisToMonitor).forEach((api) => {
-  //   console.log("yo: ", api);
-  //   console.log("y2o: ", allApisToMonitor[api].url);
-  //   // console.log("yo1: ", api.url);
-  // });
-
-  res.json({ allApisToMonitor });
+  res.json({ hello: "there" });
 };
 
-export {
-  createMonitor,
-  deleteMonitor,
-  getMonitor,
-  updateMonitor,
-  activateMonitor,
-};
+export { createMonitor, deleteMonitor, updateMonitor, activateMonitor };

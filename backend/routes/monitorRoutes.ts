@@ -2,7 +2,6 @@ import express, { Response, Router } from "express";
 import {
   createMonitor,
   deleteMonitor,
-  getMonitor,
   updateMonitor,
   activateMonitor,
 } from "../controllers/monitorController";
@@ -25,7 +24,6 @@ const _rateLimiter = rateLimiter({
 router
   .route("/")
   .post(_rateLimiter, createMonitor)
-  .get(getMonitor)
   .patch(updateMonitor)
   .delete(deleteMonitor);
 router.route("/activate").post(activateMonitor);

@@ -3,6 +3,10 @@ import MonitorDocument from "./MonitorDocument";
 
 const MonitorSchema: Schema = new mongoose.Schema(
   {
+    setting: {
+      type: Boolean,
+      required: [true, "Please provide monitoring setting"],
+    },
     intervalSetting: {
       type: Boolean,
       required: [true, "Please provide interval setting"],
@@ -13,9 +17,19 @@ const MonitorSchema: Schema = new mongoose.Schema(
       required: [true, "Please provide interval schedule"],
       default: "weekly",
     },
-    time: {
+    timeHour: {
+      type: Number,
+      required: [true, "Please provide monitoring hour"],
+    },
+    timeMinutes: {
+      type: Number,
+      required: [true, "Please provide monitoring minutes"],
+    },
+    timeAMOrPM: {
       type: String,
-      required: [true, "Please provide monitoring time"],
+      enum: ["AM", "PM"],
+      required: [true, "Please provide AM or PM time"],
+      default: "AM",
     },
     dayOfWeek: {
       type: String,
@@ -30,7 +44,7 @@ const MonitorSchema: Schema = new mongoose.Schema(
         "none",
       ],
       required: [true, "Please provide monitoring day"],
-      default: "monday",
+      default: "none",
     },
     createdBy: {
       type: mongoose.Types.ObjectId,
@@ -40,7 +54,6 @@ const MonitorSchema: Schema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-// const MonitorCollection: Model<MonitorDocument>
 
 const MonitorCollection: Model<MonitorDocument> = mongoose.model(
   "Monitor",

@@ -12,6 +12,7 @@ import { UnifiedModel } from "./UnifiedModel";
 
 //
 export interface Monitor extends UnifiedModel {
+  setting: boolean;
   intervalSetting: boolean;
   intervalSchedule: string; // weekly, daily, hourly
   // intervalSchedule: "weekly" | "daily" | "hourly" | "seconds" | "none"; // weekly, daily, hourly
