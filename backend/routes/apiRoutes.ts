@@ -6,6 +6,9 @@ import {
   deleteApi,
   getAllApis,
   updateApi,
+  // showStats,
+  pingAll,
+  pingOne,
 } from "../controllers/apiController";
 
 const router = express.Router();
@@ -21,6 +24,8 @@ const createLimiter = rateLimiter({
 });
 
 router.route("/").post(createLimiter, createApi).get(getAllApis);
+router.route("/ping-all").post(pingAll);
+router.route("/ping-one").post(pingOne);
 // router.route("/stats").get(showStats);
 // remember about :id
 router.route("/:id").delete(deleteApi).patch(updateApi);

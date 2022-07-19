@@ -6,9 +6,10 @@ import {
   NotFoundError,
   UnAuthenticatedError,
 } from "../errors/index";
-import checkPermissions from "../utils/checkPermissions";
+import checkPermissions from "../middleware/checkPermissions";
 import mongoose from "mongoose";
 import moment from "moment";
+import axios from "axios";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
   const { url, host, monitoring } = req.body;
@@ -26,34 +27,17 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
 
 // -------------------------------------------
 
-export interface AllApisResponse {
-  tickets: any[];
-  totalTickets: number;
-  numOfPages: number;
-}
-
-const getAllApis = async (
-  req: Request,
-  res: Response
-): Promise<AllApisResponse> => {
+const getAllApis = async (req: Request, res: Response): Promise<void> => {
   const { url, status, lastPinged, monitoring, sort, search } = req.query;
 
-  const queryObject = {
+  const queryObject: any = {
     createdBy: req?.user?.userId,
-    url: url,
-    status: status,
-    lastPinged: lastPinged,
-    monitoring: monitoring,
   };
-
-  // can add more stuff based on condition
 
   if (status && status !== "All") {
     queryObject.status = status;
   }
-  if (lastPinged && lastPinged !== "All") {
-    queryObject.lastPinged = lastPinged;
-  }
+
   if (monitoring && monitoring !== "All") {
     queryObject.monitoring = monitoring;
   }
@@ -87,14 +71,12 @@ const getAllApis = async (
 
   result = result.skip(skip).limit(limit);
 
-  const tickets = await result;
+  const allApis = await result;
 
-  const totalTickets = await Api.countDocuments(queryObject);
-  const numOfPages = Math.ceil(totalTickets / limit);
+  const totalApis = await Api.countDocuments(queryObject);
+  const numOfPages = Math.ceil(totalApis / limit);
 
-  res.status(StatusCodes.OK);
-
-  return { tickets, totalTickets, numOfPages };
+  res.status(StatusCodes.OK).json({ allApis, totalApis, numOfPages });
 };
 
 // ------------------------------------------
@@ -144,21 +126,114 @@ const deleteApi = async (req: Request, res: Response): Promise<void> => {
 
 // ----------------------------------
 
+const pingAll = async (req: Request, res: Response): Promise<void> => {
+  const allApisToMonitor = await Api.find({
+    createdBy: req?.user?.userId,
+    monitoring: "on",
+  });
+
+  if (!allApisToMonitor) {
+    throw new NotFoundError(`No APIs found`);
+  }
+
+  Object.keys(allApisToMonitor).forEach(async (api) => {
+    checkPermissions(req.user, allApisToMonitor[api].createdBy);
+    const dateTime = moment().format("MMM Do YYYY, hh:mm A");
+    try {
+      const res = await axios.get(allApisToMonitor[api].url);
+      // console.log("res: ", res);
+      if (res) {
+        const updatedApi = await Api.findOneAndUpdate(
+          { _id: allApisToMonitor[api].id },
+          { status: "healthy", lastPinged: dateTime },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+      }
+    } catch (error) {
+      const updatedApi = await Api.findOneAndUpdate(
+        { _id: allApisToMonitor[api].id },
+        { status: "unhealthy", lastPinged: dateTime },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+    }
+  });
+
+  res.status(StatusCodes.OK).json("Pinged APIs");
+};
+// ----------------------------------
+
+const pingOne = async (req: Request, res: Response): Promise<void> => {
+  const { id: apiId } = req.params;
+
+  const api = await Api.findOne({ _id: apiId });
+
+  if (!api) {
+    throw new NotFoundError(`No API with id :${apiId}`);
+  }
+
+  checkPermissions(req.user, api.createdBy);
+
+  const dateTime = moment().format("MMM Do YYYY, hh:mm A");
+
+  try {
+    const res = await axios.get(api.url);
+    if (res) {
+      const updatedApi = await Api.findOneAndUpdate(
+        { _id: api.id },
+        { status: "healthy", lastPinged: dateTime },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+    }
+  } catch (error) {
+    const updatedApi = await Api.findOneAndUpdate(
+      { _id: api.id },
+      { status: "unhealthy", lastPinged: dateTime },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+  }
+
+  res.status(StatusCodes.OK).json("Pinged API");
+};
+
+// ----------------------------------
+
 // const showStats = async (req: Request, res: Response) => {
+//   // interface statsStatus {
+//   //   healthy?: string;
+//   //   unhealthy?: string;
+//   //   pending?: string;
+//   //   reduce: any;
+//   // }
+
+//   const userId: mongoose.Types.ObjectId = req?.user?.userId;
+
 //   let statsStatus = await Api.aggregate([
-//     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+//     { $match: { createdBy: req?.user?.userId as mongoose.Types.ObjectId } },
 //     { $group: { _id: "$status", count: { $sum: 1 } } },
 //   ]);
 
-//   let statsType = await Api.aggregate([
-//     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-//     { $group: { _id: "$ApiType", count: { $sum: 1 } } },
-//   ]);
+//   // let statsType = await Api.aggregate([
+//   //   { $match: { createdBy: req?.user?.userId } },
+//   //   { $group: { _id: "$ApiType", count: { $sum: 1 } } },
+//   // ]);
 
-//   let statsPriority = await Api.aggregate([
-//     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-//     { $group: { _id: "$ticketPriority", count: { $sum: 1 } } },
-//   ]);
+//   // let statsPriority = await Api.aggregate([
+//   //   { $match: { createdBy: req.user.userId } },
+//   //   { $group: { _id: "$ticketPriority", count: { $sum: 1 } } },
+//   // ]);
+//   console.log("statsStatus1: ", statsStatus);
 
 //   // accumulator, currentValue
 //   statsStatus = statsStatus.reduce((acc, curr) => {
@@ -167,26 +242,29 @@ const deleteApi = async (req: Request, res: Response): Promise<void> => {
 //     return acc;
 //   }, {});
 
-//   statsType = statsType.reduce((acc, curr) => {
-//     const { _id: title, count } = curr;
-//     acc[title] = count;
-//     return acc;
-//   }, {});
+//   console.log("statsStatus: ", statsStatus);
 
-//   statsPriority = statsPriority.reduce((acc, curr) => {
-//     const { _id: title, count } = curr;
-//     acc[title] = count;
-//     return acc;
-//   }, {});
+//   // statsType = statsType.reduce((acc, curr) => {
+//   //   const { _id: title, count } = curr;
+//   //   acc[title] = count;
+//   //   return acc;
+//   // }, {});
 
-//   const defaultStats = {
-//     Open: statsStatus.Open || 0,
-//     High: statsPriority.High || 0,
-//     Bug: statsType.Bug || 0,
-//   };
+//   // statsPriority = statsPriority.reduce((acc, curr) => {
+//   //   const { _id: title, count } = curr;
+//   //   acc[title] = count;
+//   //   return acc;
+//   // }, {});
 
-//   let monthlyApplications = await Ticket.aggregate([
-//     { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+//   // const defaultStats = {
+//   //   Healthy: statsStatus.healthy || 0,
+//   //   Unhealthy: statsStatus.unhealthy || 0,
+//   //   Pending: statsStatus.pending || 0,
+//   // };
+
+//   let monthlyApplications = await Api.aggregate([
+//     // { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+//     { $match: { createdBy: userId } },
 //     {
 //       $group: {
 //         _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
@@ -220,5 +298,7 @@ export {
   deleteApi,
   getAllApis,
   updateApi,
-  // showStats
+  // showStats,
+  pingAll,
+  pingOne,
 };
