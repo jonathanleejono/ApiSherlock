@@ -2,6 +2,7 @@ import { useAppContext } from "../context/appContext";
 import StatItem from "./StatItem";
 import { FaEnvelopeOpenText, FaBug, FaExclamationCircle } from "react-icons/fa";
 import Wrapper from "../assets/wrappers/StatsContainer";
+import React from "react";
 
 const StatsContainer = () => {
   const { statsStatus, statsType, statsPriority } = useAppContext();
@@ -26,7 +27,7 @@ const StatsContainer = () => {
       count: statsType.Bug || 0,
       icon: <FaBug />,
       color: "#647acb", //blue
-      bcg: "#e0e8f9",     
+      bcg: "#e0e8f9",
     },
   ];
 

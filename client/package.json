@@ -6,6 +6,10 @@
     "@testing-library/jest-dom": "^5.15.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
+    "@types/jest": "^28.1.6",
+    "@types/node": "^18.0.6",
+    "@types/react": "^18.0.15",
+    "@types/react-dom": "^18.0.6",
     "axios": "^0.24.0",
     "history": "^5.1.0",
     "moment": "^2.29.1",
@@ -17,6 +21,7 @@
     "react-scripts": "^5.0.0",
     "recharts": "^2.1.8",
     "styled-components": "^5.3.3",
+    "typescript": "^4.7.4",
     "web-vitals": "^1.1.2"
   },
   "scripts": {

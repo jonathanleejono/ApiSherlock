@@ -1,6 +1,7 @@
 import { FormRow, FormRowSelect } from ".";
 import { useAppContext } from "../context/appContext";
 import Wrapper from "../assets/wrappers/SearchContainer";
+import React from "react";
 
 const SearchContainer = () => {
   const {
@@ -67,6 +68,7 @@ const SearchContainer = () => {
           />
           {/* sort */}
           <FormRowSelect
+            labelText="sort"
             name="sort"
             value={sort}
             handleChange={handleSearch}

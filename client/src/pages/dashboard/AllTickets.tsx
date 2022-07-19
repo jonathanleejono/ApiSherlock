@@ -1,5 +1,6 @@
 import { TicketsContainer, SearchContainer } from "../../components";
 import { Link } from "react-router-dom";
+import React from "react";
 
 const AllTickets = () => {
   return (

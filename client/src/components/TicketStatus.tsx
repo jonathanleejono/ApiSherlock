@@ -1,4 +1,5 @@
 import Wrapper from "../assets/wrappers/TicketStatus";
+import React from "react";
 
 const TicketStatus = ({ icon, text, ticketStatus }) => {
   //combining the .status and ${status} classes together

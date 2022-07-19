@@ -5,6 +5,8 @@ import { useAppContext } from "../context/appContext";
 import Logo from "./Logo";
 import NavLinks from "./NavLinks";
 
+import React from "react";
+
 const MobileSidebar = () => {
   const { showSidebar, toggleSidebar } = useAppContext();
   return (

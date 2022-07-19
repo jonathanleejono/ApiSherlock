@@ -4,6 +4,7 @@ import Loading from "./Loading";
 import Ticket from "./Ticket";
 import Wrapper from "../assets/wrappers/TicketsContainer";
 import PageBtnContainer from "./PageBtnContainer";
+import React from "react";
 
 const TicketsContainer = () => {
   const {

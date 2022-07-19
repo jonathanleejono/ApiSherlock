@@ -17,6 +17,7 @@ import Wrapper from "../assets/wrappers/Ticket";
 import TicketInfo from "./TicketInfo";
 import TicketStatus from "./TicketStatus";
 import TicketPriority from "./TicketPriority";
+import React from "react";
 
 const Ticket = ({
   _id,
@@ -32,8 +33,7 @@ const Ticket = ({
 }) => {
   const { setEditTicket, deleteApi } = useAppContext();
 
-  let date = moment(createdAt);
-  date = date.format("MMM Do, YYYY");
+  let date = moment(createdAt).format("MMM Do, YYYY");
 
   let createdDate = "Created Date: " + date;
 

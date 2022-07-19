@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FormRow, Alert } from "../../components";
 import { useAppContext } from "../../context/appContext";
 import Wrapper from "../../assets/wrappers/DashboardFormPage";
+
 const Profile = () => {
   const { user, showAlert, displayAlert, updateUser, isLoading } =
     useAppContext();
@@ -26,12 +27,14 @@ const Profile = () => {
         {showAlert && <Alert />}
         <div className="form-center">
           <FormRow
+            labelText="Name"
             type="text"
             name="name"
             value={name}
             handleChange={(e) => setName(e.target.value)}
           />
           <FormRow
+            labelText="Email"
             type="email"
             name="email"
             value={email}

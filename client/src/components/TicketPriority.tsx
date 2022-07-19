@@ -1,4 +1,5 @@
 import Wrapper from "../assets/wrappers/TicketPriority";
+import React from "react";
 
 const TicketPriority = ({ icon, text, ticketPriority }) => {
   //combining the .status and .Priority classes together

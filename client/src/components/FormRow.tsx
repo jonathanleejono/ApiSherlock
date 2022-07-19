@@ -1,19 +1,20 @@
-const FormNoInput = ({ type, name, value, handleChange, labelText, text }) => {
+import React from "react";
+
+const FormRow = ({ type, name, value, handleChange, labelText }) => {
   return (
     <div className="form-row">
       <label htmlFor={name} className="form-label">
         {labelText || name}
       </label>
-      <span
+      <input
         type={type}
         value={value}
         name={name}
-        text={text}
         onChange={handleChange}
-        className="form-no-input"
+        className="form-input"
       />
     </div>
   );
 };
 
-export default FormNoInput;
+export default FormRow;

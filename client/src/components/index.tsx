@@ -2,7 +2,6 @@ import Alert from "./Alert";
 import BigSidebar from "./BigSidebar";
 import ChartsContainer from "./ChartsContainer";
 import FormRow from "./FormRow";
-import FormNoInput from "./FormNoInput";
 import TicketDescriptionText from "./TicketDescriptionText";
 import FormRowSelect from "./FormRowSelect";
 import TicketsContainer from "./TicketsContainer";
@@ -15,7 +14,6 @@ import StatsContainer from "./StatsContainer";
 export {
   Logo,
   FormRow,
-  FormNoInput,
   Alert,
   Navbar,
   BigSidebar,

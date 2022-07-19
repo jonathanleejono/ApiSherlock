@@ -6,6 +6,7 @@ import {
 } from "../../components";
 import { useAppContext } from "../../context/appContext";
 import Wrapper from "../../assets/wrappers/DashboardFormPage";
+import React from "react";
 
 const AddTicket = () => {
   const {

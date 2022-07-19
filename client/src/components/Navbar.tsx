@@ -3,6 +3,7 @@ import { FaAlignLeft, FaUserCircle, FaCaretDown } from "react-icons/fa";
 import { useAppContext } from "../context/appContext";
 import Logo from "./Logo";
 import { useState } from "react";
+import React from "react";
 const Navbar = () => {
   const [showLogout, setShowLogout] = useState(false);
   const { toggleSidebar, logoutUser, user } = useAppContext();

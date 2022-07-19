@@ -1,4 +1,5 @@
 import Wrapper from "../assets/wrappers/StatItem";
+import React from "react";
 
 const StatsItem = ({ count, title, icon, color, bcg }) => {
   return (
