@@ -45,8 +45,12 @@ const apiSlice = createSlice({
       toast.dismiss();
       toast.error(payload);
     },
-    [deleteApi.fulfilled]: (state, { payload }) => {
-      toast.success(payload);
+    [deleteApi.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [deleteApi.fulfilled]: (state) => {
+      state.isLoading = false;
+      toast.success("Api Deleted");
     },
     [deleteApi.rejected]: (state, { payload }) => {
       toast.error(payload);

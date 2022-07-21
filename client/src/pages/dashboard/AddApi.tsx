@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   clearValues,
@@ -14,6 +15,8 @@ const AddApi = () => {
 
   const dispatch = useAppDispatch();
 
+  const navigate = useNavigate();
+
   //e = event
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,6 +27,8 @@ const AddApi = () => {
     }
 
     dispatch(createApi({ url, host, monitoring }));
+
+    navigate("/all-apis");
   };
 
   const handleInput = (e) => {

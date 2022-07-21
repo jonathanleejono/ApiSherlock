@@ -1,19 +1,21 @@
 import { useEffect } from "react";
 import { getAllApis } from "src/features/allApis/allApisSlice";
-import { useAppSelector } from "src/hooks";
+import { useAppDispatch, useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/ApisContainer";
 import Api from "./Api";
 import Loading from "./Loading";
 import PageBtnContainer from "./PageBtnContainer";
 
 const ApisContainer = () => {
-  const { isLoading, allApis, search, totalApis, numOfPages, page } =
-    useAppSelector((store) => store.allApis);
+  const dispatch = useAppDispatch();
+  const { isLoading, allApis, totalApis, numOfPages } = useAppSelector(
+    (store) => store.allApis
+  );
 
   useEffect(() => {
-    getAllApis();
-    // eslint-disable-next-line
-  }, [allApis, search, totalApis, numOfPages, page]);
+    dispatch(getAllApis());
+  }, []);
+
   if (isLoading) {
     return <Loading center />;
   }

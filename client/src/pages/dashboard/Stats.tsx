@@ -6,13 +6,13 @@ import { ChartsContainer, Loading, StatsContainer } from "../../components";
 const Stats: React.FC = () => {
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(showStats());
-  }, []);
-
   const { isLoading, monthlyApplications } = useAppSelector(
     (store) => store.allApis
   );
+
+  useEffect(() => {
+    dispatch(showStats());
+  }, []);
 
   if (isLoading) {
     return <Loading center />;

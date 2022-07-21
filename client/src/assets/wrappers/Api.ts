@@ -61,15 +61,15 @@ const Wrapper = styled.article`
     color: var(--green-dark);
     background: var(--green-light);
   }
-  .Low {
+  .pending {
     background: #ededed; //gray
     color: #4d4d4d;
   }
-  .Medium {
+  .healthy {
     background: #fce7c7; //orange
     color: #f3893d;
   }
-  .High {
+  .unhealthy {
     color: #ffffff; //red
     background: #d66a6a;
   }

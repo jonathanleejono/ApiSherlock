@@ -1,12 +1,7 @@
 import moment from "moment";
 import PropTypes, { InferProps } from "prop-types";
-import { BsFillCalendar2PlusFill, BsPersonCircle } from "react-icons/bs";
-import {
-  FaBriefcase,
-  FaLayerGroup,
-  FaRegCreditCard,
-  FaUserFriends,
-} from "react-icons/fa";
+import { BsFillCalendar2PlusFill } from "react-icons/bs";
+import { FaBriefcase, FaLayerGroup, FaRegCreditCard } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { deleteApi, setEditApi } from "src/features/api/apiSlice";
 import { useAppDispatch } from "src/hooks";
@@ -42,8 +37,6 @@ const Api: React.FC<ApiProps> = ({
 
   const date = moment(createdAt).format("MMM Do, YYYY");
   const createdDate = "Created Date: " + date;
-  const apiUrl = "API URL: " + url;
-  const apiHost = "Host: " + host;
   const apiLastPinged = "Last Pinged: " + lastPinged;
   const apiMonitoring = "Monitoring: " + monitoring;
 
@@ -59,8 +52,6 @@ const Api: React.FC<ApiProps> = ({
       <div className="content">
         <div className="content-center">
           <ApiInfo icon={<BsFillCalendar2PlusFill />} text={createdDate} />
-          <ApiInfo icon={<BsPersonCircle />} text={apiUrl} />
-          <ApiInfo icon={<FaUserFriends />} text={apiHost} />
           <ApiInfo icon={<FaRegCreditCard />} text={apiLastPinged} />
           <ApiInfo icon={<FaBriefcase />} text={apiMonitoring} />
           <ApiStatus

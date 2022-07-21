@@ -1,4 +1,8 @@
-import { clearFilters, handleChange } from "src/features/allApis/allApisSlice";
+import {
+  clearFilters,
+  getAllApis,
+  handleChange,
+} from "src/features/allApis/allApisSlice";
 import { useAppDispatch, useAppSelector } from "src/hooks";
 import { FormRow, FormRowSelect } from ".";
 import Wrapper from "../assets/wrappers/SearchContainer";
@@ -6,21 +10,28 @@ import Wrapper from "../assets/wrappers/SearchContainer";
 const SearchContainer = () => {
   const dispatch = useAppDispatch();
 
-  const { isLoading, search, status, sort, statusOptions, sortOptions } =
-    useAppSelector((store) => store.allApis);
-
-  const { monitoring, monitoringOptions } = useAppSelector(
-    (store) => store.api
-  );
+  const {
+    isLoading,
+    search,
+    status,
+    sort,
+    statusOptions,
+    sortOptions,
+    monitoring,
+    monitoringOptions,
+  } = useAppSelector((store) => store.allApis);
 
   const handleSearch = (e) => {
     if (isLoading) return;
-    handleChange({ name: e.target.name, value: e.target.value });
+    const { name, value } = e.target;
+    dispatch(handleChange({ name, value }));
+    dispatch(getAllApis());
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(clearFilters());
+    dispatch(getAllApis());
   };
 
   return (
@@ -32,7 +43,7 @@ const SearchContainer = () => {
           <FormRow
             type="text"
             labelText="API URL search"
-            name="url"
+            name="search"
             value={search}
             handleChange={handleSearch}
           />

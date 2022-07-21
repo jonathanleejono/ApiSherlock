@@ -70,26 +70,30 @@ const userSlice = createSlice({
       state.isLoading = false;
       state.user = user;
       state.token = token;
-      toast.success(`Hello there ${user.name}`);
+      toast.success(`Welcome ${user.name}`);
     },
     [registerUser.rejected]: (state, { payload }) => {
       state.isLoading = false;
       removeUserFromLocalStorage();
+      toast.dismiss();
       toast.error(payload);
     },
     [loginUser.pending]: (state) => {
       state.isLoading = true;
+      toast.loading("Logging in...");
     },
     [loginUser.fulfilled]: (state, { payload }) => {
       const { user, token } = payload;
       state.isLoading = false;
       state.user = user;
       state.token = token;
-      toast.success(`Hello there ${user.first_name}`);
+      toast.dismiss();
+      toast.success(`Hello there ${user.name}`);
     },
     [loginUser.rejected]: (state, { payload }) => {
       state.isLoading = false;
       removeUserFromLocalStorage();
+      toast.dismiss();
       toast.error(payload);
     },
     [updateUser.pending]: (state) => {
@@ -100,6 +104,7 @@ const userSlice = createSlice({
       state.isLoading = false;
       state.user = user;
       state.token = token;
+      toast.dismiss();
       toast.success(`Profile Updated!`);
     },
     [updateUser.rejected]: (state, { payload }) => {
