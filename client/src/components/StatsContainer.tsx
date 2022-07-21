@@ -1,30 +1,29 @@
-import { useAppContext } from "../context/appContext";
-import StatItem from "./StatItem";
-import { FaEnvelopeOpenText, FaBug, FaExclamationCircle } from "react-icons/fa";
+import { FaBug, FaEnvelopeOpenText, FaExclamationCircle } from "react-icons/fa";
+import { useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/StatsContainer";
-import React from "react";
+import StatItem from "./StatItem";
 
 const StatsContainer = () => {
-  const { statsStatus, statsType, statsPriority } = useAppContext();
+  const { defaultStats }: any = useAppSelector((store) => store.allApis);
 
-  const defaultStats = [
+  const _defaultStats = [
     {
-      title: "Open Apis",
-      count: statsStatus.Open || 0,
+      title: "Healthy Apis",
+      count: defaultStats.healthy || 0,
       icon: <FaEnvelopeOpenText />,
       color: "#E8A811", //yellow
       bcgColor: "#fcefc7", //light yellow
     },
     {
-      title: "High Priority Apis",
-      count: statsPriority.High || 0,
+      title: "Unhealthy Apis",
+      count: defaultStats.unhealthy || 0,
       icon: <FaExclamationCircle />,
       color: "#d66a6a", //red
       bcgColor: "#ffeeee",
     },
     {
-      title: "Bug Apis",
-      count: statsType.Bug || 0,
+      title: "Pending Apis",
+      count: defaultStats.pending || 0,
       icon: <FaBug />,
       color: "#647acb", //blue
       bcgColor: "#e0e8f9",
@@ -33,7 +32,7 @@ const StatsContainer = () => {
 
   return (
     <Wrapper>
-      {defaultStats.map((item, index) => (
+      {_defaultStats.map((item, index) => (
         <StatItem key={index} {...item} />
       ))}
     </Wrapper>

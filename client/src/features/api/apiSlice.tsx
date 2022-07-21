@@ -26,20 +26,23 @@ const apiSlice = createSlice({
       state[name] = value;
     },
     clearValues: () => ({
-        ...initialState,
-      }),
+      ...initialState,
+    }),
     setEditApi: (state, { payload }) => ({ ...state, ...payload }),
   },
   extraReducers: {
     [createApi.pending]: (state) => {
       state.isLoading = true;
+      toast.loading("Please wait...");
     },
     [createApi.fulfilled]: (state) => {
       state.isLoading = false;
+      toast.dismiss();
       toast.success("Api Added");
     },
     [createApi.rejected]: (state, { payload }) => {
       state.isLoading = false;
+      toast.dismiss();
       toast.error(payload);
     },
     [deleteApi.fulfilled]: (state, { payload }) => {
@@ -49,14 +52,17 @@ const apiSlice = createSlice({
       toast.error(payload);
     },
     [editApi.pending]: (state) => {
+      toast.loading("Please wait...");
       state.isLoading = true;
     },
     [editApi.fulfilled]: (state) => {
       state.isLoading = false;
+      toast.dismiss();
       toast.success("Api Modified...");
     },
     [editApi.rejected]: (state, { payload }) => {
       state.isLoading = false;
+      toast.dismiss();
       toast.error(payload);
     },
   },

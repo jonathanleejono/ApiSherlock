@@ -1,15 +1,19 @@
-import { useEffect } from "react";
-import { useAppContext } from "../../context/appContext";
-import { StatsContainer, Loading, ChartsContainer } from "../../components";
-import React from "react";
+import React, { useEffect } from "react";
+import { showStats } from "src/features/allApis/allApisSlice";
+import { useAppDispatch, useAppSelector } from "src/hooks";
+import { ChartsContainer, Loading, StatsContainer } from "../../components";
 
-const Stats = () => {
-  const { showStats, isLoading, monthlyApplications } = useAppContext();
+const Stats: React.FC = () => {
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    showStats();
-    // eslint-disable-next-line
+    dispatch(showStats());
   }, []);
+
+  const { isLoading, monthlyApplications } = useAppSelector(
+    (store) => store.allApis
+  );
+
   if (isLoading) {
     return <Loading center />;
   }

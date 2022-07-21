@@ -17,11 +17,17 @@ const initialState = {
   numOfPages: 0,
   page: 1,
   monthlyApplications: [],
+  defaultStats: {},
   ...initialFiltersState,
 };
 
 export const getAllApis: any = createAsyncThunk(
   "allApis/getApis",
+  getAllApisThunk
+);
+
+export const showStats: any = createAsyncThunk(
+  "allApis/showStats",
   getAllApisThunk
 );
 
@@ -49,12 +55,29 @@ const allApisSlice = createSlice({
   extraReducers: {
     [getAllApis.pending]: (state) => {
       state.isLoading = true;
+      toast.loading("Please wait...");
     },
     [getAllApis.fulfilled]: (state) => {
+      toast.dismiss();
       state.isLoading = false;
     },
     [getAllApis.rejected]: (state, { payload }) => {
       state.isLoading = false;
+      toast.dismiss();
+      toast.error(payload);
+    },
+    [showStats.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [showStats.fulfilled]: (state) => {
+      state.isLoading = false;
+      toast.dismiss();
+    },
+    [showStats.rejected]: (state, { payload }) => {
+      state.isLoading = false;
+      state.defaultStats = payload.defaultStats;
+      state.monthlyApplications = payload.monthlyApplications;
+      toast.dismiss();
       toast.error(payload);
     },
   },

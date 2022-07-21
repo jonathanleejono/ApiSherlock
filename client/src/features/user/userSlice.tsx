@@ -19,19 +19,24 @@ const initialState = {
   token: getTokenFromLocalStorage(),
 };
 
+const authApiUrl = "/api/auth";
+
 export const registerUser: any = createAsyncThunk(
   "user/registerUser",
-  async (user, thunkAPI) => registerUserThunk("/api/register", user, thunkAPI)
+  async (user, thunkAPI) =>
+    registerUserThunk(`${authApiUrl}/register`, user, thunkAPI)
 );
 
 export const loginUser: any = createAsyncThunk(
   "user/loginUser",
-  async (user, thunkAPI) => loginUserThunk("/api/login", user, thunkAPI)
+  async (user, thunkAPI) =>
+    loginUserThunk(`${authApiUrl}/login`, user, thunkAPI)
 );
 
 export const updateUser: any = createAsyncThunk(
   "user/updateUser",
-  async (user, thunkAPI) => updateUserThunk("/api/updateUser", user, thunkAPI)
+  async (user, thunkAPI) =>
+    updateUserThunk(`${authApiUrl}/updateUser`, user, thunkAPI)
 );
 
 export const clearStore: any = createAsyncThunk(
@@ -65,7 +70,7 @@ const userSlice = createSlice({
       state.isLoading = false;
       state.user = user;
       state.token = token;
-      toast.success(`Hello there ${user.first_name}`);
+      toast.success(`Hello there ${user.name}`);
     },
     [registerUser.rejected]: (state, { payload }) => {
       state.isLoading = false;

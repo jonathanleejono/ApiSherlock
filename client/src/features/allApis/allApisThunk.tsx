@@ -19,3 +19,12 @@ export const getAllApisThunk = async (_, thunkAPI) => {
     return checkForUnauthorizedResponse(error, thunkAPI);
   }
 };
+
+export const getApiStatsThunk = async (_, thunkAPI) => {
+  try {
+    const resp = await customFetch.get("/api/api/stats");
+    return resp.data;
+  } catch (error) {
+    return checkForUnauthorizedResponse(error, thunkAPI);
+  }
+};
