@@ -9,21 +9,21 @@ const StatsContainer = () => {
 
   const defaultStats = [
     {
-      title: "Open Tickets",
+      title: "Open Apis",
       count: statsStatus.Open || 0,
       icon: <FaEnvelopeOpenText />,
       color: "#E8A811", //yellow
       bcg: "#fcefc7", //light yellow
     },
     {
-      title: "High Priority Tickets",
+      title: "High Priority Apis",
       count: statsPriority.High || 0,
       icon: <FaExclamationCircle />,
       color: "#d66a6a", //red
       bcg: "#ffeeee",
     },
     {
-      title: "Bug Tickets",
+      title: "Bug Apis",
       count: statsType.Bug || 0,
       icon: <FaBug />,
       color: "#647acb", //blue
@@ -33,9 +33,7 @@ const StatsContainer = () => {
 
   return (
     <Wrapper>
-      {defaultStats.map((item, index) => {
-        return <StatItem key={index} {...item} />;
-      })}
+      {defaultStats.map((item, index) => <StatItem key={index} {...item} />)}
     </Wrapper>
   );
 };

@@ -2,9 +2,8 @@ import Alert from "./Alert";
 import BigSidebar from "./BigSidebar";
 import ChartsContainer from "./ChartsContainer";
 import FormRow from "./FormRow";
-import TicketDescriptionText from "./TicketDescriptionText";
 import FormRowSelect from "./FormRowSelect";
-import TicketsContainer from "./TicketsContainer";
+import ApisContainer from "./ApisContainer";
 import Loading from "./Loading";
 import Logo from "./Logo";
 import Navbar from "./Navbar";
@@ -20,9 +19,8 @@ export {
   MobileSidebar,
   FormRowSelect,
   SearchContainer,
-  TicketsContainer,
+  ApisContainer,
   StatsContainer,
   ChartsContainer,
   Loading,
-  TicketDescriptionText,
 };

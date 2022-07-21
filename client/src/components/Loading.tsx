@@ -1,7 +1,9 @@
-import React from "react";
+interface LoadingProps {
+  center: boolean;
+}
 
-const Loading = ({ center }) => {
-  return <div className={center ? "loading loading-center" : "loading"}></div>;
-};
+const Loading: React.FC<LoadingProps> = ({ center }) => (
+  <div className={center ? "loading loading-center" : "loading"}></div>
+);
 
 export default Loading;

@@ -2,8 +2,7 @@ import main from "../assets/images/main.png";
 import Wrapper from "../assets/wrappers/LandingPage";
 import { Logo } from "../components";
 import { Link } from "react-router-dom";
-const Landing = () => {
-  return (
+const Landing = () => (
     <Wrapper>
       <nav>
         <Logo />
@@ -11,7 +10,7 @@ const Landing = () => {
       <div className="container page">
         <div className="info">
           <h1>
-            ticket <span>tracking</span> app
+            api <span>tracking</span> app
           </h1>
           <p>
             Create and manage tickets for any aspect of your product or team.
@@ -27,6 +26,5 @@ const Landing = () => {
       </div>
     </Wrapper>
   );
-};
 
 export default Landing;

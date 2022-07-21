@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Register, Landing, Error, ProtectedRoute } from "./pages";
 import {
-  AllTickets,
+  AllApis,
   Profile,
   SharedLayout,
   Stats,
-  AddTicket,
+  AddApi,
+  EditApi,
 } from "./pages/dashboard";
 
 function App() {
@@ -21,8 +22,9 @@ function App() {
           }
         >
           <Route index element={<Stats />} />
-          <Route path="all-tickets" element={<AllTickets />} />
-          <Route path="add-ticket" element={<AddTicket />} />
+          <Route path="all-apis" element={<AllApis />} />
+          <Route path="add-api" element={<AddApi />} />
+          <Route path="edit-api" element={<EditApi />} />
           <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="/register" element={<Register />} />

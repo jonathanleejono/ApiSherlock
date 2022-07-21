@@ -2,8 +2,7 @@ import { Link } from 'react-router-dom'
 import img from '../assets/images/not-found.svg'
 import Wrapper from '../assets/wrappers/ErrorPage'
 
-const Error = () => {
-  return (
+const Error = () => (
     <Wrapper className='full-page'>
       <div>
         <img src={img} alt='not found' />
@@ -13,6 +12,5 @@ const Error = () => {
       </div>
     </Wrapper>
   )
-}
 
 export default Error

@@ -1,23 +1,17 @@
+import { clearFilters, handleChange } from "src/features/AllApis/AllApisSlice";
+import { useAppDispatch, useAppSelector } from "src/hooks";
 import { FormRow, FormRowSelect } from ".";
-import { useAppContext } from "../context/appContext";
 import Wrapper from "../assets/wrappers/SearchContainer";
-import React from "react";
 
 const SearchContainer = () => {
-  const {
-    isLoading,
-    search,
-    searchTicketStatus,
-    searchTicketPriority,
-    searchTicketType,
-    sort,
-    sortOptions,
-    handleChange,
-    clearFilters,
-    ticketPriorityOptions,
-    ticketStatusOptions,
-    ticketTypeOptions,
-  } = useAppContext();
+  const dispatch = useAppDispatch();
+
+  const { isLoading, search, status, sort, statusOptions, sortOptions } =
+    useAppSelector((store) => store.allApis);
+
+  const { monitoring, monitoringOptions } = useAppSelector(
+    (store) => store.api
+  );
 
   const handleSearch = (e) => {
     if (isLoading) return;
@@ -26,7 +20,7 @@ const SearchContainer = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    clearFilters();
+    dispatch(clearFilters());
   };
 
   return (
@@ -34,37 +28,29 @@ const SearchContainer = () => {
       <form className="form">
         <h4>search form</h4>
         <div className="form-center">
-          {/* search for ticket */}
+          {/* search for url */}
           <FormRow
             type="text"
-            labelText="ID search"
-            name="search"
+            labelText="API URL search"
+            name="url"
             value={search}
             handleChange={handleSearch}
           />
           {/* search by status */}
           <FormRowSelect
             labelText="status"
-            name="searchTicketStatus"
-            value={searchTicketStatus}
+            name="status"
+            value={status}
             handleChange={handleSearch}
-            list={["All", ...ticketStatusOptions]}
+            list={["All", ...statusOptions]}
           />
-          {/* search by priority */}
+          {/* search by monitoring */}
           <FormRowSelect
-            labelText="priority"
-            name="searchTicketPriority"
-            value={searchTicketPriority}
+            labelText="monitoring"
+            name="monitoring"
+            value={monitoring}
             handleChange={handleSearch}
-            list={["All", ...ticketPriorityOptions]}
-          />
-          {/* search by type */}
-          <FormRowSelect
-            labelText="type"
-            name="searchTicketType"
-            value={searchTicketType}
-            handleChange={handleSearch}
-            list={["All", ...ticketTypeOptions]}
+            list={["All", ...monitoringOptions]}
           />
           {/* sort */}
           <FormRowSelect
@@ -75,6 +61,7 @@ const SearchContainer = () => {
             list={sortOptions}
           />
           <button
+            type="reset"
             className="btn btn-block btn-danger"
             disabled={isLoading}
             onClick={handleSubmit}

@@ -7,7 +7,7 @@ const ChartsContainer = () => {
   const { monthlyApplications: data } = useAppContext();
   return (
     <Wrapper>
-      <h4>Monthly Tickets</h4>
+      <h4>Monthly Apis</h4>
       <BarChart data={data} />
     </Wrapper>
   );

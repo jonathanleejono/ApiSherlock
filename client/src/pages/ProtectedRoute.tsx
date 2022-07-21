@@ -1,12 +1,16 @@
-import { useAppContext } from '../context/appContext'
-import { Navigate } from 'react-router-dom'
+import { Navigate } from "react-router-dom";
+import { useAppSelector } from "src/hooks";
 
-const ProtectedRoute = ({ children }) => {
-  const { user } = useAppContext()
-  if (!user) {
-    return <Navigate to='/landing' />
-  }
-  return children
+interface ProtectedRouteProps {
+  children: JSX.Element;
 }
 
-export default ProtectedRoute
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { user } = useAppSelector((store) => store.user);
+  if (!user) {
+    return <Navigate to="/landing" />;
+  }
+  return children;
+};
+
+export default ProtectedRoute;

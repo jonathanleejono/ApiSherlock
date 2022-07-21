@@ -2,8 +2,7 @@ import { Outlet } from "react-router-dom";
 import Wrapper from "../../assets/wrappers/SharedLayout";
 import { Navbar, BigSidebar, MobileSidebar } from "../../components";
 
-const SharedLayout = () => {
-  return (
+const SharedLayout = () => (
     <Wrapper>
       <main className="dashboard">
         <MobileSidebar />
@@ -17,6 +16,5 @@ const SharedLayout = () => {
       </main>
     </Wrapper>
   );
-};
 
 export default SharedLayout;

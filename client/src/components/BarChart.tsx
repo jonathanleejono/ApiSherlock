@@ -9,8 +9,7 @@ import {
 } from "recharts";
 import React from "react";
 
-const BarChartComponent = ({ data }) => {
-  return (
+const BarChartComponent = ({ data }) => (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} margin={{ top: 50 }}>
         <CartesianGrid strokeDasharray="3 3 " />
@@ -21,6 +20,5 @@ const BarChartComponent = ({ data }) => {
       </BarChart>
     </ResponsiveContainer>
   );
-};
 
 export default BarChartComponent;
