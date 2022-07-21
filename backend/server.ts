@@ -20,6 +20,7 @@ import apiRouter from "./routes/apiRoutes";
 import authenticateUser from "./middleware/auth";
 import errorHandlerMiddleware from "./middleware/error-handler";
 import notFoundMiddleware from "./middleware/not-found";
+import cors from "cors";
 
 const app = express();
 dotenv.config();
@@ -32,6 +33,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(xss());
 app.use(mongoSanitize());
+app.use(cors());
 
 // app.set("Accept", "application/json");
 // app.set("Content-Type", "application/json");

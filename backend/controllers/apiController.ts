@@ -1,15 +1,11 @@
-import Api from "../models/ApiCollection";
+import axios from "axios";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import {
-  BadRequestError,
-  NotFoundError,
-  UnAuthenticatedError,
-} from "../errors/index";
-import checkPermissions from "../middleware/checkPermissions";
-import mongoose from "mongoose";
 import moment from "moment";
-import axios from "axios";
+import mongoose from "mongoose";
+import { BadRequestError, NotFoundError } from "../errors/index";
+import checkPermissions from "../middleware/checkPermissions";
+import Api from "../models/ApiCollection";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
   const { url, host, monitoring } = req.body;
@@ -141,7 +137,6 @@ const pingAll = async (req: Request, res: Response): Promise<void> => {
     const dateTime = moment().format("MMM Do YYYY, hh:mm A");
     try {
       const res = await axios.get(allApisToMonitor[api].url);
-      // console.log("res: ", res);
       if (res) {
         const updatedApi = await Api.findOneAndUpdate(
           { _id: allApisToMonitor[api].id },
@@ -209,96 +204,70 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
 
 // ----------------------------------
 
-// const showStats = async (req: Request, res: Response) => {
-//   // interface statsStatus {
-//   //   healthy?: string;
-//   //   unhealthy?: string;
-//   //   pending?: string;
-//   //   reduce: any;
-//   // }
+const showStats = async (req: Request, res: Response) => {
+  interface statsStatus {
+    healthy?: string;
+    unhealthy?: string;
+    pending?: string;
+    reduce: any;
+  }
 
-//   const userId: mongoose.Types.ObjectId = req?.user?.userId;
+  const userId = new mongoose.Types.ObjectId(req?.user?.userId);
 
-//   let statsStatus = await Api.aggregate([
-//     { $match: { createdBy: req?.user?.userId as mongoose.Types.ObjectId } },
-//     { $group: { _id: "$status", count: { $sum: 1 } } },
-//   ]);
+  let statsStatus: statsStatus = await Api.aggregate([
+    { $match: { createdBy: userId } },
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
 
-//   // let statsType = await Api.aggregate([
-//   //   { $match: { createdBy: req?.user?.userId } },
-//   //   { $group: { _id: "$ApiType", count: { $sum: 1 } } },
-//   // ]);
+  // accumulator, currentValue
+  statsStatus = statsStatus.reduce((acc, curr) => {
+    const { _id: title, count } = curr;
+    acc[title] = count;
+    return acc;
+  }, {});
 
-//   // let statsPriority = await Api.aggregate([
-//   //   { $match: { createdBy: req.user.userId } },
-//   //   { $group: { _id: "$ticketPriority", count: { $sum: 1 } } },
-//   // ]);
-//   console.log("statsStatus1: ", statsStatus);
+  const defaultStats = {
+    healthy: statsStatus.healthy || 0,
+    unhealthy: statsStatus.unhealthy || 0,
+    pending: statsStatus.pending || 0,
+  };
 
-//   // accumulator, currentValue
-//   statsStatus = statsStatus.reduce((acc, curr) => {
-//     const { _id: title, count } = curr;
-//     acc[title] = count;
-//     return acc;
-//   }, {});
+  let monthlyApplications = await Api.aggregate([
+    { $match: { createdBy: userId } },
+    {
+      $group: {
+        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { "_id.year": -1, "_id.month": -1 } },
+    { $limit: 6 },
+  ]);
 
-//   console.log("statsStatus: ", statsStatus);
+  monthlyApplications = monthlyApplications
+    .map((item) => {
+      const {
+        _id: { year, month },
+        count,
+      } = item;
 
-//   // statsType = statsType.reduce((acc, curr) => {
-//   //   const { _id: title, count } = curr;
-//   //   acc[title] = count;
-//   //   return acc;
-//   // }, {});
+      const date = moment()
+        .month(month - 1)
+        .year(year)
+        .format("MMM Y");
+      return { date, count };
+    })
+    .reverse();
 
-//   // statsPriority = statsPriority.reduce((acc, curr) => {
-//   //   const { _id: title, count } = curr;
-//   //   acc[title] = count;
-//   //   return acc;
-//   // }, {});
-
-//   // const defaultStats = {
-//   //   Healthy: statsStatus.healthy || 0,
-//   //   Unhealthy: statsStatus.unhealthy || 0,
-//   //   Pending: statsStatus.pending || 0,
-//   // };
-
-//   let monthlyApplications = await Api.aggregate([
-//     // { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
-//     { $match: { createdBy: userId } },
-//     {
-//       $group: {
-//         _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
-//         count: { $sum: 1 },
-//       },
-//     },
-//     { $sort: { "_id.year": -1, "_id.month": -1 } },
-//     { $limit: 6 },
-//   ]);
-
-//   monthlyApplications = monthlyApplications
-//     .map((item) => {
-//       const {
-//         _id: { year, month },
-//         count,
-//       } = item;
-
-//       const date = moment()
-//         .month(month - 1)
-//         .year(year)
-//         .format("MMM Y");
-//       return { date, count };
-//     })
-//     .reverse();
-
-//   res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
-// };
+  res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
+};
 
 export {
   createApi,
   deleteApi,
   getAllApis,
   updateApi,
-  // showStats,
+  showStats,
   pingAll,
   pingOne,
 };
