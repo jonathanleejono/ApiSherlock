@@ -1,16 +1,17 @@
-import { useAppContext } from "../context/appContext";
-import NavLinks from "./NavLinks";
-import Logo from "../components/Logo";
+import { useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/BigSidebar";
-import React from "react";
+import Logo from "../components/Logo";
+import NavLinks from "./NavLinks";
 
-const BigSidebar = () => {
-  const { showSidebar } = useAppContext();
+const BigSidebar: React.FC = () => {
+  const { isSidebarOpen } = useAppSelector((store) => store.user);
   return (
     <Wrapper>
       <div
         className={
-          showSidebar ? "sidebar-container " : "sidebar-container show-sidebar"
+          isSidebarOpen
+            ? "sidebar-container "
+            : "sidebar-container show-sidebar"
         }
       >
         <div className="content">

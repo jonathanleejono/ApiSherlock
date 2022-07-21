@@ -1,10 +1,12 @@
-import BarChart from "./BarChart";
-import { useAppContext } from "../context/appContext";
+import { useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/ChartsContainer";
-import React from "react";
+import BarChart from "./BarChart";
 
 const ChartsContainer = () => {
-  const { monthlyApplications: data } = useAppContext();
+  const { monthlyApplications: data } = useAppSelector(
+    (store) => store.allApis
+  );
+
   return (
     <Wrapper>
       <h4>Monthly Apis</h4>

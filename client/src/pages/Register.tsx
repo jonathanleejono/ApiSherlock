@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
-import { Logo, FormRow, Alert } from "../components";
-import Wrapper from "../assets/wrappers/RegisterPage";
-import { useAppContext } from "../context/appContext";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { loginUser, registerUser } from "src/features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "src/hooks";
+import Wrapper from "../assets/wrappers/RegisterPage";
+import { FormRow, Logo } from "../components";
 
 const initialState = {
   name: "",
@@ -13,9 +15,9 @@ const initialState = {
 
 const Register = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [values, setValues] = useState(initialState);
-  const { user, isLoading, showAlert, displayAlert, setupUser } =
-    useAppContext();
+  const { user, isLoading } = useAppSelector((store) => store.user);
 
   const toggleMember = () => {
     setValues({ ...values, isMember: !values.isMember });
@@ -29,22 +31,14 @@ const Register = () => {
     e.preventDefault();
     const { name, email, password, isMember } = values;
     if (!email || !password || (!isMember && !name)) {
-      displayAlert();
+      toast.error("Please provide all users");
       return;
     }
     const currentUser = { name, email, password };
     if (isMember) {
-      setupUser({
-        currentUser,
-        endPoint: "login",
-        alertText: "Login Successful! Redirecting...",
-      });
+      dispatch(loginUser(currentUser));
     } else {
-      setupUser({
-        currentUser,
-        endPoint: "register",
-        alertText: "User Created! Redirecting...",
-      });
+      dispatch(registerUser(currentUser));
     }
   };
 
@@ -63,11 +57,10 @@ const Register = () => {
 
         <h3>{values.isMember ? "Login" : "Register"}</h3>
 
-        {showAlert && <Alert />}
-
         {/* name input */}
         {!values.isMember && (
           <FormRow
+            labelText="Name"
             type="text"
             name="name"
             value={values.name}
@@ -76,6 +69,7 @@ const Register = () => {
         )}
         {/* email input */}
         <FormRow
+          labelText="Email"
           type="email"
           name="email"
           value={values.email}
@@ -83,6 +77,7 @@ const Register = () => {
         />
         {/* password input */}
         <FormRow
+          labelText="password"
           type="password"
           name="password"
           value={values.password}

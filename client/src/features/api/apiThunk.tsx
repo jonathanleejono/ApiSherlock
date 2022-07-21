@@ -1,4 +1,4 @@
-import { showLoading, hideLoading, getAllApis } from "../AllApis/AllApisSlice";
+import { showLoading, hideLoading, getAllApis } from "../allApis/allApisSlice";
 import customFetch, { checkForUnauthorizedResponse } from "../../utils/axios";
 import { clearValues } from "./apiSlice";
 

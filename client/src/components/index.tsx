@@ -1,4 +1,3 @@
-import Alert from "./Alert";
 import BigSidebar from "./BigSidebar";
 import ChartsContainer from "./ChartsContainer";
 import FormRow from "./FormRow";
@@ -13,7 +12,6 @@ import StatsContainer from "./StatsContainer";
 export {
   Logo,
   FormRow,
-  Alert,
   Navbar,
   BigSidebar,
   MobileSidebar,

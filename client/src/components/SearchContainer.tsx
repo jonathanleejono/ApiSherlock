@@ -1,4 +1,4 @@
-import { clearFilters, handleChange } from "src/features/AllApis/AllApisSlice";
+import { clearFilters, handleChange } from "src/features/allApis/allApisSlice";
 import { useAppDispatch, useAppSelector } from "src/hooks";
 import { FormRow, FormRowSelect } from ".";
 import Wrapper from "../assets/wrappers/SearchContainer";

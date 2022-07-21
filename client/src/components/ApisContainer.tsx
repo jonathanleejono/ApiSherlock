@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getAllApis } from "src/features/AllApis/AllApisSlice";
+import { getAllApis } from "src/features/allApis/allApisSlice";
 import { useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/ApisContainer";
 import Api from "./Api";
@@ -32,7 +32,9 @@ const ApisContainer = () => {
         {totalApis} api{allApis.length > 1 && "s"} found
       </h5>
       <div className="apis">
-        {allApis.map((api: any) => <Api key={api._id} {...api} />)}
+        {allApis.map((api: any) => (
+          <Api key={api._id} {...api} />
+        ))}
       </div>
       {numOfPages > 1 && <PageBtnContainer />}
     </Wrapper>

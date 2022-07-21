@@ -1,12 +1,13 @@
-import Wrapper from "../assets/wrappers/Navbar";
-import { FaAlignLeft, FaUserCircle, FaCaretDown } from "react-icons/fa";
-import { useAppContext } from "../context/appContext";
-import Logo from "./Logo";
 import { useState } from "react";
-import React from "react";
-const Navbar = () => {
+import { FaAlignLeft, FaCaretDown, FaUserCircle } from "react-icons/fa";
+import { logoutUser, toggleSidebar } from "src/features/user/userSlice";
+import { useAppSelector } from "src/hooks";
+import Wrapper from "../assets/wrappers/Navbar";
+import Logo from "./Logo";
+const Navbar: React.FC = () => {
   const [showLogout, setShowLogout] = useState(false);
-  const { toggleSidebar, logoutUser, user } = useAppContext();
+  const { user } = useAppSelector((store) => store.user);
+
   return (
     <Wrapper>
       <div className="nav-center">

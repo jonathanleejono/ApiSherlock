@@ -1,6 +1,6 @@
 import customFetch, { checkForUnauthorizedResponse } from "../../utils/axios";
 import { clearAllApisState } from "../allApis/allApisSlice";
-import { clearValues } from "../api/batteryCellSlice";
+import { clearValues } from "../api/apiSlice";
 import { logoutUser } from "./userSlice";
 import { addUserToLocalStorage } from "../../utils/localStorage";
 

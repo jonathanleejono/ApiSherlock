@@ -1,4 +1,5 @@
 import moment from "moment";
+import PropTypes, { InferProps } from "prop-types";
 import { BsFillCalendar2PlusFill, BsPersonCircle } from "react-icons/bs";
 import {
   FaBriefcase,
@@ -13,15 +14,17 @@ import Wrapper from "../assets/wrappers/Api";
 import ApiInfo from "./ApiInfo";
 import ApiStatus from "./ApiStatus";
 
-interface ApiProps {
-  createdAt: string;
-  url: string;
-  host: string;
-  lastPinged: string;
-  monitoring: string;
-  status: string;
-  _id: string;
-}
+const propTypes = {
+  createdAt: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
+  host: PropTypes.string.isRequired,
+  lastPinged: PropTypes.string.isRequired,
+  monitoring: PropTypes.string.isRequired,
+  status: PropTypes.string.isRequired,
+  _id: PropTypes.string.isRequired,
+};
+
+type ApiProps = InferProps<typeof propTypes>;
 
 // the function params are from the mapped object in ApisContainer.tsx
 const Api: React.FC<ApiProps> = ({
@@ -92,5 +95,7 @@ const Api: React.FC<ApiProps> = ({
     </Wrapper>
   );
 };
+
+Api.propTypes = propTypes;
 
 export default Api;

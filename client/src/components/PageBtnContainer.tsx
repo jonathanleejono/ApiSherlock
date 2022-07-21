@@ -1,13 +1,11 @@
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
-import { changePage } from "src/features/AllApis/AllApisSlice";
+import { changePage } from "src/features/allApis/allApisSlice";
 import { useAppDispatch, useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/PageBtnContainer";
 
 const PageBtnContainer = () => {
   const dispatch = useAppDispatch();
   const { numOfPages, page } = useAppSelector((store) => store.allApis);
-
-  // const { changePage } = useAppContext();
 
   const pages = Array.from({ length: numOfPages }, (_, index) => index + 1);
 

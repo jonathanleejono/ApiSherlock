@@ -13,27 +13,29 @@ const StatsContainer = () => {
       count: statsStatus.Open || 0,
       icon: <FaEnvelopeOpenText />,
       color: "#E8A811", //yellow
-      bcg: "#fcefc7", //light yellow
+      bcgColor: "#fcefc7", //light yellow
     },
     {
       title: "High Priority Apis",
       count: statsPriority.High || 0,
       icon: <FaExclamationCircle />,
       color: "#d66a6a", //red
-      bcg: "#ffeeee",
+      bcgColor: "#ffeeee",
     },
     {
       title: "Bug Apis",
       count: statsType.Bug || 0,
       icon: <FaBug />,
       color: "#647acb", //blue
-      bcg: "#e0e8f9",
+      bcgColor: "#e0e8f9",
     },
   ];
 
   return (
     <Wrapper>
-      {defaultStats.map((item, index) => <StatItem key={index} {...item} />)}
+      {defaultStats.map((item, index) => (
+        <StatItem key={index} {...item} />
+      ))}
     </Wrapper>
   );
 };

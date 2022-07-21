@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { FormRow, Alert } from "../../components";
-import { useAppContext } from "../../context/appContext";
+import { toast } from "react-toastify";
+import { updateUser } from "src/features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "src/hooks";
 import Wrapper from "../../assets/wrappers/DashboardFormPage";
+import { FormRow } from "../../components";
 
 const Profile = () => {
-  const { user, showAlert, displayAlert, updateUser, isLoading } =
-    useAppContext();
+  const { user, isLoading } = useAppSelector((store) => store.user);
+
+  const dispatch = useAppDispatch();
 
   const [name, setName] = useState(user?.name);
   const [email, setEmail] = useState(user?.email);
@@ -14,17 +17,16 @@ const Profile = () => {
     e.preventDefault();
 
     if (!name || !email) {
-      displayAlert();
+      toast.error("Please provide all values");
       return;
     }
-    updateUser({ name, email });
+    dispatch(updateUser({ name, email }));
   };
 
   return (
     <Wrapper>
       <form className="form" onSubmit={handleSubmit}>
         <h3>profile</h3>
-        {showAlert && <Alert />}
         <div className="form-center">
           <FormRow
             labelText="Name"

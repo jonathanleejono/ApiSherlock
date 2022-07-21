@@ -1,9 +1,12 @@
 import { Navigate } from "react-router-dom";
 import { useAppSelector } from "src/hooks";
+import PropTypes, { InferProps } from "prop-types";
 
-interface ProtectedRouteProps {
-  children: JSX.Element;
-}
+const propTypes = {
+  children: PropTypes.element.isRequired,
+};
+
+type ProtectedRouteProps = InferProps<typeof propTypes>;
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user } = useAppSelector((store) => store.user);
@@ -12,5 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
   return children;
 };
+
+ProtectedRoute.propTypes = propTypes;
 
 export default ProtectedRoute;

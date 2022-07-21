@@ -1,29 +1,34 @@
-import Wrapper from "../assets/wrappers/MobileSidebar";
 import { FaTimes } from "react-icons/fa";
-import { useAppContext } from "../context/appContext";
+import Wrapper from "../assets/wrappers/MobileSidebar";
 
 import Logo from "./Logo";
 import NavLinks from "./NavLinks";
 
-import React from "react";
+import { toggleSidebar } from "src/features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "src/hooks";
 
 const MobileSidebar = () => {
-  const { showSidebar, toggleSidebar } = useAppContext();
+  const dispatch = useAppDispatch();
+  const toggle = () => {
+    dispatch(toggleSidebar());
+  };
+
+  const { isSidebarOpen } = useAppSelector((store) => store.user);
   return (
     <Wrapper>
       <div
         className={
-          showSidebar ? "sidebar-container show-sidebar" : "sidebar-container"
+          isSidebarOpen ? "sidebar-container show-sidebar" : "sidebar-container"
         }
       >
         <div className="content">
-          <button type="button" className="close-btn" onClick={toggleSidebar}>
+          <button type="button" className="close-btn" onClick={toggle}>
             <FaTimes />
           </button>
           <header>
             <Logo />
           </header>
-          <NavLinks toggleSidebar={toggleSidebar} />
+          <NavLinks toggleSidebar={toggle} />
         </div>
       </div>
     </Wrapper>

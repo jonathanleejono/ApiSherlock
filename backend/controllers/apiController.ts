@@ -28,7 +28,7 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
 // -------------------------------------------
 
 const getAllApis = async (req: Request, res: Response): Promise<void> => {
-  const { url, status, lastPinged, monitoring, sort, search } = req.query;
+  const { status, monitoring, sort, search } = req.query;
 
   const queryObject: any = {
     createdBy: req?.user?.userId,
