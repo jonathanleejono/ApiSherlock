@@ -3,11 +3,6 @@ import { StatusCodes } from "http-status-codes";
 import { BadRequestError, UnAuthenticatedError } from "../errors/index";
 import User from "../models/UserCollection";
 
-// export interface UserResponse {
-//   user: { name: string; email: string };
-//   token: string;
-// }
-
 const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password } = req.body;
 
