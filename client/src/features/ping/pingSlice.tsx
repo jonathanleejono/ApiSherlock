@@ -25,22 +25,30 @@ const pingSlice = createSlice({
   extraReducers: {
     [pingAll.pending]: (state) => {
       state.isLoading = true;
+      toast.loading("Pinging apis...");
     },
-    [pingAll.fulfilled]: (state) => {
+    [pingAll.fulfilled]: (state, { payload }) => {
+      toast.dismiss();
+      toast.success(payload);
       state.isLoading = false;
     },
     [pingAll.rejected]: (state, { payload }) => {
       state.isLoading = false;
+      toast.dismiss();
       toast.error(payload);
     },
     [pingOne.pending]: (state) => {
       state.isLoading = true;
+      toast.loading("Pinging api...");
     },
-    [pingOne.fulfilled]: (state) => {
+    [pingOne.fulfilled]: (state, { payload }) => {
       state.isLoading = false;
+      toast.dismiss();
+      toast.success(payload);
     },
     [pingOne.rejected]: (state, { payload }) => {
       state.isLoading = false;
+      toast.dismiss();
       toast.error(payload);
     },
   },

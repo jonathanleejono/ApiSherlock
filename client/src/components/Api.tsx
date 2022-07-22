@@ -1,9 +1,10 @@
 import moment from "moment";
 import PropTypes, { InferProps } from "prop-types";
 import { BsFillCalendar2PlusFill } from "react-icons/bs";
-import { FaBriefcase, FaLayerGroup, FaRegCreditCard } from "react-icons/fa";
+import { FaSearch, FaLayerGroup, FaCode } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { deleteApi, setEditApi } from "src/features/api/apiSlice";
+import { pingOne } from "src/features/ping/pingSlice";
 import { useAppDispatch } from "src/hooks";
 import Wrapper from "../assets/wrappers/Api";
 import ApiInfo from "./ApiInfo";
@@ -52,8 +53,8 @@ const Api: React.FC<ApiProps> = ({
       <div className="content">
         <div className="content-center">
           <ApiInfo icon={<BsFillCalendar2PlusFill />} text={createdDate} />
-          <ApiInfo icon={<FaRegCreditCard />} text={apiLastPinged} />
-          <ApiInfo icon={<FaBriefcase />} text={apiMonitoring} />
+          <ApiInfo icon={<FaCode />} text={apiLastPinged} />
+          <ApiInfo icon={<FaSearch />} text={apiMonitoring} />
           <ApiStatus
             icon={<FaLayerGroup />}
             text="Status:"
@@ -62,12 +63,26 @@ const Api: React.FC<ApiProps> = ({
         </div>
         <footer>
           <div className="actions">
+            <button
+              type="button"
+              className="btn ping-btn"
+              onClick={() => dispatch(pingOne(_id))}
+            >
+              Ping API
+            </button>
             <Link
               to="/edit-api"
               className="btn edit-btn"
               onClick={() =>
                 dispatch(
-                  setEditApi({ _id, url, host, lastPinged, monitoring, status })
+                  setEditApi({
+                    apiId: _id,
+                    url,
+                    host,
+                    lastPinged,
+                    monitoring,
+                    status,
+                  })
                 )
               }
             >

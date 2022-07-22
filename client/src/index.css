@@ -42,6 +42,10 @@ html {
   --red-dark: #842029;
   --green-light: #d1e7dd;
   --green-dark: #0f5132;
+  --blue-light: #d1e0e7;
+  --blue-dark: #074a67;
+  --purple-light: #dad1e7;
+  --purple-dark: #1c0f51;
 
   /* fonts  */
   --headingFont: "Roboto Condensed", Sans-Serif;
@@ -178,6 +182,11 @@ ul {
   padding: 0.5rem 1.25rem;
 }
 .btn-api {
+  font-size: 1.25rem;
+  padding: 0.5rem 1.25rem;
+  margin-right: 16px;
+}
+.btn-ping {
   font-size: 1.25rem;
   padding: 0.5rem 1.25rem;
 }

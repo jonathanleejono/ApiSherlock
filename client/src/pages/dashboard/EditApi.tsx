@@ -1,12 +1,23 @@
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getAllApis } from "src/features/allApis/allApisSlice";
 import { clearValues, editApi, handleChange } from "src/features/api/apiSlice";
 import { useAppDispatch, useAppSelector } from "src/hooks";
 import Wrapper from "../../assets/wrappers/DashboardFormPage";
 import { FormRow, FormRowSelect } from "../../components";
 
 const EditApi = () => {
-  const { isLoading, monitoring, monitoringOptions, url, host, hostOptions } =
-    useAppSelector((store) => store.api);
+  const {
+    isLoading,
+    monitoring,
+    monitoringOptions,
+    url,
+    host,
+    hostOptions,
+    apiId,
+  } = useAppSelector((store) => store.api);
+
+  const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
 
@@ -19,7 +30,12 @@ const EditApi = () => {
       return;
     }
 
-    dispatch(editApi({ url, host, monitoring }));
+    // in Api.tsx, the apiId in Redux state takes in actual api._id
+    dispatch(editApi({ id: apiId, api: { url, host, monitoring } }));
+
+    navigate("/all-apis");
+
+    dispatch(getAllApis());
   };
 
   const handleInput = (e) => {

@@ -38,9 +38,9 @@ export const deleteApiThunk = async (id, thunkAPI?) => {
     );
   }
 };
-export const editApiThunk = async ({ _id, api }, thunkAPI?) => {
+export const editApiThunk = async ({ id, api }, thunkAPI?) => {
   try {
-    const resp = await customFetch.patch(`/api/api/${_id}`, api);
+    const resp = await customFetch.patch(`/api/api/${id}`, api);
     thunkAPI.dispatch(clearValues());
     return resp.data;
   } catch (err) {

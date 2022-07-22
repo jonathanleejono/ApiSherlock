@@ -6,9 +6,10 @@ const initialState = {
   isLoading: false,
   apiId: "",
   url: "",
-  host: "",
+  // AWS is default because it's the first option
+  host: "AWS",
   hostOptions: ["AWS", "GCP", "Azure", "Heroku", "DigitalOcean", "Other"],
-  monitoring: "",
+  monitoring: "on",
   monitoringOptions: ["on", "off"],
 };
 

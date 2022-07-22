@@ -88,7 +88,7 @@ const userSlice = createSlice({
       state.user = user;
       state.token = token;
       toast.dismiss();
-      toast.success(`Hello there ${user.name}`);
+      toast.success(`Hello there ${user.name}, logging in...`);
     },
     [loginUser.rejected]: (state, { payload }) => {
       state.isLoading = false;

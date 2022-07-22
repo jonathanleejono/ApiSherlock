@@ -66,8 +66,8 @@ const Wrapper = styled.article`
     color: #4d4d4d;
   }
   .healthy {
-    background: #fce7c7; //orange
-    color: #f3893d;
+    background: var(--green-light); //orange
+    color: var(--green-dark);
   }
   .unhealthy {
     color: #ffffff; //red
@@ -95,12 +95,18 @@ const Wrapper = styled.article`
     margin-top: 1rem;
   }
   .edit-btn,
-  .delete-btn {
+  .delete-btn,
+  .ping-btn {
     letter-spacing: var(--letterSpacing);
     cursor: pointer;
     // height: 30px;
     padding: 0.75rem 1.5rem;
     margin-top: 0.5rem;
+  }
+  .ping-btn {
+    color: #647acb;
+    background: #e0e8f9;
+    margin-right: 0.5rem;
   }
   .edit-btn {
     color: var(--green-dark);

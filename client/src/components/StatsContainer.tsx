@@ -1,4 +1,4 @@
-import { FaBug, FaEnvelopeOpenText, FaExclamationCircle } from "react-icons/fa";
+import { FaCommentDots, FaCheck, FaExclamationCircle } from "react-icons/fa";
 import { useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/StatsContainer";
 import StatItem from "./StatItem";
@@ -10,9 +10,9 @@ const StatsContainer = () => {
     {
       title: "Healthy Apis",
       count: defaultStats.healthy || 0,
-      icon: <FaEnvelopeOpenText />,
-      color: "#E8A811", //yellow
-      bcgColor: "#fcefc7", //light yellow
+      icon: <FaCheck />,
+      color: "#0f5132", //green
+      bcgColor: "#d1e7dd",
     },
     {
       title: "Unhealthy Apis",
@@ -24,7 +24,7 @@ const StatsContainer = () => {
     {
       title: "Pending Apis",
       count: defaultStats.pending || 0,
-      icon: <FaBug />,
+      icon: <FaCommentDots />,
       color: "#647acb", //blue
       bcgColor: "#e0e8f9",
     },

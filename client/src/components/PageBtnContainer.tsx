@@ -1,5 +1,5 @@
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
-import { changePage } from "src/features/allApis/allApisSlice";
+import { changePage, getAllApis } from "src/features/allApis/allApisSlice";
 import { useAppDispatch, useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/PageBtnContainer";
 
@@ -14,7 +14,8 @@ const PageBtnContainer = () => {
     if (newPage > numOfPages) {
       newPage = 1;
     }
-    changePage(newPage);
+    dispatch(changePage(newPage));
+    dispatch(getAllApis());
   };
 
   const prevPage = () => {
@@ -22,7 +23,8 @@ const PageBtnContainer = () => {
     if (newPage < 1) {
       newPage = numOfPages;
     }
-    changePage(newPage);
+    dispatch(changePage(newPage));
+    dispatch(getAllApis());
   };
 
   return (
@@ -37,7 +39,10 @@ const PageBtnContainer = () => {
             type="button"
             className={pageNumber === page ? "pageBtn active" : "pageBtn"}
             key={pageNumber}
-            onClick={() => dispatch(changePage(pageNumber))}
+            onClick={() => {
+              dispatch(changePage(pageNumber));
+              dispatch(getAllApis());
+            }}
           >
             {pageNumber}
           </button>

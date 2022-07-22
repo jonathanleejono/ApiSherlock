@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -10,6 +11,10 @@ import Wrapper from "../../assets/wrappers/DashboardFormPage";
 import { FormRow, FormRowSelect } from "../../components";
 
 const AddApi = () => {
+  useEffect(() => {
+    dispatch(clearValues());
+  }, []);
+
   const { isLoading, monitoring, monitoringOptions, url, host, hostOptions } =
     useAppSelector((store) => store.api);
 
