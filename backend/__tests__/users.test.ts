@@ -1,7 +1,7 @@
-import request from "supertest";
-import { seedUser } from "../db/seedDb";
-import app from "../server";
 import mongoose from "mongoose";
+import request from "supertest";
+import { mockUser } from "../mocks/mockUser";
+import app from "../server";
 
 const apiAuthUrl = "/api/auth";
 const seedDbUrl = "/api/db";
@@ -16,8 +16,8 @@ const { name, email, password } = user;
 
 describe("testing users controller", () => {
   beforeEach(async () => {
-    await request(app).delete(`${seedDbUrl}/resetDb`);
-    await request(app).post(`${seedDbUrl}/seedDb`);
+    await request(app).delete(`${seedDbUrl}/resetDb/users`);
+    await request(app).post(`${seedDbUrl}/seedDb/users`);
   });
 
   afterAll(async () => {
@@ -48,7 +48,7 @@ describe("testing users controller", () => {
       //   expect(response.body).toEqual(
       //     expect.objectContaining({ user: { name: name } })
       //   );
-      //   toMatchObject won't fail because it doesn't mind missing key value pairs
+      //   toMatchObject won't fail
       //   expect(response.body).toMatchObject({
       //     user: { name: name },
       //   });
@@ -57,15 +57,15 @@ describe("testing users controller", () => {
     it("should login a user", async (): Promise<void> => {
       // this is the user in the seedDb route (in the db folder)
       const response = await request(app).post(`${apiAuthUrl}/login`).send({
-        email: seedUser.email,
-        password: seedUser.password,
+        email: mockUser.email,
+        password: mockUser.password,
       });
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(
         expect.objectContaining({
           token: expect.any(String),
-          user: { name: seedUser.name, email: seedUser.email },
+          user: { name: mockUser.name, email: mockUser.email },
         })
       );
     });
@@ -75,8 +75,8 @@ describe("testing users controller", () => {
       const loginResponse = await request(app)
         .post(`${apiAuthUrl}/login`)
         .send({
-          email: seedUser.email,
-          password: seedUser.password,
+          email: mockUser.email,
+          password: mockUser.password,
         });
 
       const token = loginResponse.body.token;
@@ -85,7 +85,7 @@ describe("testing users controller", () => {
         .patch(`${apiAuthUrl}/updateUser`)
         .send({
           name: "bob",
-          email: seedUser.email,
+          email: mockUser.email,
         })
         .set("Authorization", `Bearer ${token}`);
 
@@ -93,7 +93,7 @@ describe("testing users controller", () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           token: expect.any(String),
-          user: { name: "bob", email: seedUser.email },
+          user: { name: "bob", email: mockUser.email },
         })
       );
     });

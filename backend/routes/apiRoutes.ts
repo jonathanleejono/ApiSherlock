@@ -6,6 +6,7 @@ import {
   deleteApi,
   getAllApis,
   updateApi,
+  getApi,
   showStats,
   pingAll,
   pingOne,
@@ -28,6 +29,6 @@ router.route("/ping-all").post(pingAll);
 router.route("/ping-one/:id").post(pingOne);
 router.route("/stats").get(showStats);
 // remember about :id
-router.route("/:id").delete(deleteApi).patch(updateApi);
+router.route("/:id").delete(deleteApi).patch(updateApi).get(getApi);
 
 export default router;

@@ -1,5 +1,6 @@
+import { Types } from "mongoose";
 export interface UnifiedModel {
-  _id: any; // This _id should be readonly on client side
+  _id: Types.ObjectId; // This _id should be readonly on client side
   readonly createdAt?: string;
   readonly updatedAt?: string;
 }

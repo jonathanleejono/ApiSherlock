@@ -43,9 +43,11 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
 
   // NO AWAIT
 
-  let result = Api.find(queryObject);
+  let result: any = Api.find(queryObject);
 
   // chain sort conditions
+
+  result = result.sort("_id");
 
   if (sort === "Latest") {
     result = result.sort("-createdAt");
@@ -80,11 +82,6 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
 const updateApi = async (req: Request, res: Response): Promise<void> => {
   const { id: apiId } = req.params;
 
-  const { host, url, monitoring } = req.body;
-
-  if (!url || !host || !monitoring) {
-    throw new BadRequestError("Please provide all values");
-  }
   const api = await Api.findOne({ _id: apiId });
 
   if (!api) {
@@ -102,7 +99,26 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
   res.status(StatusCodes.OK).json(updatedApi);
 };
 
+// ------------------------------------------
+
+const getApi = async (req: Request, res: Response): Promise<void> => {
+  const { id: apiId } = req.params;
+
+  const api = await Api.findOne({ _id: apiId });
+
+  if (!api) {
+    throw new NotFoundError(`No API with id :${apiId}`);
+  }
+
+  // check authorization
+  checkPermissions(req.user, api.createdBy);
+
+  res.status(StatusCodes.OK).json(api);
+};
+
 // ----------------------------------
+
+export const deleteMsg = "Success! Api removed";
 
 const deleteApi = async (req: Request, res: Response): Promise<void> => {
   const { id: apiId } = req.params;
@@ -117,7 +133,7 @@ const deleteApi = async (req: Request, res: Response): Promise<void> => {
 
   await api.remove();
 
-  res.status(StatusCodes.OK).json({ msg: "Success! Api removed" });
+  res.status(StatusCodes.OK).json({ msg: deleteMsg });
 };
 
 // ----------------------------------
@@ -135,6 +151,7 @@ const pingAll = async (req: Request, res: Response): Promise<void> => {
   Object.keys(allApisToMonitor).forEach(async (api) => {
     checkPermissions(req.user, allApisToMonitor[api].createdBy);
     const dateTime = moment().format("MMM Do YYYY, hh:mm A");
+
     try {
       const res = await axios.get(allApisToMonitor[api].url);
       if (res) {
@@ -267,6 +284,7 @@ export {
   deleteApi,
   getAllApis,
   updateApi,
+  getApi,
   showStats,
   pingAll,
   pingOne,

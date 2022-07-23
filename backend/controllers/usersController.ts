@@ -69,7 +69,7 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
   const user = await User.findOne({ _id: req?.user?.userId });
 
   if (!user) {
-    throw new Error("Invalid credentials");
+    throw new UnAuthenticatedError("Invalid credentials");
   }
 
   user!.email = email;
