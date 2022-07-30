@@ -4,10 +4,10 @@ import Wrapper from "../assets/wrappers/MobileSidebar";
 import Logo from "./Logo";
 import NavLinks from "./NavLinks";
 
-import { toggleSidebar } from "src/features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "src/hooks";
+import { toggleSidebar } from "features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "hooks";
 
-const MobileSidebar = () => {
+const MobileSidebar: React.FC = () => {
   const dispatch = useAppDispatch();
   const toggle = () => {
     dispatch(toggleSidebar());

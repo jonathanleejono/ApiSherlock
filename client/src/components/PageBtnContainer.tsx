@@ -1,9 +1,9 @@
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
-import { changePage, getAllApis } from "src/features/allApis/allApisSlice";
-import { useAppDispatch, useAppSelector } from "src/hooks";
+import { changePage, getAllApis } from "features/allApis/allApisSlice";
+import { useAppDispatch, useAppSelector } from "hooks";
 import Wrapper from "../assets/wrappers/PageBtnContainer";
 
-const PageBtnContainer = () => {
+const PageBtnContainer: React.FC = () => {
   const dispatch = useAppDispatch();
   const { numOfPages, page } = useAppSelector((store) => store.allApis);
 

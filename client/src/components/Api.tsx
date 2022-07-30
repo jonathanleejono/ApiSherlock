@@ -3,9 +3,9 @@ import PropTypes, { InferProps } from "prop-types";
 import { BsFillCalendar2PlusFill } from "react-icons/bs";
 import { FaSearch, FaLayerGroup, FaCode } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { deleteApi, setEditApi } from "src/features/api/apiSlice";
-import { pingOne } from "src/features/ping/pingSlice";
-import { useAppDispatch } from "src/hooks";
+import { deleteApi, setEditApi } from "features/api/apiSlice";
+import { pingOne } from "features/ping/pingSlice";
+import { useAppDispatch } from "hooks";
 import Wrapper from "../assets/wrappers/Api";
 import ApiInfo from "./ApiInfo";
 import ApiStatus from "./ApiStatus";
@@ -22,7 +22,7 @@ const propTypes = {
 
 type ApiProps = InferProps<typeof propTypes>;
 
-// the function params are from the mapped object in ApisContainer.tsx
+// the function params are passed in by the mapped object in ApisContainer.tsx
 const Api: React.FC<ApiProps> = ({
   createdAt,
   url,
@@ -34,12 +34,31 @@ const Api: React.FC<ApiProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  // const { isLoading } = useAppSelector((store: any) => store.api);
-
   const date = moment(createdAt).format("MMM Do, YYYY");
   const createdDate = "Created Date: " + date;
   const apiLastPinged = "Last Pinged: " + lastPinged;
   const apiMonitoring = "Monitoring: " + monitoring;
+
+  const handleEdit = async () => {
+    dispatch(
+      setEditApi({
+        apiId: _id,
+        url,
+        host,
+        lastPinged,
+        monitoring,
+        status,
+      })
+    );
+  };
+
+  const handlePingOne = async () => {
+    dispatch(pingOne(_id));
+  };
+
+  const handleDelete = async () => {
+    dispatch(deleteApi(_id));
+  };
 
   return (
     <Wrapper>
@@ -66,32 +85,17 @@ const Api: React.FC<ApiProps> = ({
             <button
               type="button"
               className="btn ping-btn"
-              onClick={() => dispatch(pingOne(_id))}
+              onClick={handlePingOne}
             >
               Ping API
             </button>
-            <Link
-              to="/edit-api"
-              className="btn edit-btn"
-              onClick={() =>
-                dispatch(
-                  setEditApi({
-                    apiId: _id,
-                    url,
-                    host,
-                    lastPinged,
-                    monitoring,
-                    status,
-                  })
-                )
-              }
-            >
+            <Link to="/edit-api" className="btn edit-btn" onClick={handleEdit}>
               Edit
             </Link>
             <button
               type="button"
               className="btn delete-btn"
-              onClick={() => dispatch(deleteApi(_id))}
+              onClick={handleDelete}
             >
               Delete
             </button>

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { showStats } from "src/features/allApis/allApisSlice";
-import { useAppDispatch, useAppSelector } from "src/hooks";
+import { showStats } from "features/allApis/allApisSlice";
+import { useAppDispatch, useAppSelector } from "hooks";
 import { ChartsContainer, Loading, StatsContainer } from "../../components";
 
 const Stats: React.FC = () => {

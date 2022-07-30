@@ -15,7 +15,8 @@ const user = {
 const { name, email, password } = user;
 
 describe("testing users controller", () => {
-  beforeEach(async () => {
+  beforeAll(async () => {
+    await new Promise((res) => setTimeout(res, 2000));
     await request(app).delete(`${seedDbUrl}/resetDb/users`);
     await request(app).post(`${seedDbUrl}/seedDb/users`);
   });

@@ -1,9 +1,9 @@
 import { FaCommentDots, FaCheck, FaExclamationCircle } from "react-icons/fa";
-import { useAppSelector } from "src/hooks";
+import { useAppSelector } from "hooks";
 import Wrapper from "../assets/wrappers/StatsContainer";
 import StatItem from "./StatItem";
 
-const StatsContainer = () => {
+const StatsContainer: React.FC = () => {
   const { defaultStats }: any = useAppSelector((store) => store.allApis);
 
   const _defaultStats = [

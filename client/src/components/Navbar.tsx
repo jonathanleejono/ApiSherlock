@@ -1,9 +1,10 @@
+import { logoutUser, toggleSidebar } from "features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "hooks";
 import { useState } from "react";
 import { FaAlignLeft, FaCaretDown, FaUserCircle } from "react-icons/fa";
-import { logoutUser, toggleSidebar } from "src/features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "src/hooks";
 import Wrapper from "../assets/wrappers/Navbar";
 import Logo from "./Logo";
+
 const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
   const [showLogout, setShowLogout] = useState(false);

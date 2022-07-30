@@ -8,7 +8,7 @@ const propTypes = {
   labelText: PropTypes.string.isRequired,
 };
 
-type FormRowProps = InferProps<typeof propTypes>;
+export type FormRowProps = InferProps<typeof propTypes>;
 
 const FormRow: React.FC<FormRowProps> = ({
   type,
@@ -19,9 +19,11 @@ const FormRow: React.FC<FormRowProps> = ({
 }) => (
   <div className="form-row">
     <label htmlFor={name} className="form-label">
-      {labelText || name}
+      {/* leave this as a single value */}
+      {labelText}
     </label>
     <input
+      id={name} //this id is necessary for testing
       type={type}
       value={value}
       name={name}

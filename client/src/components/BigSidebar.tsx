@@ -1,4 +1,4 @@
-import { useAppSelector } from "src/hooks";
+import { useAppSelector } from "hooks";
 import Wrapper from "../assets/wrappers/BigSidebar";
 import Logo from "../components/Logo";
 import NavLinks from "./NavLinks";

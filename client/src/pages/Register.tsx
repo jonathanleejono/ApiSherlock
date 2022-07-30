@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { loginUser, registerUser } from "src/features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "src/hooks";
+import { loginUser, registerUser } from "features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "hooks";
 import Wrapper from "../assets/wrappers/RegisterPage";
 import { FormRow, Logo } from "../components";
+import { RootState } from "store";
 
 const initialState = {
   name: "",
@@ -17,28 +18,41 @@ const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [values, setValues] = useState(initialState);
-  const { user, isLoading } = useAppSelector((store) => store.user);
+  const { user, isLoading } = useAppSelector((store: RootState) => store.user);
+  const { name, email, password, isMember } = values;
+  const currentUser = { name, email, password };
 
   const toggleMember = () => {
     setValues({ ...values, isMember: !values.isMember });
   };
 
-  const handleChange = (e) => {
-    setValues({ ...values, [e.target.name]: e.target.value });
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setValues({ ...values, [event.target.name]: event.target.value });
   };
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    const { name, email, password, isMember } = values;
+  const onSubmit = (event: React.FormEvent<EventTarget>) => {
+    event.preventDefault();
     if (!email || !password || (!isMember && !name)) {
-      toast.error("Please provide all users");
+      toast.error("Please provide all fields");
       return;
     }
-    const currentUser = { name, email, password };
     if (isMember) {
       dispatch(loginUser(currentUser));
     } else {
-      dispatch(registerUser(currentUser));
+      handleRegisterUser();
+    }
+  };
+
+  const handleRegisterUser = async () => {
+    const resultAction = await dispatch(registerUser(currentUser));
+    if (registerUser.fulfilled.match(resultAction)) {
+      // user will have a type signature of User as we passed that as the Returned parameter in createAsyncThunk
+      const user = resultAction.payload;
+      toast.success(`Welcome ${user.name}`);
+    } else if (resultAction.payload) {
+      toast.error(`${resultAction.payload}`);
+    } else {
+      toast.error(`${resultAction.payload.error}`);
     }
   };
 

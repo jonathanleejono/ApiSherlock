@@ -2,12 +2,12 @@ import {
   clearFilters,
   getAllApis,
   handleChange,
-} from "src/features/allApis/allApisSlice";
-import { useAppDispatch, useAppSelector } from "src/hooks";
+} from "features/allApis/allApisSlice";
+import { useAppDispatch, useAppSelector } from "hooks";
 import { FormRow, FormRowSelect } from ".";
 import Wrapper from "../assets/wrappers/SearchContainer";
 
-const SearchContainer = () => {
+const SearchContainer: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const {
@@ -21,15 +21,15 @@ const SearchContainer = () => {
     monitoringOptions,
   } = useAppSelector((store) => store.allApis);
 
-  const handleSearch = (e) => {
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (isLoading) return;
-    const { name, value } = e.target;
+    const { name, value } = event.target;
     dispatch(handleChange({ name, value }));
     dispatch(getAllApis());
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent<EventTarget>) => {
+    event.preventDefault();
     dispatch(clearFilters());
     dispatch(getAllApis());
   };

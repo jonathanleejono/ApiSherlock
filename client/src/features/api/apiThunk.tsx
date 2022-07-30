@@ -1,16 +1,16 @@
-import { showLoading, hideLoading, getAllApis } from "../allApis/allApisSlice";
+import { apiApiUrl } from "constants/urls";
 import customFetch, { checkForUnauthorizedResponse } from "../../utils/axios";
+import { getAllApis, hideLoading, showLoading } from "../allApis/allApisSlice";
 import { clearValues } from "./apiSlice";
 
 export const createApiThunk = async ({ url, host, monitoring }, thunkAPI) => {
-  // very important to add slashs at end of path (eg. '/battery-cells/')
-  // this is so urls can navigate properly
   try {
-    const resp = await customFetch.post("/api/api/", {
+    const resp = await customFetch.post(`${apiApiUrl}`, {
       url,
       host,
       monitoring,
     });
+
     thunkAPI.dispatch(clearValues());
     return resp.data;
   } catch (err) {
@@ -22,10 +22,11 @@ export const createApiThunk = async ({ url, host, monitoring }, thunkAPI) => {
     );
   }
 };
+
 export const deleteApiThunk = async (id, thunkAPI?) => {
   thunkAPI.dispatch(showLoading());
   try {
-    const resp = await customFetch.delete(`/api/api/${id}`);
+    const resp = await customFetch.delete(`${apiApiUrl}/${id}`);
     thunkAPI.dispatch(getAllApis());
     return resp.data.msg;
   } catch (err) {
@@ -40,7 +41,7 @@ export const deleteApiThunk = async (id, thunkAPI?) => {
 };
 export const editApiThunk = async ({ id, api }, thunkAPI?) => {
   try {
-    const resp = await customFetch.patch(`/api/api/${id}`, api);
+    const resp = await customFetch.patch(`${apiApiUrl}/${id}`, api);
     thunkAPI.dispatch(clearValues());
     return resp.data;
   } catch (err) {

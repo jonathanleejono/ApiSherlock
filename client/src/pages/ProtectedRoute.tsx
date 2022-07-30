@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useAppSelector } from "src/hooks";
+import { useAppSelector } from "hooks";
 import PropTypes, { InferProps } from "prop-types";
 
 const propTypes = {

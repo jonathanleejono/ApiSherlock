@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { updateUser } from "src/features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "src/hooks";
+import { updateUser } from "features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "hooks";
 import Wrapper from "../../assets/wrappers/DashboardFormPage";
 import { FormRow } from "../../components";
 

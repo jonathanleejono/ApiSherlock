@@ -1,9 +1,10 @@
 import axios from "axios";
+import { baseUrl } from "constants/urls";
 import { clearStore } from "../features/user/userSlice";
 import { getTokenFromLocalStorage } from "./localStorage";
 
 const customFetch = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: baseUrl,
 });
 
 customFetch.interceptors.request.use((config: any) => {

@@ -1,11 +1,14 @@
-import Wrapper from "../assets/wrappers/ApiStatus";
+import PropTypes, { InferProps } from "prop-types";
 import React from "react";
+import Wrapper from "../assets/wrappers/ApiStatus";
 
-interface ApiStatusProps {
-  icon: JSX.Element;
-  text: string;
-  apiStatus: string;
-}
+const propTypes = {
+  icon: PropTypes.element.isRequired,
+  text: PropTypes.string.isRequired,
+  apiStatus: PropTypes.string.isRequired,
+};
+
+type ApiStatusProps = InferProps<typeof propTypes>;
 
 const ApiStatus: React.FC<ApiStatusProps> = ({ icon, text, apiStatus }) => (
   //combining the .status and ${status} classes together
@@ -15,5 +18,7 @@ const ApiStatus: React.FC<ApiStatusProps> = ({ icon, text, apiStatus }) => (
     <span className={`status ${apiStatus}`}>{apiStatus}</span>
   </Wrapper>
 );
+
+ApiStatus.propTypes = propTypes;
 
 export default ApiStatus;

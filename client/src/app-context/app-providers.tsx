@@ -1,15 +1,14 @@
-import * as React from "react";
 import { HelmetProvider } from "react-helmet-async";
-// the two css files are needed to render the messages
-// the css files needs to be here or in index.js
-// but if it's in index.js, it might not work for tests that are wrapped
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer, Slide } from "react-toastify";
 import { Provider } from "react-redux";
-import { store } from "src/store";
+import { Slide, ToastContainer } from "react-toastify";
+import { store } from "store";
+import "react-toastify/dist/ReactToastify.css";
+
+// the react-toastify css files needs to be here or in index.tsx (or wherever app is rendered)
+// for toastify to work
 
 interface AppProvidersProps {
-  children: JSX.Element;
+  children: React.ReactNode;
 }
 
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => (

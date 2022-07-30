@@ -1,12 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import {
-  clearValues,
-  createApi,
-  handleChange,
-} from "src/features/api/apiSlice";
-import { useAppDispatch, useAppSelector } from "src/hooks";
+import { clearValues, createApi, handleChange } from "features/api/apiSlice";
+import { useAppDispatch, useAppSelector } from "hooks";
 import Wrapper from "../../assets/wrappers/DashboardFormPage";
 import { FormRow, FormRowSelect } from "../../components";
 
@@ -23,8 +19,8 @@ const AddApi = () => {
   const navigate = useNavigate();
 
   //e = event
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent<EventTarget>) => {
+    event.preventDefault();
 
     if (!url || !host || !monitoring) {
       toast.error("Please provide all values");
@@ -36,8 +32,8 @@ const AddApi = () => {
     navigate("/all-apis");
   };
 
-  const handleInput = (e) => {
-    const { name, value } = e.target;
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
     dispatch(handleChange({ name, value }));
   };
 

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authApiUrl } from "constants/urls";
 import { toast } from "react-toastify";
 import {
   getUserFromLocalStorage,
@@ -17,9 +18,8 @@ const initialState = {
   isSidebarOpen: false,
   user: getUserFromLocalStorage(),
   token: getTokenFromLocalStorage(),
+  error: null,
 };
-
-const authApiUrl = "/api/auth";
 
 export const registerUser: any = createAsyncThunk(
   "user/registerUser",
@@ -61,20 +61,30 @@ const userSlice = createSlice({
       }
     },
   },
-  extraReducers: {
-    [registerUser.pending]: (state) => {
+  extraReducers: (builder) => {
+    builder.addCase(registerUser.pending, (state) => {
       state.isLoading = true;
-    },
-    [registerUser.fulfilled]: (state, { payload }) => {
-      const { user, token } = payload;
+    }),
+    builder.addCase(registerUser.fulfilled, (state, { payload }) => {
       state.isLoading = false;
+      const { user, token } = payload;
       state.user = user;
       state.token = token;
-      toast.success(`Welcome ${user.name}`);
-    },
+      // toast.success(`Welcome ${user.name}`);
+    }),
+    builder.addCase(registerUser.rejected, (state, action) => {
+      removeUserFromLocalStorage();
+      state.isLoading = false;
+      if (action.payload) {
+        // return toast.error(`${action.payload.errorMessage}`)
+        state.error = action.payload.errorMessage
+      } else {
+        state.error = action.error.message
+      }
+    }),
+    
     [registerUser.rejected]: (state, { payload }) => {
       state.isLoading = false;
-      removeUserFromLocalStorage();
       toast.dismiss();
       toast.error(payload);
     },
@@ -90,11 +100,11 @@ const userSlice = createSlice({
       toast.dismiss();
       toast.success(`Hello there ${user.name}, logging in...`);
     },
-    [loginUser.rejected]: (state, { payload }) => {
+    [loginUser.rejected]: (state) => {
       state.isLoading = false;
       removeUserFromLocalStorage();
       toast.dismiss();
-      toast.error(payload);
+      toast.error(`Error logging in`);
     },
     [updateUser.pending]: (state) => {
       state.isLoading = true;
