@@ -7,6 +7,7 @@ import {
   pingOneApiErrorMsg,
   pingOneApiSuccessMsg,
 } from "constants/messages";
+import { editApiRoute } from "constants/routes";
 import { setEditApi } from "features/api/apiSlice";
 import { deleteApi } from "features/api/apiThunk";
 import { pingOne } from "features/ping/pingThunk";
@@ -110,7 +111,11 @@ const Api: React.FC<ApiProps> = ({
             >
               Ping API
             </button>
-            <Link to="/edit-api" className="btn edit-btn" onClick={handleEdit}>
+            <Link
+              to={editApiRoute}
+              className="btn edit-btn"
+              onClick={handleEdit}
+            >
               Edit
             </Link>
             <button

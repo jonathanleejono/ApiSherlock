@@ -1,6 +1,7 @@
 import main from "assets/images/main.png";
 import Wrapper from "assets/wrappers/LandingPage";
 import { Logo } from "components";
+import { registerRoute } from "constants/routes";
 import { Link } from "react-router-dom";
 const Landing = () => (
   <Wrapper>
@@ -17,7 +18,7 @@ const Landing = () => (
           status, and have full visibility of where each API is hosted. Built on
           React, Redux, Node, Express, Typescript, and MongoDB.
         </p>
-        <Link to="/register" className="btn btn-hero">
+        <Link to={registerRoute} className="btn btn-hero">
           Login/Register
         </Link>
       </div>
