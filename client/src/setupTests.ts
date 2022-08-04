@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/extend-expect";
-import { allApisKey, tokenKey, usersKey } from "test/constants/keys";
+import { allApisKey, tokenKey, usersKey } from "constants/keys";
 import * as apisDB from "test/data/apisDb";
 import * as usersDB from "test/data/usersDb";
 import { server } from "test/mocks/server";

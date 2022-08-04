@@ -15,7 +15,7 @@ import {
 } from "interfaces/apis";
 import { PingResponse } from "interfaces/ping";
 import { dateTime } from "test/constants/datetime";
-import { allApisKey } from "test/constants/keys";
+import { allApisKey } from "constants/keys";
 import { mockApis } from "test/data/mockApis";
 
 type ApiOptions = {
@@ -24,19 +24,21 @@ type ApiOptions = {
 
 let allApisInMemory: ApiOptions = {};
 
-// set key "__allApis__", set value to allApis = {}
+// set key "allApisKey", set value to allApis = {}
 const persist = () =>
   window.localStorage.setItem(allApisKey, JSON.stringify(allApisInMemory));
 
-// get by key "__allApis__", set allApis = {} to new allApis value
+// get by key "allApisKey", set allApis = {} to new allApis value
 const load = () => {
   const getAllApisKey = window.localStorage.getItem(allApisKey);
   const _allApisKey: string = getAllApisKey !== null ? getAllApisKey : "";
   Object.assign(allApisInMemory, JSON.parse(_allApisKey));
 };
 
+const { NODE_ENV, REACT_APP_MSW_DEV } = process.env;
+
 // initialize
-if (process.env.NODE_ENV === "test") {
+if (NODE_ENV === "test" || REACT_APP_MSW_DEV === "on") {
   try {
     load();
   } catch (error) {
@@ -135,7 +137,7 @@ function validateItemExists(_id: string) {
 const apis = [...mockApis];
 
 // GET ALL MOCK APIS
-async function getMockApis(userId: string): Promise<AllApisResponse> {
+async function generateMockApis(userId: string): Promise<ApiDataResponse[]> {
   Object.keys(apis).forEach((_, index: number) => {
     const mockApi = apis[index];
     // the mockApi's id is the key
@@ -156,18 +158,14 @@ async function getMockApis(userId: string): Promise<AllApisResponse> {
     persist();
   });
 
-  const totalApis = apis.length;
-  const numOfPages = Math.ceil(totalApis / 10);
-  return { allApis: apis, totalApis, numOfPages };
+  return apis;
 }
 
 // GET ALL BY OWNER - WITH AUTH
 async function getAllApis(userId: string): Promise<AllApisResponse> {
-  const _allApis = await Promise.all(
-    Object.keys(allApisInMemory).map((apiId) => {
-      authorize(userId, apiId);
-      return getApiById(apiId);
-    })
+  await generateMockApis(userId);
+  const _allApis = Object.values(allApisInMemory).filter(
+    (api) => api.createdBy === userId
   );
   const totalApis = _allApis.length;
   const numOfPages = Math.ceil(totalApis / 10);
@@ -178,7 +176,8 @@ export let pendingApiStats = 0;
 
 // GET allApis Stats
 async function getAllApisStats(userId: string): Promise<AllApisStatsResponse> {
-  await getMockApis(userId); //generate mock apis first
+  //generate mock apis first, so data is displayed in stats
+  await generateMockApis(userId);
 
   const mockApisByUser = Object.values(allApisInMemory).filter(
     (api) => api.createdBy === userId
@@ -259,7 +258,7 @@ export {
   updateApi,
   deleteApi,
   getAllApis,
-  getMockApis,
+  generateMockApis,
   getAllApisStats,
   pingAllApis,
   pingOneApi,

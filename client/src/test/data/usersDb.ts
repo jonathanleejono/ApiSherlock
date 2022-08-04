@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from "errors";
+import { BadRequestError, NotFoundError, UnAuthenticatedError } from "errors";
 import {
   AuthUserResponse,
   LoginUserData,
@@ -6,24 +6,27 @@ import {
   UpdateUserData,
   UserDataResponse,
 } from "interfaces/users";
-import { usersKey } from "test/constants/keys";
+import { usersKey } from "constants/keys";
+import { Buffer } from "buffer";
+import { RestRequest, DefaultBodyType, PathParams } from "msw";
+import { removeUserFromLocalStorage } from "utils/localStorage";
 
-type UserOptions = {
-  [key: string]: RegisterUserData;
-};
+// the password is needed to be retrieved and compared
+let userInMemory: RegisterUserData = { name: "", email: "", password: "" };
 
-let users: UserOptions = {};
-
-const persist = () => localStorage.setItem(usersKey, JSON.stringify(users));
+const persist = () =>
+  localStorage.setItem(usersKey, JSON.stringify(userInMemory));
 
 const load = () => {
   const getUsersKey = localStorage.getItem(usersKey);
   const _usersKey: string = getUsersKey !== null ? getUsersKey : "";
-  Object.assign(users, JSON.parse(_usersKey));
+  Object.assign(userInMemory, JSON.parse(_usersKey));
 };
 
+const { NODE_ENV, REACT_APP_MSW_DEV } = process.env;
+
 // initialize
-if (process.env.NODE_ENV === "test") {
+if (NODE_ENV === "test" || REACT_APP_MSW_DEV === "on") {
   try {
     load();
   } catch (error) {
@@ -39,28 +42,36 @@ function validateUserForm({ name, email, password }: RegisterUserData) {
 }
 
 // REGISTER
-async function createUser({
+async function registerUser({
   name,
   email,
   password,
 }: RegisterUserData): Promise<AuthUserResponse> {
   validateUserForm({ name, email, password });
   const _id = userHash(email);
-  if (users[_id]) {
-    const error = new BadRequestError(
-      `Cannot create a new user with the email "${email}"`
-    );
 
-    throw error;
+  if (userInMemory) {
+    const storedUserEmail = userInMemory.email as string;
+
+    if (storedUserEmail && userHash(storedUserEmail) === _id) {
+      const error = new BadRequestError(
+        `Cannot create a new user with the email "${email}"`
+      );
+
+      throw error;
+    }
   }
+
   const passwordHash = userHash(password);
-  users[_id] = { name, email, password: passwordHash };
+  userInMemory = { name, email, password: passwordHash };
   persist();
-  return { user: await getUserById(_id), token: generateToken(_id) };
+  const user = await getUser();
+  const token = generateToken(_id);
+  return { user, token };
 }
 
 // LOGIN
-async function authenticateUser({
+async function loginUser({
   email,
   password,
 }: LoginUserData): Promise<AuthUserResponse> {
@@ -70,10 +81,10 @@ async function authenticateUser({
   }
 
   const _id = userHash(email);
-  const user = users[_id] || {};
+  const user = userInMemory || {};
 
   if (!user) {
-    const error = new NotFoundError(`User with id ${_id} not found`);
+    const error = new NotFoundError(`User not found`);
     throw error;
   }
   if (user.password === userHash(password)) {
@@ -92,31 +103,31 @@ async function updateUser(
   _id: string,
   updates: Partial<UpdateUserData>
 ): Promise<AuthUserResponse> {
-  checkUserExists(_id);
-  Object.assign(users[_id], updates);
+  checkUserExists();
+  Object.assign(userInMemory, updates);
   persist();
-  // need to await because getUserById is async
-  return { user: await getUserById(_id), token: generateToken(_id) };
+  return { user: userInMemory, token: generateToken(_id) };
 }
 
 // DELETE
-async function deleteUser(_id: string) {
-  checkUserExists(_id);
-  delete users[_id];
+async function deleteUser() {
+  checkUserExists();
+  removeUserFromLocalStorage();
   persist();
 }
 
-function checkUserExists(_id: string) {
+function checkUserExists() {
   load();
-  if (!users[_id]) {
-    const error = new NotFoundError(`No user with the id "${_id}"`);
+
+  if (!userInMemory) {
+    const error = new NotFoundError(`No user found"`);
     throw error;
   }
 }
 
-async function getUserById(_id: string): Promise<UserDataResponse> {
-  checkUserExists(_id);
-  const user = showUserWithoutPassword(users[_id]);
+async function getUser(): Promise<UserDataResponse> {
+  checkUserExists();
+  const user = showUserWithoutPassword(userInMemory);
   return user;
 }
 
@@ -126,8 +137,42 @@ function showUserWithoutPassword(user: RegisterUserData): UserDataResponse {
 }
 
 function generateToken(userId: string) {
+  // make sure to install Buffer browser dependency
+  // and import {Buffer} at the top
   const token: string = Buffer.from(userId, "utf8").toString("base64");
   return token;
+}
+
+const getToken = (req: RestRequest<DefaultBodyType, PathParams<string>>) =>
+  req.headers.get("Authorization")?.replace("Bearer ", "");
+
+async function getUserByToken(
+  req: RestRequest<DefaultBodyType, PathParams<string>>
+) {
+  const token = getToken(req);
+  if (!token) {
+    const error = new UnAuthenticatedError("A token must be provided");
+    throw error;
+  }
+  let userId;
+  try {
+    userId = Buffer.from(token, "base64").toString("utf8");
+
+    const user = await getUser();
+
+    const actualUserId = userHash(user.email);
+
+    if (actualUserId !== userId) {
+      const error = new UnAuthenticatedError("Unauthenticated");
+      throw error;
+    } else return user;
+  } catch (err) {
+    console.log("Get User Error: ", err);
+    const error = new UnAuthenticatedError(
+      "Invalid token. Please login again."
+    );
+    throw error;
+  }
 }
 
 export function userHash(str: string) {
@@ -141,14 +186,14 @@ export function userHash(str: string) {
 }
 
 async function resetDB() {
-  users = {};
+  userInMemory = { name: "", email: "", password: "" };
   persist();
 }
 
 export {
-  authenticateUser,
-  createUser,
-  getUserById,
+  loginUser,
+  registerUser,
+  getUserByToken,
   updateUser,
   deleteUser,
   resetDB,

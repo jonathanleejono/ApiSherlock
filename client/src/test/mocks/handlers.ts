@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
   createApiErrorMsg,
   deleteApiErrorMsg,
@@ -22,8 +23,7 @@ import {
   registerUserUrl,
   updateUserUrl,
 } from "constants/urls";
-import UnAuthenticatedError from "errors/unauthenticated";
-import { DefaultBodyType, PathParams, rest, RestRequest } from "msw";
+import { rest } from "msw";
 import { dateTime } from "test/constants/datetime";
 import * as apisDB from "test/data/apisDb";
 import * as usersDB from "test/data/usersDb";
@@ -36,7 +36,7 @@ const handlers = [
   rest.post(customClientFetch(loginUserUrl), async (req, res, ctx) => {
     try {
       const { email, password } = await req.json();
-      const { user, token } = await usersDB.authenticateUser({
+      const { user, token } = await usersDB.loginUser({
         email,
         password,
       });
@@ -49,11 +49,10 @@ const handlers = [
 
   // REGISTER user
   rest.post(customClientFetch(registerUserUrl), async (req, res, ctx) => {
-    const { name, email, password } = await req.json();
-    await usersDB.createUser({ name, email, password });
-
     try {
-      const { user, token } = await usersDB.authenticateUser({
+      const { name, email, password } = await req.json();
+      const { user, token } = await usersDB.registerUser({
+        name,
         email,
         password,
       });
@@ -70,7 +69,7 @@ const handlers = [
     // axios/customFetch gets the token and sets it in headers
     // the mock api req uses the token -> the beauty of mock apis!
     try {
-      const _user = await getUser(req);
+      const _user = await usersDB.getUserByToken(req);
       const userId = userHash(_user.email);
       const { name, email } = await req.json();
       const { user, token } = await usersDB.updateUser(userId, {
@@ -85,11 +84,11 @@ const handlers = [
   }),
 
   //   GET allApis
-  rest.get(customClientFetch(getAllApisUrl), async (req, res, ctx) => {
+  rest.get(customClientFetch(`${getAllApisUrl}`), async (req, res, ctx) => {
     try {
-      const user = await getUser(req);
+      const user = await usersDB.getUserByToken(req);
       const userId = userHash(user.email);
-      const { allApis, totalApis, numOfPages } = await apisDB.getMockApis(
+      const { allApis, totalApis, numOfPages } = await apisDB.getAllApis(
         userId
       );
       return res(ctx.json({ allApis, totalApis, numOfPages }));
@@ -102,7 +101,7 @@ const handlers = [
   //   GET allApis STATS
   rest.get(customClientFetch(getAllApisStatsUrl), async (req, res, ctx) => {
     try {
-      const user = await getUser(req);
+      const user = await usersDB.getUserByToken(req);
       const userId = userHash(user.email);
       const { defaultStats, monthlyApis } = await apisDB.getAllApisStats(
         userId
@@ -118,10 +117,10 @@ const handlers = [
   rest.post(customClientFetch(createApiUrl), async (req, res, ctx) => {
     try {
       const { url, host, monitoring } = await req.json();
-      const user = await getUser(req);
+      const user = await usersDB.getUserByToken(req);
       const userId = userHash(user.email);
       const createdApi = await apisDB.createApi({
-        _id: "1234",
+        _id: faker.datatype.uuid(),
         createdBy: userId,
         url: url,
         host: host,
@@ -143,7 +142,7 @@ const handlers = [
   // UPDATE api
   rest.patch(customClientFetch(`${editApiUrl}/:id`), async (req, res, ctx) => {
     try {
-      const user = await getUser(req);
+      const user = await usersDB.getUserByToken(req);
       const userId = userHash(user.email);
       const { id } = req.params;
       const apiId = id as string;
@@ -162,7 +161,7 @@ const handlers = [
     customClientFetch(`${deleteApiUrl}/:id`),
     async (req, res, ctx) => {
       try {
-        const user = await getUser(req);
+        const user = await usersDB.getUserByToken(req);
         const userId = userHash(user.email);
         const { id } = req.params;
         const apiId = id as string;
@@ -179,7 +178,7 @@ const handlers = [
   // PING allApis
   rest.post(customClientFetch(pingAllApisUrl), async (req, res, ctx) => {
     try {
-      const user = await getUser(req);
+      const user = await usersDB.getUserByToken(req);
       const userId = userHash(user.email);
       const resp = await apisDB.pingAllApis(userId);
       return res(ctx.status(200), ctx.json({ msg: resp.msg }));
@@ -194,7 +193,7 @@ const handlers = [
     customClientFetch(`${pingOneApiUrl}/:id`),
     async (req, res, ctx) => {
       try {
-        const user = await getUser(req);
+        const user = await usersDB.getUserByToken(req);
         const userId = userHash(user.email);
         const { id } = req.params;
         const apiId = id as string;
@@ -208,31 +207,5 @@ const handlers = [
     }
   ),
 ];
-
-export const getToken = (
-  req: RestRequest<DefaultBodyType, PathParams<string>>
-) => req.headers.get("Authorization")?.replace("Bearer ", "");
-
-export async function getUser(
-  req: RestRequest<DefaultBodyType, PathParams<string>>
-) {
-  const token = getToken(req);
-  if (!token) {
-    const error = new UnAuthenticatedError("A token must be provided");
-    throw error;
-  }
-  let userId;
-  try {
-    userId = Buffer.from(token, "base64").toString("utf8");
-    const user = await usersDB.getUserById(userId);
-    return user;
-  } catch (err) {
-    console.log("Get User Error: ", err);
-    const error = new UnAuthenticatedError(
-      "Invalid token. Please login again."
-    );
-    throw error;
-  }
-}
 
 export { handlers };

@@ -13,7 +13,7 @@ const registerUserErrorMsg = `Register user error, ${pleaseTryAgainLaterMsg}`;
 const updateUserSuccessMsg = `Updated profile!`;
 const updateUserErrorMsg = `Update user error, ${pleaseTryAgainLaterMsg}`;
 
-const getAllApisErrorMsg = `Error fetching APIs, , ${pleaseTryAgainLaterMsg}`;
+const getAllApisErrorMsg = `Error fetching APIs, ${pleaseTryAgainLaterMsg}`;
 
 const createApiSuccessMsg = `API Added!`;
 const createApiErrorMsg = `Error adding API, ${pleaseTryAgainLaterMsg}`;

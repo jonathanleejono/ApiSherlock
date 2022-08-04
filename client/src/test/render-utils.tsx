@@ -9,7 +9,7 @@ import { AuthUserResponse } from "interfaces/users";
 import { ReactElement } from "react";
 import { buildMockUser } from "test/data/generateMockData";
 import * as usersDB from "test/data/usersDb";
-import { tokenKey } from "./constants/keys";
+import { tokenKey } from "../constants/keys";
 
 async function render(
   ui: ReactElement,
@@ -41,8 +41,8 @@ async function render(
 
 async function loginAsUser() {
   const user = buildMockUser();
-  await usersDB.createUser(user);
-  const authUser = await usersDB.authenticateUser(user);
+  await usersDB.registerUser(user);
+  const authUser = await usersDB.loginUser(user);
   window.localStorage.setItem(tokenKey, authUser.token);
   return authUser;
 }
