@@ -1,26 +1,21 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { baseUrl } from "constants/urls";
-import { clearStore } from "../features/user/userSlice";
-import { getTokenFromLocalStorage } from "./localStorage";
+import { getTokenFromLocalStorage } from "utils/localStorage";
 
 const customFetch = axios.create({
   baseURL: baseUrl,
 });
 
-customFetch.interceptors.request.use((config: any) => {
+customFetch.interceptors.request.use((config: AxiosRequestConfig) => {
+  if (!config || !config.headers) {
+    return { error: "Axios error" };
+  }
+
   const token = getTokenFromLocalStorage();
   if (token) {
-    config.headers.common.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
-
-export const checkForUnauthorizedResponse = (error, thunkAPI) => {
-  if (error.response.status === 401) {
-    thunkAPI.dispatch(clearStore());
-    return thunkAPI.rejectWithValue("Session Expired! Logging Out...");
-  }
-  return thunkAPI.rejectWithValue(error.response.data.msg);
-};
 
 export default customFetch;

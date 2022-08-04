@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Register, Landing, Error, ProtectedRoute } from "./pages";
+import { Register, Landing, Error, ProtectedRoute } from "pages";
 import {
   AllApis,
   Profile,
@@ -7,7 +7,15 @@ import {
   Stats,
   AddApi,
   EditApi,
-} from "./pages/dashboard";
+} from "pages/dashboard";
+import {
+  addApiRoute,
+  allApisRoute,
+  editApiRoute,
+  landingRoute,
+  profileRoute,
+  registerRoute,
+} from "constants/routes";
 
 function App() {
   return (
@@ -22,13 +30,13 @@ function App() {
           }
         >
           <Route index element={<Stats />} />
-          <Route path="all-apis" element={<AllApis />} />
-          <Route path="add-api" element={<AddApi />} />
-          <Route path="edit-api" element={<EditApi />} />
-          <Route path="profile" element={<Profile />} />
+          <Route path={allApisRoute} element={<AllApis />} />
+          <Route path={addApiRoute} element={<AddApi />} />
+          <Route path={editApiRoute} element={<EditApi />} />
+          <Route path={profileRoute} element={<Profile />} />
         </Route>
-        <Route path="/register" element={<Register />} />
-        <Route path="/landing" element={<Landing />} />
+        <Route path={registerRoute} element={<Register />} />
+        <Route path={landingRoute} element={<Landing />} />
         <Route path="*" element={<Error />} />
       </Routes>
     </BrowserRouter>

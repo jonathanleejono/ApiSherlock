@@ -1,7 +1,7 @@
-import { useAppSelector } from "hooks";
-import Wrapper from "../assets/wrappers/BigSidebar";
-import Logo from "../components/Logo";
-import NavLinks from "./NavLinks";
+import Wrapper from "assets/wrappers/BigSidebar";
+import Logo from "components/Logo";
+import NavLinks from "components/NavLinks";
+import { useAppSelector } from "state/hooks";
 
 const BigSidebar: React.FC = () => {
   const { isSidebarOpen } = useAppSelector((store) => store.user);

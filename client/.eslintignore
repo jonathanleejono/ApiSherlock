@@ -1,3 +1,5 @@
 /node_modules
 .env
 package-lock.json
+src/state/hooks.ts
+src/notifications/toast.ts

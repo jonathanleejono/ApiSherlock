@@ -1,11 +1,8 @@
-import {
-  clearFilters,
-  getAllApis,
-  handleChange,
-} from "features/allApis/allApisSlice";
-import { useAppDispatch, useAppSelector } from "hooks";
+import { clearFilters, handleChange } from "features/allApis/allApisSlice";
+import { useAppDispatch, useAppSelector } from "state/hooks";
 import { FormRow, FormRowSelect } from ".";
-import Wrapper from "../assets/wrappers/SearchContainer";
+import Wrapper from "assets/wrappers/SearchContainer";
+import { getAllApis } from "features/allApis/allApisThunk";
 
 const SearchContainer: React.FC = () => {
   const dispatch = useAppDispatch();

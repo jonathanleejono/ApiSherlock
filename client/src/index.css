@@ -149,7 +149,7 @@ ul {
 }
 /* buttons */
 
-.btn {
+.btn, .btn-inverse {
   cursor: pointer;
   color: var(--white);
   background: var(--primary-500);
@@ -162,9 +162,17 @@ ul {
   text-transform: capitalize;
   display: inline-block;
 }
+.btn-inverse {
+  color: var(--primary-500);
+  background: var(--white);
+}
 .btn:hover {
   background: var(--primary-700);
   box-shadow: var(--shadow-3);
+}
+.btn-inverse:hover {
+  background: var(--shadow-3);
+  box-shadow: var(--primary-700)
 }
 .btn-hipster {
   color: var(--primary-500);
@@ -181,14 +189,10 @@ ul {
   font-size: 1.25rem;
   padding: 0.5rem 1.25rem;
 }
-.btn-api {
+.btn-api, .btn-ping, .btn-refresh {
   font-size: 1.25rem;
   padding: 0.5rem 1.25rem;
   margin-right: 16px;
-}
-.btn-ping {
-  font-size: 1.25rem;
-  padding: 0.5rem 1.25rem;
 }
 .btn-danger {
   background: var(--red-light);

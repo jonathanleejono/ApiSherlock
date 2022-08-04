@@ -1,14 +1,22 @@
+import Wrapper from "assets/wrappers/Api";
+import ApiInfo from "components/ApiInfo";
+import ApiStatus from "components/ApiStatus";
+import {
+  deleteApiErrorMsg,
+  deleteApiSuccessMsg,
+  pingOneApiErrorMsg,
+  pingOneApiSuccessMsg,
+} from "constants/messages";
+import { setEditApi } from "features/api/apiSlice";
+import { deleteApi } from "features/api/apiThunk";
+import { pingOne } from "features/ping/pingThunk";
 import moment from "moment";
+import { handleToast } from "notifications/toast";
 import PropTypes, { InferProps } from "prop-types";
 import { BsFillCalendar2PlusFill } from "react-icons/bs";
-import { FaSearch, FaLayerGroup, FaCode } from "react-icons/fa";
+import { FaCode, FaLayerGroup, FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { deleteApi, setEditApi } from "features/api/apiSlice";
-import { pingOne } from "features/ping/pingSlice";
-import { useAppDispatch } from "hooks";
-import Wrapper from "../assets/wrappers/Api";
-import ApiInfo from "./ApiInfo";
-import ApiStatus from "./ApiStatus";
+import { useAppDispatch } from "state/hooks";
 
 const propTypes = {
   createdAt: PropTypes.string.isRequired,
@@ -34,7 +42,8 @@ const Api: React.FC<ApiProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  const date = moment(createdAt).format("MMM Do, YYYY");
+  const _createdAt = new Date(createdAt.toString());
+  const date = moment(_createdAt).format("MMM Do, YYYY");
   const createdDate = "Created Date: " + date;
   const apiLastPinged = "Last Pinged: " + lastPinged;
   const apiMonitoring = "Monitoring: " + monitoring;
@@ -53,11 +62,23 @@ const Api: React.FC<ApiProps> = ({
   };
 
   const handlePingOne = async () => {
-    dispatch(pingOne(_id));
+    const resultAction = await dispatch(pingOne(_id));
+    handleToast(
+      resultAction,
+      pingOne,
+      pingOneApiSuccessMsg,
+      pingOneApiErrorMsg
+    );
   };
 
   const handleDelete = async () => {
-    dispatch(deleteApi(_id));
+    const resultAction = await dispatch(deleteApi(_id));
+    handleToast(
+      resultAction,
+      deleteApi,
+      deleteApiSuccessMsg,
+      deleteApiErrorMsg
+    );
   };
 
   return (

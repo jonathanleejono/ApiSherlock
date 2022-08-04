@@ -1,6 +1,6 @@
 import PropTypes, { InferProps } from "prop-types";
 import React from "react";
-import Wrapper from "../assets/wrappers/ApiStatus";
+import Wrapper from "assets/wrappers/ApiStatus";
 
 const propTypes = {
   icon: PropTypes.element.isRequired,

@@ -1,11 +1,9 @@
-import { FaTimes } from "react-icons/fa";
-import Wrapper from "../assets/wrappers/MobileSidebar";
-
-import Logo from "./Logo";
-import NavLinks from "./NavLinks";
-
+import Wrapper from "assets/wrappers/MobileSidebar";
+import Logo from "components/Logo";
+import NavLinks from "components/NavLinks";
 import { toggleSidebar } from "features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "hooks";
+import { FaTimes } from "react-icons/fa";
+import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const MobileSidebar: React.FC = () => {
   const dispatch = useAppDispatch();

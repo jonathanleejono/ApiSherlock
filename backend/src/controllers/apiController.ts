@@ -12,8 +12,11 @@ import ApiCollection from "models/ApiCollection";
 import moment from "moment";
 import mongoose from "mongoose";
 import { validateInputKeys } from "middleware/validateKeys";
-
-const validCreateApiKeys = ["url", "host", "monitoring"];
+import {
+  validCreateApiKeys,
+  validGetAllApisKeys,
+  validUpdateApiKeys,
+} from "constants/keys";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -47,8 +50,6 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
     return error;
   }
 };
-
-const validGetAllApisKeys = ["status", "monitoring", "sort", "search"];
 
 const getAllApis = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -118,11 +119,6 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
 
     const allApis = await result;
 
-    if (!allApis) {
-      notFoundError(res, "No APIs found");
-      return;
-    }
-
     const totalApis = await ApiCollection.countDocuments(queryObject);
     const numOfPages = Math.ceil(totalApis / limit);
 
@@ -131,8 +127,6 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
     return error;
   }
 };
-
-const validUpdateApiKeys = ["url", "host", "monitoring"];
 
 const updateApi = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -259,7 +253,7 @@ const showStats = async (req: Request, res: Response) => {
       pending: stats.pending || 0,
     };
 
-    let monthlyApplications = await ApiCollection.aggregate([
+    let monthlyApis = await ApiCollection.aggregate([
       { $match: { createdBy: userId } },
       {
         $group: {
@@ -274,7 +268,7 @@ const showStats = async (req: Request, res: Response) => {
       { $limit: 6 },
     ]);
 
-    monthlyApplications = monthlyApplications
+    monthlyApis = monthlyApis
       .map((item) => {
         const {
           _id: { year, month },
@@ -289,7 +283,7 @@ const showStats = async (req: Request, res: Response) => {
       })
       .reverse();
 
-    res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
+    res.status(StatusCodes.OK).json({ defaultStats, monthlyApis });
   } catch (error) {
     return error;
   }

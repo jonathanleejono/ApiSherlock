@@ -1,7 +1,8 @@
+import Wrapper from "assets/wrappers/PageBtnContainer";
+import { changePage } from "features/allApis/allApisSlice";
+import { getAllApis } from "features/allApis/allApisThunk";
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
-import { changePage, getAllApis } from "features/allApis/allApisSlice";
-import { useAppDispatch, useAppSelector } from "hooks";
-import Wrapper from "../assets/wrappers/PageBtnContainer";
+import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const PageBtnContainer: React.FC = () => {
   const dispatch = useAppDispatch();

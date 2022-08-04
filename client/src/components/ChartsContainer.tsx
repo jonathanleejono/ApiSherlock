@@ -1,11 +1,9 @@
-import { useAppSelector } from "hooks";
-import Wrapper from "../assets/wrappers/ChartsContainer";
-import BarChart from "./BarChart";
+import { useAppSelector } from "state/hooks";
+import Wrapper from "assets/wrappers/ChartsContainer";
+import BarChart from "components/BarChart";
 
 const ChartsContainer: React.FC = () => {
-  const { monthlyApplications: data } = useAppSelector(
-    (store) => store.allApis
-  );
+  const { monthlyApis: data } = useAppSelector((store) => store.allApis);
 
   return (
     <Wrapper>

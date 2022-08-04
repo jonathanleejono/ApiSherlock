@@ -1,34 +1,58 @@
-import { apiApiUrl } from "constants/urls";
-import customFetch, { checkForUnauthorizedResponse } from "../../utils/axios";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  allApisSliceName,
+  getAllApisActionType,
+  getAllApisStatsActionType,
+} from "constants/actionTypes";
+import { getAllApisStatsUrl, getAllApisUrl } from "constants/urls";
+import { AllApisResponse, AllApisStatsResponse } from "interfaces/apis";
+import { ValidationErrors } from "interfaces/errors";
+import { RootState } from "state/store";
+import customFetch from "utils/axios";
+import { checkPermissions } from "utils/checkPermissions";
 
-export const getAllApisThunk = async (_, thunkAPI) => {
-  const { page, search, sort, status, monitoring } =
-    thunkAPI.getState().allApis;
-
-  // do not push query params on to separate lines or the query param functionality won't work properly
-  // the double /api with the .env is intentional
-  // also make sure to not include forward slash in front of apiApiUrl
-  let url = `${apiApiUrl}?sort=${sort}&status=${status}&monitoring=${monitoring}&page=${page}`;
-
-  if (search) {
-    url += `&search=${search}`;
+const getAllApis = createAsyncThunk<
+  AllApisResponse,
+  void,
+  {
+    rejectValue: Partial<ValidationErrors>;
+    state: RootState;
   }
-
+>(`${allApisSliceName}${getAllApisActionType}`, async (_, thunkAPI) => {
   try {
+    const { page, search, sort, status, monitoring } =
+      thunkAPI.getState().allApis;
+
+    // do not push query params on to separate lines or the
+    // query param functionality won't work properly
+    let url = `${getAllApisUrl}?sort=${sort}&status=${status}&monitoring=${monitoring}&page=${page}`;
+
+    if (search) {
+      url += `&search=${search}`;
+    }
+
     const resp = await customFetch.get(url);
-
     return resp.data;
   } catch (error) {
-    return checkForUnauthorizedResponse(error, thunkAPI);
+    checkPermissions(error, thunkAPI);
+    return thunkAPI.rejectWithValue(error.response.data);
   }
-};
+});
 
-export const getApiStatsThunk = async (_, thunkAPI) => {
+const getAllApisStats = createAsyncThunk<
+  AllApisStatsResponse,
+  void,
+  {
+    rejectValue: Partial<ValidationErrors>;
+  }
+>(`${allApisSliceName}${getAllApisStatsActionType}`, async (_, thunkAPI) => {
   try {
-    const resp = await customFetch.get(`/${apiApiUrl}/stats`);
-
+    const resp = await customFetch.get(`${getAllApisStatsUrl}`);
     return resp.data;
   } catch (error) {
-    return checkForUnauthorizedResponse(error, thunkAPI);
+    checkPermissions(error, thunkAPI);
+    return thunkAPI.rejectWithValue(error.response.data);
   }
-};
+});
+
+export { getAllApis, getAllApisStats };

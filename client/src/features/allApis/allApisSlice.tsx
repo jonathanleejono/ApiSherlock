@@ -1,40 +1,61 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { toast } from "react-toastify";
-import { getAllApisThunk, getApiStatsThunk } from "./allApisThunk";
+import { createSlice } from "@reduxjs/toolkit";
+import { allApisSliceName } from "constants/actionTypes";
+import { getAllApis, getAllApisStats } from "features/allApis/allApisThunk";
+import { ApiDataResponse, MonthlyApis } from "interfaces/apis";
 
-const initialFiltersState = {
+interface AllApisFiltersState {
+  search: string;
+  status: string;
+  sort: string;
+  monitoring: string;
+  page: number;
+}
+
+interface AllApisStats {
+  healthy: number;
+  unhealthy: number;
+  pending: number;
+}
+
+interface AllApisState extends AllApisFiltersState {
+  isLoading: boolean;
+  allApis: ApiDataResponse[];
+  totalApis: number;
+  numOfPages: number;
+  defaultStats: Partial<AllApisStats>;
+  monthlyApis: [MonthlyApis];
+  statusOptions: string[];
+  sortOptions: string[];
+  monitoringOptions: string[];
+}
+
+const initialFiltersState: AllApisFiltersState = {
   search: "",
   status: "",
-  statusOptions: ["healthy", "unhealthy", "pending"],
   sort: "Latest",
-  sortOptions: ["Latest", "Oldest", "A-Z", "Z-A"],
   monitoring: "",
-  monitoringOptions: ["on", "off"],
+  page: 1,
 };
 
-const initialState = {
+const initialState: AllApisState = {
   isLoading: true,
   allApis: [],
   totalApis: 0,
   numOfPages: 0,
-  page: 1,
-  monthlyApplications: [],
-  defaultStats: {},
+  defaultStats: { healthy: 0, unhealthy: 0, pending: 0 },
+  monthlyApis: [{ date: "", count: 0 }],
+  statusOptions: ["healthy", "unhealthy", "pending"],
+  sortOptions: ["Latest", "Oldest", "A-Z", "Z-A"],
+  monitoringOptions: ["on", "off"],
   ...initialFiltersState,
 };
 
-export const getAllApis: any = createAsyncThunk(
-  "allApis/getApis",
-  getAllApisThunk
-);
-
-export const showStats: any = createAsyncThunk(
-  "allApis/showStats",
-  getApiStatsThunk
-);
+type AllApisOptions = {
+  [key: string]: object | number | boolean | string;
+};
 
 const allApisSlice = createSlice({
-  name: "allApis",
+  name: `${allApisSliceName}`,
   initialState,
   reducers: {
     showLoading: (state) => {
@@ -43,47 +64,43 @@ const allApisSlice = createSlice({
     hideLoading: (state) => {
       state.isLoading = false;
     },
-    handleChange: (state, { payload: { name, value } }) => {
+    handleChange: (state: AllApisOptions, { payload: { name, value } }) => {
       state.page = 1;
       state[name] = value;
     },
     clearFilters: (state) => ({ ...state, ...initialFiltersState }),
     clearState: (state) => ({ ...state, ...initialState }),
-    changePage: (state, { payload }) => {
+    changePage: (state: AllApisOptions, { payload }) => {
       state.page = payload;
     },
     clearAllApisState: () => initialState,
   },
-  extraReducers: {
-    [getAllApis.pending]: (state) => {
+  extraReducers: (builder) => {
+    builder.addCase(getAllApis.pending, (state) => {
       state.isLoading = true;
-    },
-    [getAllApis.fulfilled]: (state, { payload }) => {
-      state.isLoading = false;
-      // make sure state + payload items here line up with
-      // values returned in backend controllers
-      state.allApis = payload.allApis;
-      state.totalApis = payload.totalApis;
-      state.numOfPages = payload.numOfPages;
-    },
-    [getAllApis.rejected]: (state, { payload }) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.error(payload);
-    },
-    [showStats.pending]: (state) => {
+    }),
+      builder.addCase(getAllApis.fulfilled, (state, { payload }) => {
+        state.isLoading = false;
+        // make sure state + payload items here line up with
+        // values returned in backend controllers
+        state.allApis = payload.allApis;
+        state.totalApis = payload.totalApis;
+        state.numOfPages = payload.numOfPages;
+      }),
+      builder.addCase(getAllApis.rejected, (state) => {
+        state.isLoading = false;
+      });
+    builder.addCase(getAllApisStats.pending, (state) => {
       state.isLoading = true;
-    },
-    [showStats.fulfilled]: (state, { payload }) => {
-      state.isLoading = false;
-      state.defaultStats = payload.defaultStats;
-      state.monthlyApplications = payload.monthlyApplications;
-    },
-    [showStats.rejected]: (state, { payload }) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.error(payload);
-    },
+    }),
+      builder.addCase(getAllApisStats.fulfilled, (state, { payload }) => {
+        state.isLoading = false;
+        state.defaultStats = payload.defaultStats;
+        state.monthlyApis = payload.monthlyApis;
+      }),
+      builder.addCase(getAllApisStats.rejected, (state) => {
+        state.isLoading = false;
+      });
   },
 });
 

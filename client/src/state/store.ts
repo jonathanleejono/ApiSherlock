@@ -1,8 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
-import apiSlice from "./features/api/apiSlice";
-import userSlice from "./features/user/userSlice";
-import allApisSlice from "./features/allApis/allApisSlice";
-import pingSlice from "./features/ping/pingSlice";
+import apiSlice from "features/api/apiSlice";
+import userSlice from "features/user/userSlice";
+import allApisSlice from "features/allApis/allApisSlice";
+import pingSlice from "features/ping/pingSlice";
 
 export const store = configureStore({
   reducer: {

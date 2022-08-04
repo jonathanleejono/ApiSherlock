@@ -1,11 +1,23 @@
+import Wrapper from "assets/wrappers/RegisterPage";
+import { capitalCase } from "change-case";
+import { FormRow, Logo } from "components";
+import {
+  authUserSuccessMsg,
+  loginUserErrorMsg,
+  pleaseFillOutAllValues,
+  registerUserErrorMsg,
+} from "constants/messages";
+import { loginUser, registerUser } from "features/user/userThunk";
+import { handleToast } from "notifications/toast";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { loginUser, registerUser } from "features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "hooks";
-import Wrapper from "../assets/wrappers/RegisterPage";
-import { FormRow, Logo } from "../components";
-import { RootState } from "store";
+import { useAppDispatch, useAppSelector } from "state/hooks";
+import { RootState } from "state/store";
+import {
+  addUserToLocalStorage,
+  removeUserFromLocalStorage,
+} from "utils/localStorage";
 
 const initialState = {
   name: "",
@@ -33,26 +45,54 @@ const Register = () => {
   const onSubmit = (event: React.FormEvent<EventTarget>) => {
     event.preventDefault();
     if (!email || !password || (!isMember && !name)) {
-      toast.error("Please provide all fields");
+      toast.error(pleaseFillOutAllValues);
       return;
     }
     if (isMember) {
-      dispatch(loginUser(currentUser));
+      handleLoginUser();
     } else {
       handleRegisterUser();
     }
   };
 
+  const handleLoginUser = async () => {
+    const resultAction = await dispatch(loginUser({ email, password }));
+
+    let userFirstName = "";
+
+    if (loginUser.fulfilled.match(resultAction)) {
+      userFirstName = resultAction.payload.user.name;
+    }
+
+    const resp = handleToast(
+      resultAction,
+      loginUser,
+      authUserSuccessMsg(capitalCase(userFirstName)),
+      loginUserErrorMsg
+    );
+
+    if (resp.data === "success") {
+      const { user, token } = resp.payload;
+      addUserToLocalStorage({ user, token });
+    } else if (resp.data === "error") {
+      removeUserFromLocalStorage();
+    }
+  };
+
   const handleRegisterUser = async () => {
     const resultAction = await dispatch(registerUser(currentUser));
-    if (registerUser.fulfilled.match(resultAction)) {
-      // user will have a type signature of User as we passed that as the Returned parameter in createAsyncThunk
-      const user = resultAction.payload;
-      toast.success(`Welcome ${user.name}`);
-    } else if (resultAction.payload) {
-      toast.error(`${resultAction.payload}`);
-    } else {
-      toast.error(`${resultAction.payload.error}`);
+    const resp = handleToast(
+      resultAction,
+      registerUser,
+      authUserSuccessMsg(capitalCase(name)),
+      registerUserErrorMsg
+    );
+
+    if (resp.data === "success") {
+      const { user, token } = resp.payload;
+      addUserToLocalStorage({ user, token });
+    } else if (resp.data === "error") {
+      removeUserFromLocalStorage();
     }
   };
 
@@ -91,7 +131,7 @@ const Register = () => {
         />
         {/* password input */}
         <FormRow
-          labelText="password"
+          labelText="Password"
           type="password"
           name="password"
           value={values.password}

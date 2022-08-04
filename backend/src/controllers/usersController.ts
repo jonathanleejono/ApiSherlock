@@ -4,8 +4,11 @@ import { badRequestError, unAuthenticatedError } from "errors/index";
 import UserCollection from "models/UserCollection";
 import validateUser from "middleware/validateUser";
 import { validateInputKeys } from "middleware/validateKeys";
-
-const validRegisterKeys = ["name", "email", "password"];
+import {
+  validRegisterKeys,
+  validLoginKeys,
+  validUpdateKeys,
+} from "constants/keys";
 
 const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -45,8 +48,6 @@ const register = async (req: Request, res: Response): Promise<void> => {
     return error;
   }
 };
-
-const validLoginKeys = ["email", "password"];
 
 const login = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -96,8 +97,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
     return error;
   }
 };
-
-const validUpdateKeys = ["name", "email"];
 
 const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {

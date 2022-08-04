@@ -1,10 +1,17 @@
+import Wrapper from "assets/wrappers/DashboardFormPage";
+import { FormRow, FormRowSelect } from "components";
+import {
+  editApiErrorMsg,
+  editApiSuccessMsg,
+  pleaseFillOutAllValues,
+} from "constants/messages";
+import { allApisRoute } from "constants/routes";
+import { clearValues, handleChange } from "features/api/apiSlice";
+import { editApi } from "features/api/apiThunk";
+import { handleToast } from "notifications/toast";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getAllApis } from "features/allApis/allApisSlice";
-import { clearValues, editApi, handleChange } from "features/api/apiSlice";
-import { useAppDispatch, useAppSelector } from "hooks";
-import Wrapper from "../../assets/wrappers/DashboardFormPage";
-import { FormRow, FormRowSelect } from "../../components";
+import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const EditApi = () => {
   const {
@@ -21,25 +28,34 @@ const EditApi = () => {
 
   const dispatch = useAppDispatch();
 
-  //e = event
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<EventTarget>) => {
+    event.preventDefault();
 
     if (!url || !host || !monitoring) {
-      toast.error("Please provide all values");
+      toast.error(pleaseFillOutAllValues);
       return;
     }
 
-    // in Api.tsx, the apiId in Redux state takes in actual api._id
-    dispatch(editApi({ id: apiId, api: { url, host, monitoring } }));
+    const resultAction = await dispatch(
+      // in Api.tsx, the Redux state apiId is set with the actual api._id
+      // through the setEdit dispatch (in handleEdit)
+      editApi({ _id: apiId, api: { url, host, monitoring } })
+    );
 
-    navigate("/all-apis");
+    const resp = handleToast(
+      resultAction,
+      editApi,
+      editApiSuccessMsg,
+      editApiErrorMsg
+    );
 
-    dispatch(getAllApis());
+    if (resp.data === "success") {
+      navigate(allApisRoute);
+    }
   };
 
-  const handleInput = (e) => {
-    const { name, value } = e.target;
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
     dispatch(handleChange({ name, value }));
   };
 

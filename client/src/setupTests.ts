@@ -1,16 +1,21 @@
 import "@testing-library/jest-dom/extend-expect";
-import * as listItemsDB from "test/mocks/listItemsDb";
-import * as usersDB from "test/mocks/usersDb";
-import { server } from "test/server/server";
+import { allApisKey, tokenKey, usersKey } from "test/constants/keys";
+import * as apisDB from "test/data/apisDb";
+import * as usersDB from "test/data/usersDb";
+import { server } from "test/mocks/server";
+import * as ResizeObserverModule from "resize-observer-polyfill";
+
+global.ResizeObserver = ResizeObserverModule.default;
 
 jest.setTimeout(10000);
 
 beforeAll(() => {
   // Enable the mocking in tests.
+  // bypass to ignore pingAll/pingOne axios fetches
   server.listen({ onUnhandledRequest: "bypass" });
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-  localStorage.removeItem("__allApis__");
+  localStorage.removeItem(usersKey);
+  localStorage.removeItem(tokenKey);
+  localStorage.removeItem(allApisKey);
 });
 
 afterEach(() => {
@@ -18,15 +23,13 @@ afterEach(() => {
   server.resetHandlers();
 });
 
-afterAll(() => {
+afterAll(async () => {
   // Clean up once the tests are done.
   server.close();
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-  localStorage.removeItem("__allApis__");
-});
-
-// general cleanup
-afterEach(async () => {
-  await Promise.all([usersDB.resetDB(), listItemsDB.resetDB()]);
+  localStorage.removeItem(usersKey);
+  localStorage.removeItem(tokenKey);
+  localStorage.removeItem(allApisKey);
+  // depending on the test, DBs may need to be
+  // reset in an afterEach instead of afterAll
+  await Promise.all([usersDB.resetDB(), apisDB.resetDB()]);
 });

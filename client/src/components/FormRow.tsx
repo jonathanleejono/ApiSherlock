@@ -3,12 +3,24 @@ import PropTypes, { InferProps } from "prop-types";
 const propTypes = {
   type: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.array,
+  ]).isRequired,
   handleChange: PropTypes.func.isRequired,
   labelText: PropTypes.string.isRequired,
 };
 
-export type FormRowProps = InferProps<typeof propTypes>;
+interface FormRowProps {
+  type: string;
+  name: string;
+  value: string | number | readonly string[] | undefined;
+  handleChange: React.ChangeEventHandler<HTMLInputElement> | undefined;
+  labelText: string;
+}
+
+export type InferFormRowProps = InferProps<typeof propTypes>;
 
 const FormRow: React.FC<FormRowProps> = ({
   type,

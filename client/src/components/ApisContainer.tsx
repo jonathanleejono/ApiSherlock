@@ -1,10 +1,13 @@
+import Wrapper from "assets/wrappers/ApisContainer";
+import Api from "components/Api";
+import Loading from "components/Loading";
+import PageBtnContainer from "components/PageBtnContainer";
+import { getAllApis } from "features/allApis/allApisThunk";
+import { ApiDataResponse } from "interfaces/apis";
+import { handleToastErrors } from "notifications/toast";
 import { useEffect } from "react";
-import { getAllApis } from "features/allApis/allApisSlice";
-import { useAppDispatch, useAppSelector } from "hooks";
-import Wrapper from "../assets/wrappers/ApisContainer";
-import Api from "./Api";
-import Loading from "./Loading";
-import PageBtnContainer from "./PageBtnContainer";
+import { getAllApisErrorMsg } from "constants/messages";
+import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const ApisContainer: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -12,8 +15,13 @@ const ApisContainer: React.FC = () => {
     (store) => store.allApis
   );
 
+  const handleFetchApis = async () => {
+    const resultAction = await dispatch(getAllApis());
+    handleToastErrors(resultAction, getAllApis, getAllApisErrorMsg);
+  };
+
   useEffect(() => {
-    dispatch(getAllApis());
+    handleFetchApis();
   }, []);
 
   if (isLoading) {
@@ -34,7 +42,7 @@ const ApisContainer: React.FC = () => {
         {totalApis} api{allApis.length > 1 && "s"} found
       </h5>
       <div className="apis">
-        {allApis.map((api: any) => (
+        {allApis.map((api: ApiDataResponse) => (
           <Api key={api._id} {...api} />
         ))}
       </div>

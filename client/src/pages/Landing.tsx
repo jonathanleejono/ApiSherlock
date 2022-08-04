@@ -1,6 +1,6 @@
-import main from "../assets/images/main.png";
-import Wrapper from "../assets/wrappers/LandingPage";
-import { Logo } from "../components";
+import main from "assets/images/main.png";
+import Wrapper from "assets/wrappers/LandingPage";
+import { Logo } from "components";
 import { Link } from "react-router-dom";
 const Landing = () => (
   <Wrapper>
@@ -15,7 +15,7 @@ const Landing = () => (
         <p>
           Manage all your API links in one platform. Ping APIs to monitor their
           status, and have full visibility of where each API is hosted. Built on
-          React, Node, Express, Typescript, and MongoDB.
+          React, Redux, Node, Express, Typescript, and MongoDB.
         </p>
         <Link to="/register" className="btn btn-hero">
           Login/Register

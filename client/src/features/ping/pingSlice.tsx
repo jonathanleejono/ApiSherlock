@@ -1,18 +1,19 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { toast } from "react-toastify";
-import { pingAllThunk, pingOneThunk } from "./pingThunk";
+import { createSlice } from "@reduxjs/toolkit";
+import { pingSliceName } from "constants/actionTypes";
+import { pingAll, pingOne } from "features/ping/pingThunk";
 
-const initialState = {
+interface PingState {
+  isLoading: boolean;
+  apiId: string;
+}
+
+const initialState: PingState = {
   isLoading: false,
   apiId: "",
 };
 
-export const pingAll: any = createAsyncThunk("ping/pingAll", pingAllThunk);
-
-export const pingOne: any = createAsyncThunk("ping/pingOne", pingOneThunk);
-
 const pingSlice = createSlice({
-  name: "ping",
+  name: `${pingSliceName}`,
   initialState,
   reducers: {
     showLoading: (state) => {
@@ -22,35 +23,25 @@ const pingSlice = createSlice({
       state.isLoading = false;
     },
   },
-  extraReducers: {
-    [pingAll.pending]: (state) => {
+  extraReducers: (builder) => {
+    builder.addCase(pingAll.pending, (state) => {
       state.isLoading = true;
-      toast.loading("Pinging apis...");
-    },
-    [pingAll.fulfilled]: (state, { payload }) => {
-      toast.dismiss();
-      toast.success(payload);
-      state.isLoading = false;
-    },
-    [pingAll.rejected]: (state, { payload }) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.error(payload);
-    },
-    [pingOne.pending]: (state) => {
+    }),
+      builder.addCase(pingAll.fulfilled, (state) => {
+        state.isLoading = false;
+      }),
+      builder.addCase(pingAll.rejected, (state) => {
+        state.isLoading = false;
+      });
+    builder.addCase(pingOne.pending, (state) => {
       state.isLoading = true;
-      toast.loading("Pinging api...");
-    },
-    [pingOne.fulfilled]: (state, { payload }) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.success(payload);
-    },
-    [pingOne.rejected]: (state, { payload }) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.error(payload);
-    },
+    }),
+      builder.addCase(pingOne.fulfilled, (state) => {
+        state.isLoading = false;
+      }),
+      builder.addCase(pingOne.rejected, (state) => {
+        state.isLoading = false;
+      });
   },
 });
 

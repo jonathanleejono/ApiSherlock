@@ -1,4 +1,4 @@
-import Wrapper from "../assets/wrappers/StatItem";
+import Wrapper from "assets/wrappers/StatItem";
 import React from "react";
 import PropTypes, { InferProps } from "prop-types";
 
@@ -20,11 +20,15 @@ const StatsItem: React.FC<StatItemProps> = ({
   bcgColor,
 }) => (
   <Wrapper color={color} itemProp={bcgColor}>
-    <header>
-      <span className="count">{count}</span>
+    <header aria-label="Api Stats Header">
+      <span data-testid="ApiStatsCount" className="count">
+        {count}
+      </span>
       <span className="icon">{icon}</span>
     </header>
-    <h5 className="title">{title}</h5>
+    <h5 className="title" data-testid="ApiStatsTitle">
+      {title}
+    </h5>
   </Wrapper>
 );
 

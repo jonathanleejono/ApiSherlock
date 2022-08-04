@@ -1,10 +1,18 @@
+import Wrapper from "assets/wrappers/DashboardFormPage";
+import { FormRow, FormRowSelect } from "components";
+import {
+  createApiErrorMsg,
+  createApiSuccessMsg,
+  pleaseFillOutAllValues,
+} from "constants/messages";
+import { allApisRoute } from "constants/routes";
+import { clearValues, handleChange } from "features/api/apiSlice";
+import { createApi } from "features/api/apiThunk";
+import { handleToast } from "notifications/toast";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { clearValues, createApi, handleChange } from "features/api/apiSlice";
-import { useAppDispatch, useAppSelector } from "hooks";
-import Wrapper from "../../assets/wrappers/DashboardFormPage";
-import { FormRow, FormRowSelect } from "../../components";
+import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const AddApi = () => {
   useEffect(() => {
@@ -18,18 +26,25 @@ const AddApi = () => {
 
   const navigate = useNavigate();
 
-  //e = event
-  const handleSubmit = (event: React.FormEvent<EventTarget>) => {
+  const handleSubmit = async (event: React.FormEvent<EventTarget>) => {
     event.preventDefault();
 
     if (!url || !host || !monitoring) {
-      toast.error("Please provide all values");
+      toast.error(pleaseFillOutAllValues);
       return;
     }
 
-    dispatch(createApi({ url, host, monitoring }));
+    const resultAction = await dispatch(createApi({ url, host, monitoring }));
+    const resp = handleToast(
+      resultAction,
+      createApi,
+      createApiSuccessMsg,
+      createApiErrorMsg
+    );
 
-    navigate("/all-apis");
+    if (resp.data === "success") {
+      navigate(allApisRoute);
+    }
   };
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,9 +1,8 @@
 import { baseUrl } from "constants/urls";
-import { PathParams, rest, RestRequest, server } from "test/server/server";
+import { PathParams, rest, RestRequest, server } from "test/mocks/server";
 import customFetch from "utils/axios";
 
-// this endpoint needs to be a real route
-const endpoint = "/ping";
+const endpoint = "/test-endpoint";
 const mockResult = { mockValue: "VALUE" };
 const token = "FAKE_TOKEN";
 
@@ -14,7 +13,7 @@ describe("testing MSW server and auth setup", () => {
     // "window" suffix isn't necessary, but can be left as reference
     window.localStorage.setItem("token", token);
 
-    // this mock api response must come before client/customFetch fetches
+    // this mock api response must come before customFetch/axios fetches
     server.use(
       rest.get(`${baseUrl}${endpoint}`, async (req, res, ctx) => {
         request = req;
@@ -22,6 +21,8 @@ describe("testing MSW server and auth setup", () => {
       })
     );
 
+    // the baseUrl in rest.get(`${baseUrl}${endpoint}`)
+    // must match the baseUrl in customFetch/axios
     await customFetch.get(endpoint);
 
     expect(request.headers.get("Authorization")).toBe(`Bearer ${token}`);

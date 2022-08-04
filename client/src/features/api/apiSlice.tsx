@@ -1,29 +1,36 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { toast } from "react-toastify";
-import { createApiThunk, deleteApiThunk, editApiThunk } from "./apiThunk";
+import { createSlice } from "@reduxjs/toolkit";
+import { apiSliceName } from "constants/actionTypes";
+import { createApi, deleteApi, editApi } from "features/api/apiThunk";
 
-const initialState = {
+interface ApiState {
+  isLoading: boolean;
+  apiId: string;
+  url: string;
+  host: string;
+  hostOptions: string[];
+  monitoring: string;
+  monitoringOptions: string[];
+}
+
+const initialState: ApiState = {
   isLoading: false,
   apiId: "",
   url: "",
-  // AWS is default because it's the first option
-  host: "AWS",
+  host: "AWS", // AWS is default because it's the first option
   hostOptions: ["AWS", "GCP", "Azure", "Heroku", "DigitalOcean", "Other"],
   monitoring: "on",
   monitoringOptions: ["on", "off"],
 };
 
-export const createApi: any = createAsyncThunk("api/createApi", createApiThunk);
-
-export const deleteApi: any = createAsyncThunk("api/deleteApi", deleteApiThunk);
-
-export const editApi: any = createAsyncThunk("api/editApi", editApiThunk);
+type ApiOptions = {
+  [key: string]: Partial<ApiState>;
+};
 
 const apiSlice = createSlice({
-  name: "api",
+  name: `${apiSliceName}`,
   initialState,
   reducers: {
-    handleChange: (state, { payload: { name, value } }) => {
+    handleChange: (state: ApiOptions, { payload: { name, value } }) => {
       state[name] = value;
     },
     clearValues: () => ({
@@ -31,45 +38,34 @@ const apiSlice = createSlice({
     }),
     setEditApi: (state, { payload }) => ({ ...state, ...payload }),
   },
-  extraReducers: {
-    [createApi.pending]: (state) => {
+  extraReducers: (builder) => {
+    builder.addCase(createApi.pending, (state) => {
       state.isLoading = true;
-      toast.loading("Please wait...");
-    },
-    [createApi.fulfilled]: (state) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.success("Api Added");
-    },
-    [createApi.rejected]: (state, { payload }) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.error(payload);
-    },
-    [deleteApi.pending]: (state) => {
+    }),
+      builder.addCase(createApi.fulfilled, (state) => {
+        state.isLoading = false;
+      }),
+      builder.addCase(createApi.rejected, (state) => {
+        state.isLoading = false;
+      });
+    builder.addCase(deleteApi.pending, (state) => {
       state.isLoading = true;
-    },
-    [deleteApi.fulfilled]: (state) => {
-      state.isLoading = false;
-      toast.success("Api Deleted");
-    },
-    [deleteApi.rejected]: (state, { payload }) => {
-      toast.error(payload);
-    },
-    [editApi.pending]: (state) => {
-      toast.loading("Please wait...");
+    }),
+      builder.addCase(deleteApi.fulfilled, (state) => {
+        state.isLoading = false;
+      }),
+      builder.addCase(deleteApi.rejected, (state) => {
+        state.isLoading = false;
+      });
+    builder.addCase(editApi.pending, (state) => {
       state.isLoading = true;
-    },
-    [editApi.fulfilled]: (state) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.success("Api Modified...");
-    },
-    [editApi.rejected]: (state, { payload }) => {
-      state.isLoading = false;
-      toast.dismiss();
-      toast.error(payload);
-    },
+    }),
+      builder.addCase(editApi.fulfilled, (state) => {
+        state.isLoading = false;
+      }),
+      builder.addCase(editApi.rejected, (state) => {
+        state.isLoading = false;
+      });
   },
 });
 

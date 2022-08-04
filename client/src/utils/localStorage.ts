@@ -1,4 +1,6 @@
-const addUserToLocalStorage = ({ user, token }) => {
+import { AuthUserResponse } from "interfaces/users";
+
+const addUserToLocalStorage = ({ user, token }: AuthUserResponse) => {
   localStorage.setItem("user", JSON.stringify(user));
   localStorage.setItem("token", token);
 };

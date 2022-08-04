@@ -1,7 +1,7 @@
-import AddApi from "./AddApi";
-import EditApi from "./EditApi";
-import AllApis from "./AllApis";
-import Profile from "./Profile";
-import SharedLayout from "./SharedLayout";
-import Stats from "./Stats";
+import AddApi from "pages/dashboard/AddApi";
+import EditApi from "pages/dashboard/EditApi";
+import AllApis from "pages/dashboard/AllApis";
+import Profile from "pages/dashboard/Profile";
+import SharedLayout from "pages/dashboard/SharedLayout";
+import Stats from "pages/dashboard/Stats";
 export { AllApis, Profile, SharedLayout, Stats, AddApi, EditApi };

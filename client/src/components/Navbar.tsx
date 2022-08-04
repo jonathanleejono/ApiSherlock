@@ -1,9 +1,12 @@
-import { logoutUser, toggleSidebar } from "features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "hooks";
+import Wrapper from "assets/wrappers/Navbar";
+import Logo from "components/Logo";
+import { toggleSidebar } from "features/user/userSlice";
+import { clearStore } from "features/user/userThunk";
 import { useState } from "react";
 import { FaAlignLeft, FaCaretDown, FaUserCircle } from "react-icons/fa";
-import Wrapper from "../assets/wrappers/Navbar";
-import Logo from "./Logo";
+import { toast } from "react-toastify";
+import { useAppDispatch, useAppSelector } from "state/hooks";
+import { removeUserFromLocalStorage } from "utils/localStorage";
 
 const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -14,8 +17,10 @@ const Navbar: React.FC = () => {
     dispatch(toggleSidebar());
   };
 
-  const logout = () => {
-    dispatch(logoutUser("Logging out..."));
+  const logout = async () => {
+    dispatch(clearStore());
+    removeUserFromLocalStorage();
+    toast.success("Logging out...");
   };
 
   return (
