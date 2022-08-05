@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import axios from "axios";
+import { allApisKey } from "constants/keys";
 import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
@@ -12,11 +13,12 @@ import {
   ApiDefaultStats,
   ApiRequestData,
   MonthlyApis,
+  QueryParams,
 } from "interfaces/apis";
 import { PingResponse } from "interfaces/ping";
-import { dateTime } from "test/constants/datetime";
-import { allApisKey } from "constants/keys";
+import { currentDayYear } from "test/constants/datetime";
 import { mockApis } from "test/data/mockApis";
+// import { matchSorter } from "match-sorter";
 
 type ApiOptions = {
   [key: string]: ApiDataResponse;
@@ -82,8 +84,6 @@ async function createApi({
     throw error;
   }
 
-  const date = new Date().toString();
-
   allApisInMemory[_id] = {
     _id: apiId,
     createdBy: createdBy ? createdBy : faker.datatype.uuid(),
@@ -93,8 +93,8 @@ async function createApi({
     status: status ? status : "pending",
     lastPinged: lastPinged ? lastPinged : "Never pinged",
     __v: __v ? __v : 0,
-    createdAt: createdAt ? createdAt : date,
-    updatedAt: updatedAt ? updatedAt : date,
+    createdAt: createdAt ? createdAt : Date.now(),
+    updatedAt: updatedAt ? updatedAt : Date.now(),
   };
 
   persist();
@@ -150,8 +150,8 @@ async function generateMockApis(userId: string): Promise<ApiDataResponse[]> {
       status: mockApi.status,
       lastPinged: mockApi.lastPinged,
       monitoring: mockApi.monitoring,
-      createdAt: dateTime,
-      updatedAt: dateTime,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
       __v: 0,
     };
 
@@ -162,11 +162,74 @@ async function generateMockApis(userId: string): Promise<ApiDataResponse[]> {
 }
 
 // GET ALL BY OWNER - WITH AUTH
-async function getAllApis(userId: string): Promise<AllApisResponse> {
-  await generateMockApis(userId);
-  const _allApis = Object.values(allApisInMemory).filter(
+async function getAllApis(
+  userId: string,
+  queryObject: QueryParams
+): Promise<AllApisResponse> {
+  // generate mocks in test,
+  // but don't reset mock apis in dev
+  if (NODE_ENV === "test") {
+    await generateMockApis(userId);
+  } else if (!allApisInMemory) {
+    await generateMockApis(userId);
+  }
+
+  const { status, monitoring, search, sort } = queryObject;
+
+  const apisByUser = Object.values(allApisInMemory).filter(
     (api) => api.createdBy === userId
   );
+
+  const _allApis: ApiDataResponse[] = apisByUser.filter((api) => {
+    if (status && status !== "All" && api.status !== status) {
+      return false;
+    }
+    if (monitoring && monitoring !== "All" && api.monitoring !== monitoring) {
+      return false;
+    }
+
+    if (search && !api.url.match(new RegExp(search, "i"))) {
+      return false;
+    }
+
+    return true;
+  });
+
+  function sorting(
+    arr: any[],
+    apiAttr: string,
+    queryParam: string,
+    sortByValue: string,
+    asc: boolean
+  ) {
+    if (queryParam && queryParam == sortByValue) {
+      if (asc) {
+        arr.sort((a, b) => {
+          if (a[apiAttr] < b[apiAttr]) return -1;
+          if (a[apiAttr] > b[apiAttr]) return 1;
+          return 0;
+        });
+      } else {
+        arr.sort((a, b) => {
+          if (a[apiAttr] > b[apiAttr]) return -1;
+          if (a[apiAttr] < b[apiAttr]) return 1;
+          return 0;
+        });
+      }
+    }
+  }
+
+  _allApis.sort((a, b) => {
+    if (a._id < b._id) return -1;
+    if (a._id > b._id) return 1;
+    return 0;
+  });
+
+  sorting(_allApis, "createdAt", sort, "Latest", true);
+  sorting(_allApis, "createdAt", sort, "Oldest", false);
+  sorting(_allApis, "url", sort, "A-Z", true);
+  sorting(_allApis, "url", sort, "Z-A", false);
+
   const totalApis = _allApis.length;
   const numOfPages = Math.ceil(totalApis / 10);
   return { allApis: _allApis, totalApis, numOfPages };
@@ -196,6 +259,7 @@ async function getAllApisStats(userId: string): Promise<AllApisStatsResponse> {
     defaultStats[apiStatus] += 1;
   });
 
+  monthlyApis[0].date = currentDayYear;
   monthlyApis[0].count = mockApisByUser.length;
 
   pendingApiStats = defaultStats.pending;
@@ -215,10 +279,10 @@ async function pingAllApis(userId: string): Promise<PingResponse> {
 
       if (resp && resp.status === 200) {
         _allApis[index].status = "healthy";
-        _allApis[index].lastPinged = dateTime;
+        _allApis[index].lastPinged = Date.now();
       } else if (!resp) {
         _allApis[index].status = "unhealthy";
-        _allApis[index].lastPinged = dateTime;
+        _allApis[index].lastPinged = Date.now();
       }
     } catch (error) {
       return error;
@@ -235,10 +299,10 @@ async function pingOneApi(apiId: string): Promise<PingResponse> {
 
     if (resp && resp.status === 200) {
       api.status = "healthy";
-      api.lastPinged = dateTime;
+      api.lastPinged = Date.now();
     } else {
       api.status = "unhealthy";
-      api.lastPinged = dateTime;
+      api.lastPinged = Date.now();
     }
   } catch (error) {
     return error;

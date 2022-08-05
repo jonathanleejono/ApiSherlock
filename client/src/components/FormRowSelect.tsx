@@ -22,6 +22,7 @@ const FormRowSelect: React.FC<FormRowSelectProps> = ({
       {labelText || name}
     </label>
     <select
+      id={name} //need this id prop for testing
       name={name}
       value={value}
       onChange={handleChange}

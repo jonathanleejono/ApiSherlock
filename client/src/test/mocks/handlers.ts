@@ -23,8 +23,8 @@ import {
   registerUserUrl,
   updateUserUrl,
 } from "constants/urls";
+import { QueryParams } from "interfaces/apis";
 import { rest } from "msw";
-import { dateTime } from "test/constants/datetime";
 import * as apisDB from "test/data/apisDb";
 import * as usersDB from "test/data/usersDb";
 import { userHash } from "test/data/usersDb";
@@ -86,10 +86,38 @@ const handlers = [
   //   GET allApis
   rest.get(customClientFetch(`${getAllApisUrl}`), async (req, res, ctx) => {
     try {
+      const queryObject: QueryParams = {
+        sort: "",
+        page: 1,
+        monitoring: "",
+        status: "",
+        search: "",
+      };
+
+      const validQueryParams = [
+        "sort",
+        "status",
+        "monitoring",
+        "page",
+        "search",
+      ];
+
+      const queryParams = req.url.searchParams;
+
+      Object.keys(validQueryParams).forEach((_: string, index: number) => {
+        const validQueryParam = validQueryParams[index] as string;
+        if (queryParams.has(validQueryParam)) {
+          queryObject[validQueryParam] = queryParams.get(
+            validQueryParam
+          ) as string;
+        }
+      });
+
       const user = await usersDB.getUserByToken(req);
       const userId = userHash(user.email);
       const { allApis, totalApis, numOfPages } = await apisDB.getAllApis(
-        userId
+        userId,
+        queryObject
       );
       return res(ctx.json({ allApis, totalApis, numOfPages }));
     } catch (err) {
@@ -127,8 +155,8 @@ const handlers = [
         status: "pending",
         lastPinged: "Never pinged",
         monitoring: monitoring,
-        createdAt: dateTime,
-        updatedAt: dateTime,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
         __v: 0,
       });
 

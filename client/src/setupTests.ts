@@ -29,7 +29,9 @@ afterAll(async () => {
   localStorage.removeItem(usersKey);
   localStorage.removeItem(tokenKey);
   localStorage.removeItem(allApisKey);
-  // depending on the test, DBs may need to be
-  // reset in an afterEach instead of afterAll
+});
+
+afterEach(async () => {
+  // General cleanup
   await Promise.all([usersDB.resetDB(), apisDB.resetDB()]);
 });

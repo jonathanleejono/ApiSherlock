@@ -7,10 +7,10 @@ interface ApiRequestData {
 interface ApiDataResponse extends ApiRequestData {
   _id: string;
   status: "healthy" | "unhealthy" | "pending";
-  lastPinged: string;
+  lastPinged: number | "Never pinged";
   createdBy: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: number;
+  updatedAt: number;
   __v: number;
 }
 
@@ -37,6 +37,18 @@ interface AllApisStatsResponse {
   monthlyApis: [MonthlyApis];
 }
 
+type QueryParamsOptions = {
+  [key: string]: string | number;
+};
+
+interface QueryParams extends QueryParamsOptions {
+  sort: string;
+  page: number;
+  monitoring: "on" | "off" | "" | "All";
+  status: "healthy" | "unhealthy" | "pending" | "" | "All";
+  search: string;
+}
+
 export {
   ApiDataResponse,
   AllApisResponse,
@@ -44,4 +56,5 @@ export {
   AllApisStatsResponse,
   ApiDefaultStats,
   MonthlyApis,
+  QueryParams,
 };

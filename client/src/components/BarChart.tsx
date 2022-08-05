@@ -18,7 +18,7 @@ type BarChartComponentProps = InferProps<typeof propTypes>;
 
 const BarChartComponent: React.FC<BarChartComponentProps> = ({ data }) => (
   <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={data} margin={{ top: 50 }}>
+    <BarChart data-testid="BarChart" data={data} margin={{ top: 50 }}>
       <CartesianGrid strokeDasharray="3 3 " />
       <XAxis dataKey="date" />
       <YAxis allowDecimals={false} />

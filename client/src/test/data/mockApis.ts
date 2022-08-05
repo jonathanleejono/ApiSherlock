@@ -9,8 +9,8 @@ export const mockApis: ApiDataResponse[] = [
     monitoring: "on",
     __v: 0,
     _id: "618645616",
-    createdAt: new Date().toString(),
-    updatedAt: new Date().toString(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
     createdBy: "",
   },
   {
@@ -21,8 +21,8 @@ export const mockApis: ApiDataResponse[] = [
     monitoring: "on",
     __v: 0,
     _id: "0525509283",
-    createdAt: new Date().toString(),
-    updatedAt: new Date().toString(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
     createdBy: "",
   },
   {
@@ -33,8 +33,8 @@ export const mockApis: ApiDataResponse[] = [
     monitoring: "on",
     __v: 0,
     _id: "547928246",
-    createdAt: new Date().toString(),
-    updatedAt: new Date().toString(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
     createdBy: "",
   },
 ];

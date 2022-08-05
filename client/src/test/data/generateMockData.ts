@@ -34,6 +34,8 @@ function buildMockApi(overrides?: any) {
     monitoring: randomChoice(["on", "off"]),
     createdBy: faker.datatype.uuid(),
     createdAt: Date.now(),
+    updatedAt: Date.now(),
+    __v: 0,
     ...overrides,
   };
 }

@@ -20,10 +20,12 @@ import { Link } from "react-router-dom";
 import { useAppDispatch } from "state/hooks";
 
 const propTypes = {
-  createdAt: PropTypes.string.isRequired,
+  createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
   url: PropTypes.string.isRequired,
   host: PropTypes.string.isRequired,
-  lastPinged: PropTypes.string.isRequired,
+  lastPinged: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
   monitoring: PropTypes.string.isRequired,
   status: PropTypes.string.isRequired,
   _id: PropTypes.string.isRequired,
@@ -43,8 +45,7 @@ const Api: React.FC<ApiProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  const _createdAt = new Date(createdAt.toString());
-  const date = moment(_createdAt).format("MMM Do, YYYY");
+  const date = moment(createdAt).format("MMM Do, YYYY");
   const createdDate = "Created Date: " + date;
   const apiLastPinged = "Last Pinged: " + lastPinged;
   const apiMonitoring = "Monitoring: " + monitoring;

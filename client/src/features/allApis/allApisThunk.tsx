@@ -23,15 +23,15 @@ const getAllApis = createAsyncThunk<
     const { page, search, sort, status, monitoring } =
       thunkAPI.getState().allApis;
 
-    // do not push query params on to separate lines or the
-    // query param functionality won't work properly
-    let url = `${getAllApisUrl}?sort=${sort}&status=${status}&monitoring=${monitoring}&page=${page}`;
-
-    if (search) {
-      url += `&search=${search}`;
-    }
-
-    const resp = await customFetch.get(url);
+    const resp = await customFetch.get(getAllApisUrl, {
+      params: {
+        sort,
+        status,
+        monitoring,
+        page,
+        search,
+      },
+    });
     return resp.data;
   } catch (error) {
     checkPermissions(error, thunkAPI);

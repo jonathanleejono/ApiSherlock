@@ -77,7 +77,6 @@ test("can create an api", async () => {
 
   expect(urlInput).toBeInTheDocument();
 
-  await userEvent.clear(urlInput);
   await userEvent.type(urlInput, newText);
 
   expect(urlInput.value).toBe(newText);
@@ -161,6 +160,60 @@ let consoleErrorFn: jest.SpyInstance<
   void,
   [message?: any, ...optionalParams: any[]]
 >;
+
+test("can search and filter apis properly", async () => {
+  await waitFor(async () => {
+    await renderApp({ route: allApisRoute });
+  });
+
+  expect(
+    screen.getByRole("heading", { name: /3 apis found/i })
+  ).toBeInTheDocument();
+
+  const apiSearchField = screen.getByRole("textbox", {
+    name: /API URL search/i,
+  });
+
+  await userEvent.type(apiSearchField, "_");
+
+  expect(
+    screen.getByRole("heading", { name: /No apis to display.../i })
+  ).toBeInTheDocument();
+
+  await userEvent.clear(apiSearchField);
+
+  // look at "test/mocks/mockApis" folder for mockApis urls
+  // also remember apis were created and deleted in tests before this
+  await userEvent.type(apiSearchField, "h");
+
+  expect(
+    screen.getByRole("heading", { name: /3 apis found/i })
+  ).toBeInTheDocument();
+
+  // clear search field to not affect other tests
+  await userEvent.clear(apiSearchField);
+
+  const statusFilterOptions = screen.getByRole("combobox", { name: /status/i });
+
+  const statusHealthyOption = screen.getByRole("option", {
+    name: /\bhealthy\b/i,
+  }) as any;
+
+  await userEvent.selectOptions(statusFilterOptions, statusHealthyOption);
+
+  expect(statusHealthyOption.selected).toBe(true);
+
+  expect(
+    screen.getByRole("heading", { name: /No apis to display.../i })
+  ).toBeInTheDocument();
+
+  // reset filters, so to not affect other tests
+  await userEvent.click(screen.getByRole("button", { name: /clear filters/i }));
+
+  expect(
+    screen.getByRole("heading", { name: /3 apis found/i })
+  ).toBeInTheDocument();
+});
 
 describe("test pinging apis", () => {
   beforeAll(() => {
