@@ -59,7 +59,7 @@ const getAllApis = async (req, res) => {
             queryObject.url = { $regex: search, $options: "i" };
         }
         let result = ApiCollection_1.default.find(queryObject);
-        result = result.sort("_id");
+        result = result.sort("-_id");
         if (sort === "Latest") {
             result = result.sort("-createdAt");
         }
@@ -155,7 +155,7 @@ const getApi = async (req, res) => {
     }
 };
 exports.getApi = getApi;
-let monthlyApis = [{ date: datetime_1.currentDayYear, count: 0 }];
+let monthlyApis = [{ date: datetime_1.currentMonthYear, count: 0 }];
 const showStats = async (req, res) => {
     try {
         const user = await (0, validateUser_1.default)(req, res);
@@ -192,23 +192,18 @@ const showStats = async (req, res) => {
             { $sort: { "_id.year": -1, "_id.month": -1 } },
             { $limit: 6 },
         ]);
-        monthlyApis = aggregate
-            .map((item) => {
-            const { _id: { year, month }, count, } = item;
-            const date = (0, moment_1.default)()
-                .month(month - 1)
-                .year(year)
-                .format("MMM Y");
-            if (count > 0) {
-                console.log("yeah");
+        if (aggregate.length > 0) {
+            monthlyApis = aggregate
+                .map((item) => {
+                const { _id: { year, month }, count, } = item;
+                const date = (0, moment_1.default)()
+                    .month(month - 1)
+                    .year(year)
+                    .format("MMM Y");
                 return { date, count };
-            }
-            else {
-                console.log("no");
-                return { date: datetime_1.currentDayYear, count: 0 };
-            }
-        })
-            .reverse();
+            })
+                .reverse();
+        }
         res.status(http_status_codes_1.StatusCodes.OK).json({ defaultStats, monthlyApis });
     }
     catch (error) {
