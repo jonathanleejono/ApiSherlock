@@ -96,7 +96,7 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
     // no await, the search properties may be altered
     let result = ApiCollection.find(queryObject);
 
-    result = result.sort("_id");
+    result = result.sort("-_id");
 
     if (sort === "Latest") {
       result = result.sort("-createdAt");

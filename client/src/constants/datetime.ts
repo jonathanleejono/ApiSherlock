@@ -1,6 +1,6 @@
-import moment from "moment-timezone";
+import moment from "moment";
 
 export const currentDayYearHour = moment(Date.now())
-  .tz("America/Toronto")
+  .utcOffset("-04:00")
   .format("MMM Do YYYY, hh:mm A");
 export const currentDayYear = moment(Date.now()).format("MMM Do YYYY");
