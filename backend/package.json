@@ -6,7 +6,7 @@
   "scripts": {
     "server": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts --ignore client",
     "watch": "tsc -w",
-    "server-prod": "node dist/server.js",
+    "server-prod": "NODE_PATH=./dist node ./dist/server.js",
     "server-watch": "concurrently --kill-others-on-fail \" npm run server\" \" npm run watch\"",
     "test": "jest",
     "test-handles": "jest --detectOpenHandles",

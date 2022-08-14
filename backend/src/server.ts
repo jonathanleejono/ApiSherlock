@@ -4,7 +4,7 @@ import {
   baseSeedDbUrl,
   pingHealthCheckSuccessMsg,
   pingHealthCheckUrl,
-} from "./constants/urls";
+} from "constants/urls";
 import cors from "cors";
 import connectDB from "db/connect";
 import dotenv from "dotenv";
