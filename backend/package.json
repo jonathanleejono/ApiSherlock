@@ -2,7 +2,7 @@
   "name": "api-sherlock",
   "version": "1.0.0",
   "description": "#### Track and Manage Your Apis",
-  "main": "server.ts",
+  "main": "server.js",
   "scripts": {
     "server": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts --ignore client",
     "watch": "tsc -w",
