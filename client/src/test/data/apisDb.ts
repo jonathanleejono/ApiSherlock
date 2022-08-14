@@ -16,7 +16,7 @@ import {
   QueryParams,
 } from "interfaces/apis";
 import { PingResponse } from "interfaces/ping";
-import { currentDayYear } from "test/constants/datetime";
+import { currentDayYear } from "constants/datetime";
 import { mockApis } from "test/data/mockApis";
 // import { matchSorter } from "match-sorter";
 

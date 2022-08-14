@@ -17,6 +17,7 @@ import {
   validGetAllApisKeys,
   validUpdateApiKeys,
 } from "constants/keys";
+import { currentDayYear } from "constants/datetime";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -224,6 +225,8 @@ const getApi = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+let monthlyApis = [{ date: currentDayYear, count: 0 }];
+
 const showStats = async (req: Request, res: Response) => {
   try {
     const user = await validateUser(req, res);
@@ -253,7 +256,7 @@ const showStats = async (req: Request, res: Response) => {
       pending: stats.pending || 0,
     };
 
-    let monthlyApis = await ApiCollection.aggregate([
+    const aggregate = await ApiCollection.aggregate([
       { $match: { createdBy: userId } },
       {
         $group: {
@@ -268,7 +271,7 @@ const showStats = async (req: Request, res: Response) => {
       { $limit: 6 },
     ]);
 
-    monthlyApis = monthlyApis
+    monthlyApis = aggregate
       .map((item) => {
         const {
           _id: { year, month },
@@ -279,7 +282,10 @@ const showStats = async (req: Request, res: Response) => {
           .month(month - 1)
           .year(year)
           .format("MMM Y");
-        return { date, count };
+
+        if (count > 0) {
+          return { date, count };
+        } else return { date: currentDayYear, count: 0 };
       })
       .reverse();
 
