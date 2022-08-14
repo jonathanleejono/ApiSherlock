@@ -1,6 +1,7 @@
 import Wrapper from "assets/wrappers/Api";
 import ApiInfo from "components/ApiInfo";
 import ApiStatus from "components/ApiStatus";
+import { currentDayYearHour } from "constants/datetime";
 import {
   deleteApiErrorMsg,
   deleteApiSuccessMsg,
@@ -11,7 +12,6 @@ import { editApiRoute } from "constants/routes";
 import { setEditApi } from "features/api/apiSlice";
 import { deleteApi } from "features/api/apiThunk";
 import { pingOne } from "features/ping/pingThunk";
-import moment from "moment";
 import { handleToast } from "notifications/toast";
 import PropTypes, { InferProps } from "prop-types";
 import { BsFillCalendar2PlusFill } from "react-icons/bs";
@@ -20,8 +20,7 @@ import { Link } from "react-router-dom";
 import { useAppDispatch } from "state/hooks";
 
 const propTypes = {
-  createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-    .isRequired,
+  createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   url: PropTypes.string.isRequired,
   host: PropTypes.string.isRequired,
   lastPinged: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
@@ -35,7 +34,6 @@ type ApiProps = InferProps<typeof propTypes>;
 
 // the function params are passed in by the mapped object in ApisContainer.tsx
 const Api: React.FC<ApiProps> = ({
-  createdAt,
   url,
   host,
   lastPinged,
@@ -45,7 +43,7 @@ const Api: React.FC<ApiProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  const date = moment(createdAt).format("MMM Do, YYYY");
+  const date = currentDayYearHour;
   const createdDate = "Created Date: " + date;
   const apiLastPinged = "Last Pinged: " + lastPinged;
   const apiMonitoring = "Monitoring: " + monitoring;

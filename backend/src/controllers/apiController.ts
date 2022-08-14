@@ -271,7 +271,7 @@ const showStats = async (req: Request, res: Response) => {
       { $limit: 6 },
     ]);
 
-    if (aggregate.length !== 0) {
+    if (aggregate.length > 0) {
       monthlyApis = aggregate
         .map((item) => {
           const {
