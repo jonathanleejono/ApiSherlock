@@ -1,7 +1,7 @@
 import Wrapper from "assets/wrappers/Api";
 import ApiInfo from "components/ApiInfo";
 import ApiStatus from "components/ApiStatus";
-import { currentDayYearHour } from "constants/datetime";
+import { currentDayYear } from "constants/datetime";
 import {
   deleteApiErrorMsg,
   deleteApiSuccessMsg,
@@ -12,6 +12,7 @@ import { editApiRoute } from "constants/routes";
 import { setEditApi } from "features/api/apiSlice";
 import { deleteApi } from "features/api/apiThunk";
 import { pingOne } from "features/ping/pingThunk";
+import moment from "moment";
 import { handleToast } from "notifications/toast";
 import PropTypes, { InferProps } from "prop-types";
 import { BsFillCalendar2PlusFill } from "react-icons/bs";
@@ -34,6 +35,7 @@ type ApiProps = InferProps<typeof propTypes>;
 
 // the function params are passed in by the mapped object in ApisContainer.tsx
 const Api: React.FC<ApiProps> = ({
+  createdAt,
   url,
   host,
   lastPinged,
@@ -43,7 +45,7 @@ const Api: React.FC<ApiProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  const date = currentDayYearHour;
+  const date = moment(createdAt).utcOffset("-04:00").format("MMM Do YYYY");
   const createdDate = "Created Date: " + date;
   const apiLastPinged = "Last Pinged: " + lastPinged;
   const apiMonitoring = "Monitoring: " + monitoring;
