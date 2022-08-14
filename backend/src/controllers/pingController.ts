@@ -1,4 +1,5 @@
 import axios from "axios";
+import { currentDayYearHour } from "constants/datetime";
 import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
@@ -31,14 +32,12 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
     }
 
     Object.keys(allApisToMonitor).forEach(async (_, index: number) => {
-      const dateTime = moment().format("MMM Do YYYY, hh:mm A");
-
       try {
         const res = await axios.get(allApisToMonitor[index].url);
         if (res && res.status === 200) {
           await ApiCollection.findOneAndUpdate(
             { _id: allApisToMonitor[index].id },
-            { status: "healthy", lastPinged: dateTime },
+            { status: "healthy", lastPinged: currentDayYearHour },
             {
               new: true,
               runValidators: true,
@@ -48,7 +47,7 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
       } catch (error) {
         await ApiCollection.findOneAndUpdate(
           { _id: allApisToMonitor[index].id },
-          { status: "unhealthy", lastPinged: dateTime },
+          { status: "unhealthy", lastPinged: currentDayYearHour },
           {
             new: true,
             runValidators: true,
@@ -83,14 +82,12 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
 
     checkPermissions(res, user._id, api.createdBy);
 
-    const dateTime = moment().format("MMM Do YYYY, hh:mm A");
-
     try {
       const res = await axios.get(api.url);
       if (res && res.status === 200) {
         await ApiCollection.findOneAndUpdate(
           { _id: api.id },
-          { status: "healthy", lastPinged: dateTime },
+          { status: "healthy", lastPinged: currentDayYearHour },
           {
             new: true,
             runValidators: true,
@@ -100,7 +97,7 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
     } catch (error) {
       await ApiCollection.findOneAndUpdate(
         { _id: api.id },
-        { status: "unhealthy", lastPinged: dateTime },
+        { status: "unhealthy", lastPinged: currentDayYearHour },
         {
           new: true,
           runValidators: true,
