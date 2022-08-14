@@ -25,7 +25,9 @@ const Stats: React.FC = () => {
   return (
     <>
       <StatsContainer />
-      {monthlyApis && monthlyApis[0].count > 0 ? <ChartsContainer /> : null}
+      {monthlyApis.length > 0 && monthlyApis[0].count > 0 ? (
+        <ChartsContainer />
+      ) : null}
     </>
   );
 };

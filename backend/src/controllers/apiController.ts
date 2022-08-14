@@ -17,7 +17,7 @@ import {
   validGetAllApisKeys,
   validUpdateApiKeys,
 } from "constants/keys";
-import { currentDayYear } from "constants/datetime";
+import { currentMonthYear } from "constants/datetime";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -225,7 +225,7 @@ const getApi = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-let monthlyApis = [{ date: currentDayYear, count: 0 }];
+let monthlyApis = [{ date: currentMonthYear, count: 0 }];
 
 const showStats = async (req: Request, res: Response) => {
   try {
@@ -271,23 +271,23 @@ const showStats = async (req: Request, res: Response) => {
       { $limit: 6 },
     ]);
 
-    monthlyApis = aggregate
-      .map((item) => {
-        const {
-          _id: { year, month },
-          count,
-        } = item;
+    if (aggregate.length !== 0) {
+      monthlyApis = aggregate
+        .map((item) => {
+          const {
+            _id: { year, month },
+            count,
+          } = item;
 
-        const date = moment()
-          .month(month - 1)
-          .year(year)
-          .format("MMM Y");
+          const date = moment()
+            .month(month - 1)
+            .year(year)
+            .format("MMM Y");
 
-        if (count > 0) {
           return { date, count };
-        } else return { date: currentDayYear, count: 0 };
-      })
-      .reverse();
+        })
+        .reverse();
+    }
 
     res.status(StatusCodes.OK).json({ defaultStats, monthlyApis });
   } catch (error) {

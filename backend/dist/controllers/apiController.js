@@ -200,10 +200,13 @@ const showStats = async (req, res) => {
                 .year(year)
                 .format("MMM Y");
             if (count > 0) {
+                console.log("yeah");
                 return { date, count };
             }
-            else
+            else {
+                console.log("no");
                 return { date: datetime_1.currentDayYear, count: 0 };
+            }
         })
             .reverse();
         res.status(http_status_codes_1.StatusCodes.OK).json({ defaultStats, monthlyApis });
