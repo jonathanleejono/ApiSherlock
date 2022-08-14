@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
 interface ErrorResponse {
@@ -13,7 +13,8 @@ interface ErrorResponse {
 const errorHandlerMiddleware = (
   err: ErrorResponse,
   _: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   const defaultError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
@@ -32,6 +33,8 @@ const errorHandlerMiddleware = (
   }
 
   res.status(defaultError.statusCode).json({ msg: defaultError.msg });
+  next();
+  return;
 };
 
 export default errorHandlerMiddleware;

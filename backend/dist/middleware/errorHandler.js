@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_status_codes_1 = require("http-status-codes");
-const errorHandlerMiddleware = (err, _, res) => {
+const errorHandlerMiddleware = (err, _, res, next) => {
     const defaultError = {
         statusCode: err.statusCode || http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR,
         msg: err.message || "Something went wrong, try again later",
@@ -17,6 +17,8 @@ const errorHandlerMiddleware = (err, _, res) => {
         defaultError.msg = `${Object.keys(err.keyValue)} field has to be unique`;
     }
     res.status(defaultError.statusCode).json({ msg: defaultError.msg });
+    next();
+    return;
 };
 exports.default = errorHandlerMiddleware;
 //# sourceMappingURL=errorHandler.js.map

@@ -1,5 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const notFoundMiddleware = (res) => res.status(404).send("Route does not exist");
+const notFoundMiddleware = (_, res, next) => {
+    res.status(404).json({ error: "Route does not exist" });
+    next();
+    return;
+};
 exports.default = notFoundMiddleware;
 //# sourceMappingURL=notFoundRoute.js.map
