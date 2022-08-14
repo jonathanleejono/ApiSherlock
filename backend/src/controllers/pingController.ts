@@ -10,7 +10,6 @@ import { StatusCodes } from "http-status-codes";
 import checkPermissions from "middleware/checkPermissions";
 import validateUser from "middleware/validateUser";
 import ApiCollection from "models/ApiCollection";
-import moment from "moment";
 
 const pingAll = async (req: Request, res: Response): Promise<any> => {
   try {
