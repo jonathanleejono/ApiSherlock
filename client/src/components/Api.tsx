@@ -1,7 +1,6 @@
 import Wrapper from "assets/wrappers/Api";
 import ApiInfo from "components/ApiInfo";
 import ApiStatus from "components/ApiStatus";
-import { currentDayYear } from "constants/datetime";
 import {
   deleteApiErrorMsg,
   deleteApiSuccessMsg,
