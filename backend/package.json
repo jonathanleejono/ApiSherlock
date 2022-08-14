@@ -5,6 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "server": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts --ignore client",
+    "server-prod": "ts-node -r tsconfig-paths/register src/server.ts --ignore client",
     "test": "jest",
     "test-handles": "jest --detectOpenHandles",
     "test-watch": "jest --watchAll --detectOpenHandles",
