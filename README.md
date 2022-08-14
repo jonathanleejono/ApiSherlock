@@ -11,7 +11,7 @@ See the live app here: https://apisherlock.vercel.app/landing
 ## Backend:
 - Node
 - Express
-- MongoDB
+- MongoDB + Mongoose
 - Jest + Supertest (Unit/Integration testing)
 
 ## Frontend:
