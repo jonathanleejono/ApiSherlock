@@ -1,19 +1,25 @@
 import axios, { AxiosRequestConfig } from "axios";
+import { getToken } from "constants/token";
 import { baseUrl } from "constants/urls";
-import { getTokenFromLocalStorage } from "utils/localStorage";
+// import { axiosToken } from "features/user/userSlice";
+// import { getTokenFromLocalStorage } from "utils/localStorage";
 
 const customFetch = axios.create({
   baseURL: baseUrl,
 });
 
-customFetch.interceptors.request.use((config: AxiosRequestConfig) => {
+customFetch.interceptors.request.use(async (config: AxiosRequestConfig) => {
   if (!config || !config.headers) {
     return { error: "Axios error" };
   }
 
-  const token = getTokenFromLocalStorage();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const accessToken = await getToken();
+
+  console.log("the token: ", accessToken);
+
+  // const token = getTokenFromLocalStorage();
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
 });

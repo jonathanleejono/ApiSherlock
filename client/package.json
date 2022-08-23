@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@formatjs/intl-relativetimeformat": "^11.0.3",
     "@reduxjs/toolkit": "^1.8.3",
     "@types/jest": "^28.1.6",
     "@types/node": "^18.0.6",
@@ -29,7 +30,6 @@
     "react-toastify": "^9.0.7",
     "recharts": "^2.1.13",
     "styled-components": "^5.3.3",
-    "typescript": "^4.7.4",
     "web-vitals": "^1.1.2"
   },
   "devDependencies": {
@@ -47,7 +47,8 @@
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-testing-library": "^5.5.1",
     "resize-observer-polyfill": "^1.5.1",
-    "ts-jest": "^28.0.7"
+    "ts-jest": "^28.0.7",
+    "typescript": "^4.7.4"
   },
   "scripts": {
     "start": "react-scripts start",

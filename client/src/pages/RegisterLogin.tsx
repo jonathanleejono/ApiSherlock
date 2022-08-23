@@ -7,6 +7,7 @@ import {
   pleaseFillOutAllValues,
   registerUserErrorMsg,
 } from "constants/messages";
+import { setToken } from "constants/token";
 import { loginUser, registerUser } from "features/user/userThunk";
 import { handleToast } from "notifications/toast";
 import { useEffect, useState } from "react";
@@ -73,6 +74,9 @@ const Register = () => {
 
     if (resp.data === "success") {
       const { user, token } = resp.payload;
+      console.log("redux user: ", user);
+      console.log("redux token: ", token);
+      setToken(token);
       addUserToLocalStorage({ user, token });
     } else if (resp.data === "error") {
       removeUserFromLocalStorage();
@@ -90,7 +94,11 @@ const Register = () => {
 
     if (resp.data === "success") {
       const { user, token } = resp.payload;
+      console.log("redux user: ", user);
+      console.log("redux token: ", token);
       addUserToLocalStorage({ user, token });
+      // get the token from payload, and then save that to redux
+      // with dispatch(setToken(access_token))
     } else if (resp.data === "error") {
       removeUserFromLocalStorage();
     }

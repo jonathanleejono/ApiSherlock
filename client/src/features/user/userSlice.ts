@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { UserDataResponse } from "interfaces/users";
 import {
-  getTokenFromLocalStorage,
+  // getTokenFromLocalStorage,
   getUserFromLocalStorage,
 } from "utils/localStorage";
 import { loginUser, registerUser, updateUser } from "features/user/userThunk";
@@ -18,8 +18,11 @@ const initialState: UsersState = {
   isLoading: false,
   isSidebarOpen: false,
   user: getUserFromLocalStorage(),
-  token: getTokenFromLocalStorage(),
+  // token: getTokenFromLocalStorage(),
+  token: "",
 };
+
+export const axiosToken = initialState.token;
 
 const userSlice = createSlice({
   name: `${userSliceName}`,
@@ -40,6 +43,7 @@ const userSlice = createSlice({
     }),
       builder.addCase(registerUser.fulfilled, (state, { payload }) => {
         state.isLoading = false;
+        // set state of access_token here
         const { user, token } = payload;
         state.user = user;
         state.token = token;
