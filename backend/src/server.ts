@@ -20,6 +20,9 @@ import apiRouter from "routes/apiRoutes";
 import seedDbRouter from "routes/seedDbRoutes";
 import usersRouter from "routes/userRoutes";
 import xss from "xss-clean";
+import session from "express-session";
+import connectRedis from "connect-redis";
+import Redis from "ioredis";
 
 const app = express();
 dotenv.config();
@@ -33,6 +36,29 @@ app.use(helmet());
 app.use(xss());
 app.use(mongoSanitize());
 app.use(cors());
+
+const RedisStore = connectRedis(session);
+const redis = new Redis(process.env.REDIS_URL as string);
+
+app.set("trust proxy", process.env.NODE_ENV !== "production");
+
+app.use(
+  session({
+    name: "aid",
+    store: new RedisStore({ client: redis, disableTouch: true }),
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+      httpOnly: true,
+      // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      // secure: process.env.NODE_ENV === "production" ? true : false,
+      sameSite: "lax",
+      secure: false,
+    },
+    secret: process.env.SECRET as string,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 app.use(pingHealthCheckUrl, (_, res) => {
   res.send(pingHealthCheckSuccessMsg);

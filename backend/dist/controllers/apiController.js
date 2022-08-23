@@ -204,6 +204,7 @@ const showStats = async (req, res) => {
             })
                 .reverse();
         }
+        console.log("stats req: ", req);
         res.status(http_status_codes_1.StatusCodes.OK).json({ defaultStats, monthlyApis });
     }
     catch (error) {

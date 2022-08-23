@@ -19,6 +19,9 @@ const apiRoutes_1 = __importDefault(require("routes/apiRoutes"));
 const seedDbRoutes_1 = __importDefault(require("routes/seedDbRoutes"));
 const userRoutes_1 = __importDefault(require("routes/userRoutes"));
 const xss_clean_1 = __importDefault(require("xss-clean"));
+const express_session_1 = __importDefault(require("express-session"));
+const connect_redis_1 = __importDefault(require("connect-redis"));
+const ioredis_1 = __importDefault(require("ioredis"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 if (process.env.NODE_ENV !== "production") {
@@ -29,6 +32,22 @@ app.use((0, helmet_1.default)());
 app.use((0, xss_clean_1.default)());
 app.use((0, express_mongo_sanitize_1.default)());
 app.use((0, cors_1.default)());
+const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
+const redis = new ioredis_1.default(process.env.REDIS_URL);
+app.set("trust proxy", process.env.NODE_ENV !== "production");
+app.use((0, express_session_1.default)({
+    name: "aid",
+    store: new RedisStore({ client: redis, disableTouch: true }),
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false,
+    },
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+}));
 app.use(urls_1.pingHealthCheckUrl, (_, res) => {
     res.send(urls_1.pingHealthCheckSuccessMsg);
 });

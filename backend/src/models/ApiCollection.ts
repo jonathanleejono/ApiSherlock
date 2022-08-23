@@ -1,7 +1,7 @@
-import mongoose, { Model } from "mongoose";
+import mongoose, { Model, Schema } from "mongoose";
 import ApiDocument from "models/ApiDocument";
 
-const ApiSchema = new mongoose.Schema(
+const ApiSchema: Schema<ApiDocument> = new mongoose.Schema(
   {
     url: {
       type: String,
@@ -28,7 +28,7 @@ const ApiSchema = new mongoose.Schema(
       default: "off",
     },
     createdBy: {
-      type: mongoose.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Please provide user"],
     },

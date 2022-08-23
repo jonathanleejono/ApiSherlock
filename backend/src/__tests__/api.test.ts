@@ -80,13 +80,18 @@ describe("testing api controller", () => {
     it("should get all APIs", async (): Promise<void> => {
       const response = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
 
-      apiObjId = response.body.allApis[0]._id;
+      //reversed because in apiController, the array is sorted
+      //descending by _id, meaning apis are sorted by latest
+      const responseAllApis = response.body.allApis.reverse();
+
+      //make sure this aligns with the "update API" test
+      apiObjId = responseAllApis[0]._id;
 
       expect(response.statusCode).toBe(200);
       expect(response.headers["content-type"]).toEqual(
         expect.stringContaining("json")
       );
-      expect(response.body.allApis).toMatchObject(mockApis);
+      expect(responseAllApis).toMatchObject(mockApis);
       expect(response.body.totalApis).toEqual(mockApis.length);
       expect(response.body.numOfPages).toEqual(Math.ceil(mockApis.length / 10));
     });
@@ -201,7 +206,8 @@ describe("testing api controller", () => {
         expect(pingResponse.statusCode).toBe(200);
         expect(pingResponse.body).toEqual(pingAllApisSuccessMsg);
         expect(response.statusCode).toBe(200);
-        expect(response.body.allApis).toMatchObject(mockUpdatedApis);
+        //don't forget to reverse allApis
+        expect(response.body.allApis.reverse()).toMatchObject(mockUpdatedApis);
       }, 30000);
     });
   });

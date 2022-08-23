@@ -289,6 +289,8 @@ const showStats = async (req: Request, res: Response) => {
         .reverse();
     }
 
+    console.log("stats req: ", req);
+
     res.status(StatusCodes.OK).json({ defaultStats, monthlyApis });
   } catch (error) {
     return error;

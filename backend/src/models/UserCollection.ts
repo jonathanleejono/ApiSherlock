@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import UserDocument from "models/UserDocument";
 
-const UserSchema: Schema = new mongoose.Schema({
+const UserSchema: Schema<UserDocument> = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please provide name"],

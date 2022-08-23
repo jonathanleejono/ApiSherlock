@@ -78,10 +78,11 @@ describe("testing api controller", () => {
     describe("testing apis", () => {
         it("should get all APIs", async () => {
             const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`);
-            apiObjId = response.body.allApis[0]._id;
+            const responseAllApis = response.body.allApis.reverse();
+            apiObjId = responseAllApis[0]._id;
             expect(response.statusCode).toBe(200);
             expect(response.headers["content-type"]).toEqual(expect.stringContaining("json"));
-            expect(response.body.allApis).toMatchObject(mockApis_1.mockApis);
+            expect(responseAllApis).toMatchObject(mockApis_1.mockApis);
             expect(response.body.totalApis).toEqual(mockApis_1.mockApis.length);
             expect(response.body.numOfPages).toEqual(Math.ceil(mockApis_1.mockApis.length / 10));
         });
@@ -160,7 +161,7 @@ describe("testing api controller", () => {
                 expect(pingResponse.statusCode).toBe(200);
                 expect(pingResponse.body).toEqual(messages_1.pingAllApisSuccessMsg);
                 expect(response.statusCode).toBe(200);
-                expect(response.body.allApis).toMatchObject(mockUpdatedApis_1.mockUpdatedApis);
+                expect(response.body.allApis.reverse()).toMatchObject(mockUpdatedApis_1.mockUpdatedApis);
             }, 30000);
         });
     });
