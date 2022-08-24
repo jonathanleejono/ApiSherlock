@@ -5,7 +5,7 @@ import {
   pleaseFillOutAllValues,
   updateUserSuccessMsg,
 } from "constants/messages";
-import { profileRoute, registerRoute } from "constants/routes";
+import { landingRoute, profileRoute, registerRoute } from "constants/routes";
 import { AuthUserResponse } from "interfaces/users";
 import { mockUserPassword } from "test/data/generateMockData";
 import {
@@ -35,6 +35,17 @@ async function renderApp({
     authUser,
   };
 }
+
+test("renders landing page", async () => {
+  await renderApp({ route: landingRoute });
+
+  expect(
+    screen.getByRole("heading", { name: /api tracking app/i })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText(/React, Redux, Node, Express, Typescript, and MongoDB/i)
+  ).toBeInTheDocument();
+});
 
 test("user can register", async () => {
   await renderApp({ route: registerRoute });

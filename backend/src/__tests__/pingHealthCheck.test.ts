@@ -1,7 +1,8 @@
 import app from "server";
 import request from "supertest";
 import mongoose from "mongoose";
-import { pingHealthCheckSuccessMsg, pingHealthCheckUrl } from "constants/urls";
+import { pingHealthCheckUrl } from "constants/urls";
+import { pingHealthCheckSuccessMsg } from "constants/messages";
 
 describe("testing if supertest and jest works", () => {
   afterAll(async () => {

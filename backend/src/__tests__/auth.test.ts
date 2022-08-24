@@ -11,6 +11,7 @@ import {
   seedMockUsersDbUrl,
   updateUserUrl,
 } from "constants/urls";
+import { cookieName } from "constants/cookies";
 
 const user = {
   name: "jane",
@@ -47,19 +48,10 @@ describe("testing users controller", () => {
       );
       expect(response.body).toEqual(
         expect.objectContaining({
-          token: expect.any(String),
+          accessToken: expect.any(String),
           user: { name: name, email: email },
         })
       );
-
-      // expect.objectContaining will fail because email is missing
-      //   expect(response.body).toEqual(
-      //     expect.objectContaining({ user: { name: name } })
-      //   );
-      //   toMatchObject won't fail even though email is missing
-      //   expect(response.body).toMatchObject({
-      //     user: { name: name },
-      //   });
     });
 
     it("should login a user", async (): Promise<void> => {
@@ -74,7 +66,7 @@ describe("testing users controller", () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(
         expect.objectContaining({
-          token: expect.any(String),
+          accessToken: expect.any(String),
           user: { name: mockUser.name, email: mockUser.email },
         })
       );
@@ -88,7 +80,7 @@ describe("testing users controller", () => {
           password: mockUser.password,
         });
 
-      const { token } = loginResponse.body;
+      const { accessToken } = loginResponse.body;
 
       const response = await request(app)
         .patch(`${baseAuthUrl}${updateUserUrl}`)
@@ -96,12 +88,12 @@ describe("testing users controller", () => {
           name: "bob",
           email: mockUser.email,
         })
-        .set("Authorization", `Bearer ${token}`);
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(
         expect.objectContaining({
-          token: expect.any(String),
+          accessToken: expect.any(String),
           user: { name: "bob", email: mockUser.email },
         })
       );
@@ -116,6 +108,28 @@ describe("testing users controller", () => {
         });
 
       expect(loginResponse.statusCode).toBe(401);
+    });
+  });
+
+  describe("testing cookies", () => {
+    it("should show cookies in header", async () => {
+      const loginResponse = await request(app)
+        .post(`${baseAuthUrl}${loginUserUrl}`)
+        .send({
+          email: mockUser.email,
+          password: mockUser.password,
+        });
+
+      console.log(loginResponse);
+
+      const cookieHeader = loginResponse.headers["set-cookie"];
+
+      expect(loginResponse.statusCode).toBe(200);
+      expect(cookieHeader).toBeTruthy();
+
+      const cookie = cookieHeader[0];
+
+      expect(cookie).toContain(cookieName);
     });
   });
 });

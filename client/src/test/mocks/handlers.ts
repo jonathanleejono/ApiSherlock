@@ -7,6 +7,7 @@ import {
   getAllApisErrorMsg,
   loginUserErrorMsg,
   pingAllApisErrorMsg,
+  refreshTokenErrorMsg,
   registerUserErrorMsg,
   updateUserErrorMsg,
 } from "constants/messages";
@@ -20,6 +21,7 @@ import {
   loginUserUrl,
   pingAllApisUrl,
   pingOneApiUrl,
+  refreshAccessTokenUrl,
   registerUserUrl,
   updateUserUrl,
 } from "constants/urls";
@@ -31,16 +33,18 @@ import { userHash } from "test/data/usersDb";
 
 const customClientFetch = (path: string) => `${baseUrl}${path}`.toString();
 
+export let newAccessToken: string;
+
 const handlers = [
   // LOGIN user
   rest.post(customClientFetch(loginUserUrl), async (req, res, ctx) => {
     try {
       const { email, password } = await req.json();
-      const { user, token } = await usersDB.loginUser({
+      const { user, accessToken } = await usersDB.loginUser({
         email,
         password,
       });
-      return res(ctx.status(200), ctx.json({ user, token }));
+      return res(ctx.status(200), ctx.json({ user, accessToken }));
     } catch (err) {
       console.log("Login User Error: ", err);
       return res(ctx.status(400), ctx.json({ error: loginUserErrorMsg }));
@@ -51,12 +55,12 @@ const handlers = [
   rest.post(customClientFetch(registerUserUrl), async (req, res, ctx) => {
     try {
       const { name, email, password } = await req.json();
-      const { user, token } = await usersDB.registerUser({
+      const { user, accessToken } = await usersDB.registerUser({
         name,
         email,
         password,
       });
-      return res(ctx.json({ user, token }));
+      return res(ctx.json({ user, accessToken }));
     } catch (err) {
       console.log("Register User Error: ", err);
       return res(ctx.status(400), ctx.json({ error: registerUserErrorMsg }));
@@ -65,21 +69,32 @@ const handlers = [
 
   // UPDATE user
   rest.patch(customClientFetch(updateUserUrl), async (req, res, ctx) => {
-    // in render-utils.tsx, the auth token is set in loginAsUser()
-    // axios/customFetch gets the token and sets it in headers
-    // the mock api req uses the token -> the beauty of mock apis!
+    // in render-utils.tsx, the auth accessToken is set in loginAsUser()
+    // axios/customFetch gets the accessToken and sets it in headers
+    // the mock api req uses the accessToken -> the beauty of mock apis!
     try {
       const _user = await usersDB.getUserByToken(req);
       const userId = userHash(_user.email);
       const { name, email } = await req.json();
-      const { user, token } = await usersDB.updateUser(userId, {
+      const { user, accessToken } = await usersDB.updateUser(userId, {
         name,
         email,
       });
-      return res(ctx.json({ user, token }));
+      return res(ctx.json({ user, accessToken }));
     } catch (err) {
       console.log("Update User Error: ", err);
       return res(ctx.status(400), ctx.json({ error: updateUserErrorMsg }));
+    }
+  }),
+
+  // REFRESH token
+  rest.get(customClientFetch(refreshAccessTokenUrl), async (_, res, ctx) => {
+    try {
+      newAccessToken = usersDB.generateToken("fakeUserId");
+      return res(ctx.json({ accessToken: newAccessToken }));
+    } catch (err) {
+      console.log("Refresh Token Error: ", err);
+      return res(ctx.status(400), ctx.json({ error: refreshTokenErrorMsg }));
     }
   }),
 

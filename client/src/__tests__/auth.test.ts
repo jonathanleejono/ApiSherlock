@@ -1,17 +1,18 @@
+import { getToken, setToken } from "constants/token";
 import { baseUrl } from "constants/urls";
+import { newAccessToken } from "test/mocks/handlers";
 import { PathParams, rest, RestRequest, server } from "test/mocks/server";
 import customFetch from "utils/axios";
 
 const endpoint = "/test-endpoint";
 const mockResult = { mockValue: "VALUE" };
-const token = "FAKE_TOKEN";
+const accessToken = "FAKE_TOKEN";
 
 let request: RestRequest<never, PathParams<string>>;
 
 describe("testing MSW server and auth setup", () => {
-  test("adds auth token when a token is provided", async () => {
-    // "window" suffix isn't necessary, but can be left as reference
-    window.localStorage.setItem("token", token);
+  test("adds token when an accessToken is provided", async () => {
+    setToken(accessToken);
 
     // this mock api response must come before customFetch/axios fetches
     server.use(
@@ -21,10 +22,32 @@ describe("testing MSW server and auth setup", () => {
       })
     );
 
-    // the baseUrl in rest.get(`${baseUrl}${endpoint}`)
+    // the baseUrl above in rest.get(`${baseUrl}${endpoint}`)
     // must match the baseUrl in customFetch/axios
     await customFetch.get(endpoint);
 
-    expect(request.headers.get("Authorization")).toBe(`Bearer ${token}`);
+    expect(request.headers.get("Authorization")).toBe(`Bearer ${accessToken}`);
+
+    setToken(""); //reset token
+  });
+
+  test("refresh token activates when no accessToken is provided", async () => {
+    const emptyToken = await getToken();
+
+    expect(emptyToken).toBe("");
+
+    // this mock api response must come before customFetch/axios fetches
+    server.use(
+      rest.get(`${baseUrl}${endpoint}`, async (req, res, ctx) => {
+        request = req;
+        return res(ctx.json(mockResult));
+      })
+    );
+
+    await customFetch.get(endpoint);
+
+    expect(request.headers.get("Authorization")).toBe(
+      `Bearer ${newAccessToken}`
+    );
   });
 });

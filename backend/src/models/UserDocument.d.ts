@@ -6,7 +6,7 @@ export type ComparePasswordFunction = (
   dbPassword: string
 ) => Promise<boolean>;
 
-export type CreateJWTFunction = () => string;
+export type CreateJWTFunction = (jwtExpirationTime: string) => string;
 
 export interface User extends UnifiedModel {
   name: string;

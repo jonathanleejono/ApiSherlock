@@ -8,6 +8,7 @@ const supertest_1 = __importDefault(require("supertest"));
 const mockUser_1 = require("mocks/mockUser");
 const server_1 = __importDefault(require("server"));
 const urls_1 = require("constants/urls");
+const cookies_1 = require("constants/cookies");
 const user = {
     name: "jane",
     email: "janedoe2@gmail.com",
@@ -83,5 +84,21 @@ describe("testing users controller", () => {
             expect(loginResponse.statusCode).toBe(401);
         });
     });
+    describe("testing cookies", () => {
+        it("should show cookies in header", async () => {
+            const loginResponse = await (0, supertest_1.default)(server_1.default)
+                .post(`${urls_1.baseAuthUrl}${urls_1.loginUserUrl}`)
+                .send({
+                email: mockUser_1.mockUser.email,
+                password: mockUser_1.mockUser.password,
+            });
+            console.log(loginResponse);
+            const cookieHeader = loginResponse.headers["set-cookie"];
+            expect(loginResponse.statusCode).toBe(200);
+            expect(cookieHeader).toBeTruthy();
+            const cookie = cookieHeader[0];
+            expect(cookie).toContain(cookies_1.cookieName);
+        });
+    });
 });
-//# sourceMappingURL=users.test.js.map
+//# sourceMappingURL=auth.test.js.map

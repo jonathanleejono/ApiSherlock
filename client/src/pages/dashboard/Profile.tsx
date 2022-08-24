@@ -6,14 +6,11 @@ import {
   updateUserSuccessMsg,
 } from "constants/messages";
 import { clearStore, updateUser } from "features/user/userThunk";
+import { setToken } from "constants/token";
 import { handleToast } from "notifications/toast";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "state/hooks";
-import {
-  addUserToLocalStorage,
-  removeUserFromLocalStorage,
-} from "utils/localStorage";
 
 const Profile = () => {
   const dispatch = useAppDispatch();
@@ -45,10 +42,9 @@ const Profile = () => {
     );
 
     if (resp.data === "success") {
-      const { user, token } = resp.payload;
-      addUserToLocalStorage({ user, token });
+      const { accessToken } = resp.payload;
+      setToken(accessToken);
     } else if (resp.data === "error") {
-      removeUserFromLocalStorage();
       dispatch(clearStore());
     }
   };

@@ -12,6 +12,7 @@ const pingOneApiUrl = `${apiApiUrl}/pingOne`; // needs :id
 const registerUserUrl = `${authApiUrl}/register`;
 const loginUserUrl = `${authApiUrl}/login`;
 const updateUserUrl = `${authApiUrl}/updateUser`;
+const refreshAccessTokenUrl = `${authApiUrl}/refreshToken`;
 
 export {
   baseUrl,
@@ -27,4 +28,5 @@ export {
   registerUserUrl,
   loginUserUrl,
   updateUserUrl,
+  refreshAccessTokenUrl,
 };

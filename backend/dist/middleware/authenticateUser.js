@@ -11,9 +11,9 @@ const authenticateUser = async (req, res, next) => {
         (0, index_1.unAuthenticatedError)(res, "Authentication Invalid");
         return;
     }
-    const token = authHeader.split(" ")[1];
+    const accessToken = authHeader.split(" ")[1];
     try {
-        const payload = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+        const payload = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
         req.user = { userId: payload.userId };
         next();
     }

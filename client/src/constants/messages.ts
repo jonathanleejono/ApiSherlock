@@ -13,6 +13,8 @@ const registerUserErrorMsg = `Register user error, ${pleaseTryAgainLaterMsg}`;
 const updateUserSuccessMsg = `Updated profile!`;
 const updateUserErrorMsg = `Update user error, ${pleaseTryAgainLaterMsg}`;
 
+const refreshTokenErrorMsg = `Error in credentials, please login again`;
+
 const getAllApisErrorMsg = `Error fetching APIs, ${pleaseTryAgainLaterMsg}`;
 
 const createApiSuccessMsg = `API Added!`;
@@ -51,4 +53,5 @@ export {
   pingAllApisSuccessMsg,
   pingAllApisErrorMsg,
   pleaseFillOutAllValues,
+  refreshTokenErrorMsg,
 };

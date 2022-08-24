@@ -33,7 +33,9 @@ const createApi = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.CREATED).json(api);
     }
     catch (error) {
-        return error;
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.createApi = createApi;
@@ -82,7 +84,9 @@ const getAllApis = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json({ allApis, totalApis, numOfPages });
     }
     catch (error) {
-        return error;
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.getAllApis = getAllApis;
@@ -108,7 +112,9 @@ const updateApi = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json(updatedApi);
     }
     catch (error) {
-        return error;
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.updateApi = updateApi;
@@ -130,7 +136,9 @@ const deleteApi = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.deleteApiSuccessMsg);
     }
     catch (error) {
-        return error;
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.deleteApi = deleteApi;
@@ -151,7 +159,9 @@ const getApi = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json(api);
     }
     catch (error) {
-        return error;
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.getApi = getApi;
@@ -204,11 +214,12 @@ const showStats = async (req, res) => {
             })
                 .reverse();
         }
-        console.log("stats req: ", req);
         res.status(http_status_codes_1.StatusCodes.OK).json({ defaultStats, monthlyApis });
     }
     catch (error) {
-        return error;
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.showStats = showStats;

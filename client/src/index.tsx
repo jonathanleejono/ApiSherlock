@@ -7,6 +7,7 @@ import AppProviders from "app-context/app-providers";
 import "index.css";
 
 const { NODE_ENV, REACT_APP_MSW_DEV } = process.env;
+
 if (NODE_ENV === "development" && REACT_APP_MSW_DEV === "on") {
   worker.start();
 }

@@ -48,7 +48,9 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.CREATED).json(api);
   } catch (error) {
-    return error;
+    console.log(error);
+    badRequestError(res, error);
+    return;
   }
 };
 
@@ -125,7 +127,9 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json({ allApis, totalApis, numOfPages });
   } catch (error) {
-    return error;
+    console.log(error);
+    badRequestError(res, error);
+    return;
   }
 };
 
@@ -167,7 +171,9 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json(updatedApi);
   } catch (error) {
-    return error;
+    console.log(error);
+    badRequestError(res, error);
+    return;
   }
 };
 
@@ -195,7 +201,9 @@ const deleteApi = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json(deleteApiSuccessMsg);
   } catch (error) {
-    return error;
+    console.log(error);
+    badRequestError(res, error);
+    return;
   }
 };
 
@@ -221,7 +229,9 @@ const getApi = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json(api);
   } catch (error) {
-    return error;
+    console.log(error);
+    badRequestError(res, error);
+    return;
   }
 };
 
@@ -289,11 +299,11 @@ const showStats = async (req: Request, res: Response) => {
         .reverse();
     }
 
-    console.log("stats req: ", req);
-
     res.status(StatusCodes.OK).json({ defaultStats, monthlyApis });
   } catch (error) {
-    return error;
+    console.log(error);
+    badRequestError(res, error);
+    return;
   }
 };
 
