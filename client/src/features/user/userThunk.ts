@@ -9,7 +9,7 @@ import {
 import { loginUserUrl, registerUserUrl, updateUserUrl } from "constants/urls";
 import { clearAllApisState } from "features/allApis/allApisSlice";
 import { clearValues } from "features/api/apiSlice";
-import { logoutUser } from "features/user/userSlice";
+import { resetUserState } from "features/user/userSlice";
 import { ValidationErrors } from "interfaces/errors";
 import {
   AuthUserResponse,
@@ -19,7 +19,6 @@ import {
 } from "interfaces/users";
 import customFetch from "utils/axios";
 import { checkPermissions } from "utils/checkPermissions";
-import { removeUserFromLocalStorage } from "utils/localStorage";
 
 const registerUser = createAsyncThunk<
   // Return type of the payload creator
@@ -78,8 +77,7 @@ const clearStore = createAsyncThunk<
   }
 >(`${userSliceName}${clearStoreActionType}`, async (_, thunkAPI) => {
   try {
-    removeUserFromLocalStorage();
-    thunkAPI.dispatch(logoutUser());
+    thunkAPI.dispatch(resetUserState());
     thunkAPI.dispatch(clearAllApisState());
     thunkAPI.dispatch(clearValues());
     return Promise.resolve();

@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
 const cors_1 = __importDefault(require("cors"));
 const connect_1 = __importDefault(require("db/connect"));
@@ -16,12 +17,10 @@ const errorHandler_1 = __importDefault(require("middleware/errorHandler"));
 const notFoundRoute_1 = __importDefault(require("middleware/notFoundRoute"));
 const morgan_1 = __importDefault(require("morgan"));
 const apiRoutes_1 = __importDefault(require("routes/apiRoutes"));
+const authRoutes_1 = __importDefault(require("routes/authRoutes"));
 const seedDbRoutes_1 = __importDefault(require("routes/seedDbRoutes"));
-const userRoutes_1 = __importDefault(require("routes/userRoutes"));
 const xss_clean_1 = __importDefault(require("xss-clean"));
-const express_session_1 = __importDefault(require("express-session"));
-const connect_redis_1 = __importDefault(require("connect-redis"));
-const ioredis_1 = __importDefault(require("ioredis"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 if (process.env.NODE_ENV !== "production") {
@@ -31,27 +30,17 @@ app.use(express_1.default.json());
 app.use((0, helmet_1.default)());
 app.use((0, xss_clean_1.default)());
 app.use((0, express_mongo_sanitize_1.default)());
-app.use((0, cors_1.default)());
-const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
-const redis = new ioredis_1.default(process.env.REDIS_URL);
-app.set("trust proxy", process.env.NODE_ENV !== "production");
-app.use((0, express_session_1.default)({
-    name: "aid",
-    store: new RedisStore({ client: redis, disableTouch: true }),
-    cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
-        httpOnly: true,
-        sameSite: "lax",
-        secure: false,
-    },
-    secret: process.env.SECRET,
-    resave: false,
-    saveUninitialized: false,
+app.use((0, cors_1.default)({
+    origin: [
+        "http://localhost:3000",
+    ],
+    credentials: true,
 }));
+app.use((0, cookie_parser_1.default)());
 app.use(urls_1.pingHealthCheckUrl, (_, res) => {
-    res.send(urls_1.pingHealthCheckSuccessMsg);
+    res.send(messages_1.pingHealthCheckSuccessMsg);
 });
-app.use(`${urls_1.baseAuthUrl}`, userRoutes_1.default);
+app.use(`${urls_1.baseAuthUrl}`, authRoutes_1.default);
 app.use(`${urls_1.baseApiUrl}`, authenticateUser_1.default, apiRoutes_1.default);
 app.use(`${urls_1.baseSeedDbUrl}`, seedDbRoutes_1.default);
 app.use(notFoundRoute_1.default);

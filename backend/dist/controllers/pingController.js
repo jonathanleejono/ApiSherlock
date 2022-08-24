@@ -47,7 +47,9 @@ const pingAll = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingAllApisSuccessMsg);
     }
     catch (error) {
-        return error;
+        console.log(error);
+        (0, errors_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.pingAll = pingAll;
@@ -83,7 +85,9 @@ const pingOne = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingOneApiSuccessMsg);
     }
     catch (error) {
-        return error;
+        console.log(error);
+        (0, errors_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.pingOne = pingOne;

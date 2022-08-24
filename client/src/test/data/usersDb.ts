@@ -9,7 +9,6 @@ import {
 import { usersKey } from "constants/keys";
 import { Buffer } from "buffer";
 import { RestRequest, DefaultBodyType, PathParams } from "msw";
-import { removeUserFromLocalStorage } from "utils/localStorage";
 
 // the password is needed to be retrieved and compared
 let userInMemory: RegisterUserData = { name: "", email: "", password: "" };
@@ -66,8 +65,8 @@ async function registerUser({
   userInMemory = { name, email, password: passwordHash };
   persist();
   const user = await getUser();
-  const token = generateToken(_id);
-  return { user, token };
+  const accessToken = generateToken(_id);
+  return { user, accessToken };
 }
 
 // LOGIN
@@ -90,7 +89,7 @@ async function loginUser({
   if (user.password === userHash(password)) {
     return {
       user: showUserWithoutPassword(user),
-      token: generateToken(_id),
+      accessToken: generateToken(_id),
     };
   } else {
     const error = new BadRequestError("Invalid credentials");
@@ -106,13 +105,13 @@ async function updateUser(
   checkUserExists();
   Object.assign(userInMemory, updates);
   persist();
-  return { user: userInMemory, token: generateToken(_id) };
+  return { user: userInMemory, accessToken: generateToken(_id) };
 }
 
 // DELETE
 async function deleteUser() {
   checkUserExists();
-  removeUserFromLocalStorage();
+  userInMemory = { name: "", email: "", password: "" };
   persist();
 }
 
@@ -139,8 +138,8 @@ function showUserWithoutPassword(user: RegisterUserData): UserDataResponse {
 function generateToken(userId: string) {
   // make sure to install Buffer browser dependency
   // and import {Buffer} at the top
-  const token: string = Buffer.from(userId, "utf8").toString("base64");
-  return token;
+  const accessToken: string = Buffer.from(userId, "utf8").toString("base64");
+  return accessToken;
 }
 
 const getToken = (req: RestRequest<DefaultBodyType, PathParams<string>>) =>
@@ -149,14 +148,14 @@ const getToken = (req: RestRequest<DefaultBodyType, PathParams<string>>) =>
 async function getUserByToken(
   req: RestRequest<DefaultBodyType, PathParams<string>>
 ) {
-  const token = getToken(req);
-  if (!token) {
-    const error = new UnAuthenticatedError("A token must be provided");
+  const accessToken = getToken(req);
+  if (!accessToken) {
+    const error = new UnAuthenticatedError("A accessToken must be provided");
     throw error;
   }
   let userId;
   try {
-    userId = Buffer.from(token, "base64").toString("utf8");
+    userId = Buffer.from(accessToken, "base64").toString("utf8");
 
     const user = await getUser();
 
@@ -197,4 +196,5 @@ export {
   updateUser,
   deleteUser,
   resetDB,
+  generateToken,
 };

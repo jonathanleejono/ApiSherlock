@@ -15,10 +15,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "state/hooks";
 import { RootState } from "state/store";
-import {
-  addUserToLocalStorage,
-  removeUserFromLocalStorage,
-} from "utils/localStorage";
 
 const initialState = {
   name: "",
@@ -31,7 +27,9 @@ const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [values, setValues] = useState(initialState);
-  const { user, isLoading } = useAppSelector((store: RootState) => store.user);
+  const { userAuthenticated, isLoading } = useAppSelector(
+    (store: RootState) => store.user
+  );
   const { name, email, password, isMember } = values;
   const currentUser = { name, email, password };
 
@@ -73,13 +71,8 @@ const Register = () => {
     );
 
     if (resp.data === "success") {
-      const { user, token } = resp.payload;
-      console.log("redux user: ", user);
-      console.log("redux token: ", token);
-      setToken(token);
-      addUserToLocalStorage({ user, token });
-    } else if (resp.data === "error") {
-      removeUserFromLocalStorage();
+      const { accessToken } = resp.payload;
+      setToken(accessToken);
     }
   };
 
@@ -93,24 +86,18 @@ const Register = () => {
     );
 
     if (resp.data === "success") {
-      const { user, token } = resp.payload;
-      console.log("redux user: ", user);
-      console.log("redux token: ", token);
-      addUserToLocalStorage({ user, token });
-      // get the token from payload, and then save that to redux
-      // with dispatch(setToken(access_token))
-    } else if (resp.data === "error") {
-      removeUserFromLocalStorage();
+      const { accessToken } = resp.payload;
+      setToken(accessToken);
     }
   };
 
   useEffect(() => {
-    if (user) {
+    if (userAuthenticated) {
       setTimeout(() => {
         navigate("/");
       }, 3000);
     }
-  }, [user, navigate]);
+  }, [userAuthenticated, navigate]);
 
   return (
     <Wrapper className="full-page">

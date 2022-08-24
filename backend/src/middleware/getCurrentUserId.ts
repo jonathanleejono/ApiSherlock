@@ -4,10 +4,10 @@ interface JwtPayload {
   userId: string;
 }
 
-const getCurrentUserId = async (token: string) => {
+const getCurrentUserId = async (accessToken: string) => {
   try {
     const payload = jwt.verify(
-      token,
+      accessToken,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
 

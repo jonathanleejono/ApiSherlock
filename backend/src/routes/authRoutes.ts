@@ -1,8 +1,18 @@
 import express, { Response, Router } from "express";
-import { login, register, updateUser } from "controllers/usersController";
+import {
+  login,
+  refreshAccessToken,
+  register,
+  updateUser,
+} from "controllers/authController";
 import authenticateUser from "middleware/authenticateUser";
 import rateLimiter from "express-rate-limit";
-import { loginUserUrl, registerUserUrl, updateUserUrl } from "constants/urls";
+import {
+  loginUserUrl,
+  refreshAccessTokenUrl,
+  registerUserUrl,
+  updateUserUrl,
+} from "constants/urls";
 
 const router: Router = express.Router();
 
@@ -29,5 +39,6 @@ const loginLimiter = rateLimiter({
 router.route(`${registerUserUrl}`).post(registerLimiter, register);
 router.route(`${loginUserUrl}`).post(loginLimiter, login);
 router.route(`${updateUserUrl}`).patch(authenticateUser, updateUser);
+router.route(`${refreshAccessTokenUrl}`).get(refreshAccessToken);
 
 export default router;

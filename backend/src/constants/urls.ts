@@ -5,6 +5,7 @@ const baseSeedDbUrl = `/api/mockDb`;
 const registerUserUrl = `/register`;
 const loginUserUrl = `/login`;
 const updateUserUrl = `/updateUser`;
+const refreshAccessTokenUrl = `/refreshToken`;
 
 const createApiUrl = ``;
 const getAllApisUrl = ``;
@@ -24,7 +25,6 @@ const seedMockUsersDbUrl = `${seedDb}/users`;
 const seedMockApisDbUrl = `${seedDb}/api`;
 
 const pingHealthCheckUrl = `/api/ping`;
-const pingHealthCheckSuccessMsg = `hello world!`;
 
 export {
   baseAuthUrl,
@@ -46,5 +46,5 @@ export {
   pingAllApisUrl,
   pingOneApiUrl,
   pingHealthCheckUrl,
-  pingHealthCheckSuccessMsg,
+  refreshAccessTokenUrl,
 };

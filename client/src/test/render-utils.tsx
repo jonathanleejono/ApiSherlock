@@ -5,17 +5,17 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AppProviders from "app-context/app-providers";
+import { setToken } from "constants/token";
 import { AuthUserResponse } from "interfaces/users";
 import { ReactElement } from "react";
 import { buildMockUser } from "test/data/generateMockData";
 import * as usersDB from "test/data/usersDb";
-import { tokenKey } from "../constants/keys";
 
 async function render(
   ui: ReactElement,
   {
     route = "/landing",
-    authUser = { user: { name: "", email: "" }, token: "" },
+    authUser = { user: { name: "", email: "" }, accessToken: "" },
     ...renderOptions
   }: {
     route?: string;
@@ -43,7 +43,7 @@ async function loginAsUser() {
   const user = buildMockUser();
   await usersDB.registerUser(user);
   const authUser = await usersDB.loginUser(user);
-  window.localStorage.setItem(tokenKey, authUser.token);
+  setToken(authUser.accessToken);
   return authUser;
 }
 

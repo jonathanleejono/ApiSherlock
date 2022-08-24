@@ -64,9 +64,9 @@ describe("testing api controller", () => {
         email: mockUser.email,
         password: mockUser.password,
       });
-    const { token } = response.body;
-    currentUserId = await getCurrentUserId(token);
-    await agent.auth(token, { type: "bearer" });
+    const { accessToken } = response.body;
+    currentUserId = await getCurrentUserId(accessToken);
+    await agent.auth(accessToken, { type: "bearer" });
     await agent.delete(`${baseSeedDbUrl}${resetMockApisDbUrl}`);
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });
@@ -78,6 +78,9 @@ describe("testing api controller", () => {
 
   describe("testing apis", () => {
     it("should get all APIs", async (): Promise<void> => {
+      // give 3 seconds (3000 milliseconds) for database to update
+      await new Promise((res) => setTimeout(res, 3000));
+
       const response = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
 
       //reversed because in apiController, the array is sorted

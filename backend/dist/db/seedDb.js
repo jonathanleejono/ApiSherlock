@@ -71,7 +71,9 @@ const seedApiCollection = async (req, res) => {
             res.status(200).json({ msg: "DB seeded!" });
         }
         catch (error) {
-            return error;
+            console.log(error);
+            (0, index_1.badRequestError)(res, error);
+            return;
         }
     }
 };

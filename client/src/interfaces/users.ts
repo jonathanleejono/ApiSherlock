@@ -19,7 +19,7 @@ type UpdateUserData = UserDataResponse;
 
 interface AuthUserResponse {
   user: UserDataResponse;
-  token: string;
+  accessToken: string;
 }
 
 export {

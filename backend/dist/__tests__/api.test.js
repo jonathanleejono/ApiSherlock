@@ -65,9 +65,9 @@ describe("testing api controller", () => {
             email: mockUser_1.mockUser.email,
             password: mockUser_1.mockUser.password,
         });
-        const { token } = response.body;
-        currentUserId = await (0, getCurrentUserId_1.default)(token);
-        await agent.auth(token, { type: "bearer" });
+        const { accessToken } = response.body;
+        currentUserId = await (0, getCurrentUserId_1.default)(accessToken);
+        await agent.auth(accessToken, { type: "bearer" });
         await agent.delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockApisDbUrl}`);
         await agent.post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockApisDbUrl}`);
     });
@@ -77,6 +77,7 @@ describe("testing api controller", () => {
     });
     describe("testing apis", () => {
         it("should get all APIs", async () => {
+            await new Promise((res) => setTimeout(res, 3000));
             const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`);
             const responseAllApis = response.body.allApis.reverse();
             apiObjId = responseAllApis[0]._id;

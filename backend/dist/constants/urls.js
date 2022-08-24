@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pingHealthCheckSuccessMsg = exports.pingHealthCheckUrl = exports.pingOneApiUrl = exports.pingAllApisUrl = exports.getApiUrl = exports.editApiUrl = exports.deleteApiUrl = exports.getAllApisStatsUrl = exports.getAllApisUrl = exports.createApiUrl = exports.updateUserUrl = exports.loginUserUrl = exports.registerUserUrl = exports.seedMockApisDbUrl = exports.resetMockApisDbUrl = exports.seedMockUsersDbUrl = exports.resetMockUsersDbUrl = exports.baseSeedDbUrl = exports.baseApiUrl = exports.baseAuthUrl = void 0;
+exports.refreshAccessTokenUrl = exports.pingHealthCheckUrl = exports.pingOneApiUrl = exports.pingAllApisUrl = exports.getApiUrl = exports.editApiUrl = exports.deleteApiUrl = exports.getAllApisStatsUrl = exports.getAllApisUrl = exports.createApiUrl = exports.updateUserUrl = exports.loginUserUrl = exports.registerUserUrl = exports.seedMockApisDbUrl = exports.resetMockApisDbUrl = exports.seedMockUsersDbUrl = exports.resetMockUsersDbUrl = exports.baseSeedDbUrl = exports.baseApiUrl = exports.baseAuthUrl = void 0;
 const baseAuthUrl = `/api/auth`;
 exports.baseAuthUrl = baseAuthUrl;
 const baseApiUrl = `/api/api`;
@@ -13,6 +13,8 @@ const loginUserUrl = `/login`;
 exports.loginUserUrl = loginUserUrl;
 const updateUserUrl = `/updateUser`;
 exports.updateUserUrl = updateUserUrl;
+const refreshAccessTokenUrl = `/refreshToken`;
+exports.refreshAccessTokenUrl = refreshAccessTokenUrl;
 const createApiUrl = ``;
 exports.createApiUrl = createApiUrl;
 const getAllApisUrl = ``;
@@ -41,6 +43,4 @@ const seedMockApisDbUrl = `${seedDb}/api`;
 exports.seedMockApisDbUrl = seedMockApisDbUrl;
 const pingHealthCheckUrl = `/api/ping`;
 exports.pingHealthCheckUrl = pingHealthCheckUrl;
-const pingHealthCheckSuccessMsg = `hello world!`;
-exports.pingHealthCheckSuccessMsg = pingHealthCheckSuccessMsg;
 //# sourceMappingURL=urls.js.map

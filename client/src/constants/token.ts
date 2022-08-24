@@ -1,9 +1,9 @@
-let access_token: string;
+let accessToken: string;
 
 export function setToken(token: string): void {
-  access_token = token;
+  accessToken = token;
 }
 
 export async function getToken(): Promise<string> {
-  return access_token;
+  return accessToken;
 }

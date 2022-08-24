@@ -4,7 +4,7 @@ import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
 } from "constants/messages";
-import { notFoundError, unAuthenticatedError } from "errors";
+import { badRequestError, notFoundError, unAuthenticatedError } from "errors";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import checkPermissions from "middleware/checkPermissions";
@@ -57,7 +57,9 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
 
     res.status(StatusCodes.OK).json(pingAllApisSuccessMsg);
   } catch (error) {
-    return error;
+    console.log(error);
+    badRequestError(res, error);
+    return;
   }
 };
 
@@ -106,7 +108,9 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json(pingOneApiSuccessMsg);
   } catch (error) {
-    return error;
+    console.log(error);
+    badRequestError(res, error);
+    return;
   }
 };
 

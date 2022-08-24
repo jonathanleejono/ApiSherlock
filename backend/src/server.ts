@@ -1,8 +1,8 @@
+import { pingHealthCheckSuccessMsg } from "constants/messages";
 import {
   baseApiUrl,
   baseAuthUrl,
   baseSeedDbUrl,
-  pingHealthCheckSuccessMsg,
   pingHealthCheckUrl,
 } from "constants/urls";
 import cors from "cors";
@@ -17,12 +17,13 @@ import errorHandlerMiddleware from "middleware/errorHandler";
 import notFoundMiddleware from "middleware/notFoundRoute";
 import morgan from "morgan";
 import apiRouter from "routes/apiRoutes";
+import authRouter from "routes/authRoutes";
 import seedDbRouter from "routes/seedDbRoutes";
-import usersRouter from "routes/userRoutes";
 import xss from "xss-clean";
-import session from "express-session";
-import connectRedis from "connect-redis";
-import Redis from "ioredis";
+import cookieParser from "cookie-parser";
+// import session from "express-session";
+// import connectRedis from "connect-redis";
+// import Redis from "ioredis";
 
 const app = express();
 dotenv.config();
@@ -35,36 +36,51 @@ app.use(express.json());
 app.use(helmet());
 app.use(xss());
 app.use(mongoSanitize());
-app.use(cors());
-
-const RedisStore = connectRedis(session);
-const redis = new Redis(process.env.REDIS_URL as string);
-
-app.set("trust proxy", process.env.NODE_ENV !== "production");
+// app.use(cors());
 
 app.use(
-  session({
-    name: "aid",
-    store: new RedisStore({ client: redis, disableTouch: true }),
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-      httpOnly: true,
-      // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      // secure: process.env.NODE_ENV === "production" ? true : false,
-      sameSite: "lax",
-      secure: false,
-    },
-    secret: process.env.SECRET as string,
-    resave: false,
-    saveUninitialized: false,
+  cors({
+    origin: [
+      // process.env.CORS_ORIGIN as string,
+      // process.env.PING_CHECKER as string,
+      // process.env.STUDIO_APOLLO as string,
+      "http://localhost:3000",
+    ],
+    credentials: true,
   })
 );
+
+//make sure this is placed before routers
+app.use(cookieParser());
+
+// const RedisStore = connectRedis(session);
+// const redis = new Redis(process.env.REDIS_URL as string);
+
+// app.set("trust proxy", process.env.NODE_ENV !== "production");
+
+// app.use(
+//   session({
+//     name: "aid",
+//     store: new RedisStore({ client: redis, disableTouch: true }),
+//     cookie: {
+//       maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+//       httpOnly: true,
+//       // sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+//       // secure: process.env.NODE_ENV === "production" ? true : false,
+//       sameSite: "lax",
+//       secure: false,
+//     },
+//     secret: process.env.SECRET as string,
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
 
 app.use(pingHealthCheckUrl, (_, res) => {
   res.send(pingHealthCheckSuccessMsg);
 });
 
-app.use(`${baseAuthUrl}`, usersRouter);
+app.use(`${baseAuthUrl}`, authRouter);
 app.use(`${baseApiUrl}`, authenticateUser, apiRouter);
 app.use(`${baseSeedDbUrl}`, seedDbRouter);
 
