@@ -37,6 +37,7 @@ const mockUser_1 = require("mocks/mockUser");
 const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
 const supertest_1 = __importStar(require("supertest"));
+const apis_1 = require("enum/apis");
 const agent = (0, supertest_1.agent)(server_1.default);
 let currentUserId = "";
 let apiObjId;
@@ -89,7 +90,7 @@ describe("testing api controller", () => {
             expect(response.body.numOfPages).toEqual(Math.ceil(mockApis_1.mockApis.length / 10));
         });
         it("should get all APIs with query params", async () => {
-            const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}/?monitoring=off`);
+            const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}/?monitoring=${apis_1.ApiMonitoringOptions.OFF}`);
             testApiResponse.url = mockQueryParamApi.url;
             testApiResponse.host = mockQueryParamApi.host;
             testApiResponse.monitoring = mockQueryParamApi.monitoring;

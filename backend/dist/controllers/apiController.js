@@ -14,6 +14,7 @@ const validateKeys_1 = require("utils/validateKeys");
 const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const apis_1 = require("enum/apis");
 const createApi = async (req, res) => {
     try {
         const user = await (0, validateUserExists_1.default)(req, res);
@@ -61,16 +62,16 @@ const getAllApis = async (req, res) => {
         }
         let result = ApiCollection_1.default.find(queryObject);
         result = result.sort("-_id");
-        if (sort === "Latest") {
+        if (sort === apis_1.ApiSortOptions.Latest) {
             result = result.sort("-createdAt");
         }
-        if (sort === "Oldest") {
+        if (sort === apis_1.ApiSortOptions.Oldest) {
             result = result.sort("createdAt");
         }
-        if (sort === "A-Z") {
+        if (sort === apis_1.ApiSortOptions.A_Z) {
             result = result.sort("url");
         }
-        if (sort === "Z-A") {
+        if (sort === apis_1.ApiSortOptions.Z_A) {
             result = result.sort("-url");
         }
         const page = Number(req.query.page) || 1;
