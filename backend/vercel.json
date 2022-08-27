@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "output/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["output/**"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "output/server.js",
+      "methods": ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"]
+    }
+  ]
+}

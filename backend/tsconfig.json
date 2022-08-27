@@ -22,7 +22,22 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "typeRoots": ["src/types", "src/@types", "./node_modules/@types"],
-    "baseUrl": "src"
+    "baseUrl": "./src",
+    "paths": {
+      "constants": ["constants/*"],
+      "controllers": ["controllers/*"],
+      "db": ["db/*"],
+      "enum": ["enum/*"],
+      "errors": ["errors"],
+      "interfaces": ["interfaces/*"],
+      "middleware": ["middleware/*"],
+      "mocks": ["mocks/*"],
+      "models": ["models/*"],
+      "routes": ["routes/*"],
+      "test": ["test/*"],
+      "types": ["types/*"],
+      "utils": ["utils/*"]
+    }
   },
   "exclude": ["node_modules"],
   "include": ["src/**/*.ts", "xss-clean.d.ts"]

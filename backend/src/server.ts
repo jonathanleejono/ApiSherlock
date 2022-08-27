@@ -40,12 +40,7 @@ app.use(mongoSanitize());
 
 app.use(
   cors({
-    origin: [
-      // process.env.CORS_ORIGIN as string,
-      // process.env.PING_CHECKER as string,
-      // process.env.STUDIO_APOLLO as string,
-      "http://localhost:3000",
-    ],
+    origin: [process.env.CORS_ORIGIN as string],
     credentials: true,
   })
 );

@@ -31,9 +31,7 @@ app.use((0, helmet_1.default)());
 app.use((0, xss_clean_1.default)());
 app.use((0, express_mongo_sanitize_1.default)());
 app.use((0, cors_1.default)({
-    origin: [
-        "http://localhost:3000",
-    ],
+    origin: [process.env.CORS_ORIGIN],
     credentials: true,
 }));
 app.use((0, cookie_parser_1.default)());
