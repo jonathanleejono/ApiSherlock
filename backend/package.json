@@ -5,13 +5,14 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts --ignore client",
+    "dev2": "NODE_PATH=./dist nodemon --exec node ./dist/server.js --ignore client",
     "watch": "tsc -w",
     "server-prod": "NODE_PATH=./dist node ./dist/server.js",
     "server-redis": "concurrently --kill-others-on-fail \" redis-server\" \" npm run watch\" \" npm run dev\"",
     "server": "concurrently --kill-others-on-fail \" npm run watch\" \" npm run dev\"",
     "test": "jest --watchAll --detectOpenHandles",
     "test-handles": "jest --detectOpenHandles",
-    "test-only": "jest --watchAll --detectOpenHandles",
+    "test-only": "jest",
     "lint": "eslint ./"
   },
   "keywords": [],
