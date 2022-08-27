@@ -12,6 +12,7 @@ export interface User extends UnifiedModel {
   name: string;
   email: string;
   password: string;
+  timezoneGMT: number;
 }
 
 export default interface UserDocument extends User, mongoose.Document {

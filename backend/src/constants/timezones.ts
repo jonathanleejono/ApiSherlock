@@ -1,4 +1,4 @@
-const timezones = [
+export const timezones = [
   {
     value: "Dateline Standard Time",
     abbr: "DST",
@@ -1259,12 +1259,3 @@ const timezones = [
     utc: ["Pacific/Apia"],
   },
 ];
-
-console.log(timezones[0]);
-
-const test2 = timezones.map((tz) => ({
-  text: tz.text,
-  offset: tz.offset,
-}));
-
-console.log(test2);

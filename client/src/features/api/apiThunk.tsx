@@ -8,7 +8,7 @@ import {
 import { createApiUrl, deleteApiUrl, editApiUrl } from "constants/urls";
 import { hideLoading } from "features/allApis/allApisSlice";
 import { getAllApis } from "features/allApis/allApisThunk";
-import { clearValues } from "features/api/apiSlice";
+import { resetApiState } from "features/api/apiSlice";
 import { ApiDataResponse, ApiRequestData } from "interfaces/apis";
 import { ValidationErrors } from "interfaces/errors";
 import { AppDispatch } from "state/store";
@@ -64,7 +64,7 @@ const editApi = createAsyncThunk<
 >(`${apiSliceName}${editApiActionType}`, async ({ _id, api }, thunkAPI) => {
   try {
     const resp = await customFetch.patch(`${editApiUrl}/${_id}`, api);
-    thunkAPI.dispatch(clearValues());
+    thunkAPI.dispatch(resetApiState());
     return resp.data;
   } catch (error) {
     checkPermissions(error, thunkAPI);

@@ -25,15 +25,22 @@ import {
   registerUserUrl,
   updateUserUrl,
 } from "constants/urls";
+import { ApiStatusOptions } from "enum/apis";
 import { QueryParams } from "interfaces/apis";
 import { rest } from "msw";
 import * as apisDB from "test/data/apisDb";
 import * as usersDB from "test/data/usersDb";
 import { userHash } from "test/data/usersDb";
+import { constructDateTime } from "utils/datetime";
 
 const customClientFetch = (path: string) => `${baseUrl}${path}`.toString();
 
+//this is set in the "refresh token" handler
 export let newAccessToken: string;
+
+const { NODE_ENV } = process.env;
+
+const PROD_ENV = NODE_ENV === "production";
 
 const handlers = [
   // LOGIN user
@@ -44,7 +51,20 @@ const handlers = [
         email,
         password,
       });
-      return res(ctx.status(200), ctx.json({ user, accessToken }));
+
+      const userId = userHash(user.email);
+      const refreshToken = usersDB.generateToken(userId);
+
+      return res(
+        ctx.status(200),
+        ctx.json({ user, accessToken }),
+        ctx.cookie(usersDB.cookieName, refreshToken, {
+          maxAge: 1000 * 60 * 60 * 24,
+          httpOnly: true,
+          secure: PROD_ENV ? true : false,
+          sameSite: PROD_ENV ? "none" : "lax",
+        })
+      );
     } catch (err) {
       console.log("Login User Error: ", err);
       return res(ctx.status(400), ctx.json({ error: loginUserErrorMsg }));
@@ -54,13 +74,27 @@ const handlers = [
   // REGISTER user
   rest.post(customClientFetch(registerUserUrl), async (req, res, ctx) => {
     try {
-      const { name, email, password } = await req.json();
+      const { name, email, password, timezoneGMT } = await req.json();
       const { user, accessToken } = await usersDB.registerUser({
         name,
         email,
         password,
+        timezoneGMT,
       });
-      return res(ctx.json({ user, accessToken }));
+
+      const userId = userHash(user.email);
+      const refreshToken = usersDB.generateToken(userId);
+
+      return res(
+        ctx.status(201),
+        ctx.json({ user, accessToken }),
+        ctx.cookie(usersDB.cookieName, refreshToken, {
+          maxAge: 1000 * 60 * 60 * 24,
+          httpOnly: true,
+          secure: PROD_ENV ? true : false,
+          sameSite: PROD_ENV ? "none" : "lax",
+        })
+      );
     } catch (err) {
       console.log("Register User Error: ", err);
       return res(ctx.status(400), ctx.json({ error: registerUserErrorMsg }));
@@ -73,7 +107,7 @@ const handlers = [
     // axios/customFetch gets the accessToken and sets it in headers
     // the mock api req uses the accessToken -> the beauty of mock apis!
     try {
-      const _user = await usersDB.getUserByToken(req);
+      const _user = await usersDB.authenticateUser(req);
       const userId = userHash(_user.email);
       const { name, email } = await req.json();
       const { user, accessToken } = await usersDB.updateUser(userId, {
@@ -101,7 +135,13 @@ const handlers = [
   //   GET allApis
   rest.get(customClientFetch(`${getAllApisUrl}`), async (req, res, ctx) => {
     try {
-      const queryObject: QueryParams = {
+      type QueryParamsOptions = {
+        [key: string]: string | number;
+      };
+
+      interface CustomQueryParams extends QueryParams, QueryParamsOptions {}
+
+      const queryObject: CustomQueryParams = {
         sort: "",
         page: 1,
         monitoring: "",
@@ -128,7 +168,7 @@ const handlers = [
         }
       });
 
-      const user = await usersDB.getUserByToken(req);
+      const user = await usersDB.authenticateUser(req);
       const userId = userHash(user.email);
       const { allApis, totalApis, numOfPages } = await apisDB.getAllApis(
         userId,
@@ -144,7 +184,7 @@ const handlers = [
   //   GET allApis STATS
   rest.get(customClientFetch(getAllApisStatsUrl), async (req, res, ctx) => {
     try {
-      const user = await usersDB.getUserByToken(req);
+      const user = await usersDB.authenticateUser(req);
       const userId = userHash(user.email);
       const { defaultStats, monthlyApis } = await apisDB.getAllApisStats(
         userId
@@ -160,18 +200,18 @@ const handlers = [
   rest.post(customClientFetch(createApiUrl), async (req, res, ctx) => {
     try {
       const { url, host, monitoring } = await req.json();
-      const user = await usersDB.getUserByToken(req);
+      const user = await usersDB.authenticateUser(req);
       const userId = userHash(user.email);
       const createdApi = await apisDB.createApi({
         _id: faker.datatype.uuid(),
         createdBy: userId,
         url: url,
         host: host,
-        status: "pending",
+        status: ApiStatusOptions.Pending,
         lastPinged: "Never pinged",
         monitoring: monitoring,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        createdAt: constructDateTime(),
+        updatedAt: constructDateTime(),
         __v: 0,
       });
 
@@ -185,7 +225,7 @@ const handlers = [
   // UPDATE api
   rest.patch(customClientFetch(`${editApiUrl}/:id`), async (req, res, ctx) => {
     try {
-      const user = await usersDB.getUserByToken(req);
+      const user = await usersDB.authenticateUser(req);
       const userId = userHash(user.email);
       const { id } = req.params;
       const apiId = id as string;
@@ -204,7 +244,7 @@ const handlers = [
     customClientFetch(`${deleteApiUrl}/:id`),
     async (req, res, ctx) => {
       try {
-        const user = await usersDB.getUserByToken(req);
+        const user = await usersDB.authenticateUser(req);
         const userId = userHash(user.email);
         const { id } = req.params;
         const apiId = id as string;
@@ -221,7 +261,7 @@ const handlers = [
   // PING allApis
   rest.post(customClientFetch(pingAllApisUrl), async (req, res, ctx) => {
     try {
-      const user = await usersDB.getUserByToken(req);
+      const user = await usersDB.authenticateUser(req);
       const userId = userHash(user.email);
       const resp = await apisDB.pingAllApis(userId);
       return res(ctx.status(200), ctx.json({ msg: resp.msg }));
@@ -236,7 +276,7 @@ const handlers = [
     customClientFetch(`${pingOneApiUrl}/:id`),
     async (req, res, ctx) => {
       try {
-        const user = await usersDB.getUserByToken(req);
+        const user = await usersDB.authenticateUser(req);
         const userId = userHash(user.email);
         const { id } = req.params;
         const apiId = id as string;

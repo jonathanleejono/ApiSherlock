@@ -3,9 +3,12 @@ import PropTypes, { InferProps } from "prop-types";
 const propTypes = {
   labelText: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   handleChange: PropTypes.func.isRequired,
-  list: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+  list: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.string.isRequired),
+    PropTypes.arrayOf(PropTypes.number.isRequired),
+  ]).isRequired,
 };
 
 type FormRowSelectProps = InferProps<typeof propTypes>;

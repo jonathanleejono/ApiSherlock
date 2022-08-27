@@ -78,6 +78,18 @@ test("user can register", async () => {
   expect(emailField.value).toBe(fakeEmail);
   expect(passwordField.value).toBe(fakePassword);
 
+  const timezoneOptions = screen.getByRole("combobox", {
+    name: /timezone/i,
+  });
+
+  const timezoneSelection = screen.getByRole("option", {
+    name: "-4",
+  }) as any;
+
+  await userEvent.selectOptions(timezoneOptions, timezoneSelection);
+
+  expect(timezoneSelection.selected).toBe(true);
+
   const submitButton = screen.getByRole("button", { name: "submit" });
 
   await userEvent.click(submitButton);

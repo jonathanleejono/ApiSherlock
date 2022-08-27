@@ -10,7 +10,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const mockApis_1 = require("mocks/mockApis");
 const mockUser_1 = require("mocks/mockUser");
 const index_1 = require("errors/index");
-const validateUser_1 = __importDefault(require("middleware/validateUser"));
+const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 dotenv_1.default.config();
 const resetUsersCollection = async (_, res) => {
     if (process.env.NODE_ENV !== "testing") {
@@ -34,14 +34,14 @@ const resetApiCollection = async (_, res) => {
     }
 };
 exports.resetApiCollection = resetApiCollection;
-const { name, email, password } = mockUser_1.mockUser;
+const { name, email, password, timezoneGMT } = mockUser_1.mockUser;
 const seedUsersCollection = async (_, res) => {
     if (process.env.NODE_ENV !== "testing") {
         (0, index_1.badRequestError)(res, "Can only seed db in testing");
         return;
     }
     else {
-        await UserCollection_1.default.create({ name, email, password });
+        await UserCollection_1.default.create({ name, email, password, timezoneGMT });
         res.status(201).json({ msg: "DB seeded!" });
     }
 };
@@ -53,7 +53,7 @@ const seedApiCollection = async (req, res) => {
     }
     else {
         try {
-            const user = await (0, validateUser_1.default)(req, res);
+            const user = await (0, validateUserExists_1.default)(req, res);
             if (!user) {
                 (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
                 return;

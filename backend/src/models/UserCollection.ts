@@ -3,6 +3,7 @@ import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import UserDocument from "models/UserDocument";
+import { timezoneOffsets } from "constants/timezoneOffsets";
 
 const UserSchema: Schema<UserDocument> = new mongoose.Schema({
   name: {
@@ -25,6 +26,11 @@ const UserSchema: Schema<UserDocument> = new mongoose.Schema({
     required: [true, "Please provide password"],
     minlength: 6,
     select: false,
+  },
+  timezoneGMT: {
+    type: Number,
+    enum: timezoneOffsets,
+    default: 0,
   },
 });
 

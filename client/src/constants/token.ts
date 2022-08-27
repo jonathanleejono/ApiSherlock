@@ -1,9 +1,9 @@
-let accessToken: string;
+let accessToken: string | null;
 
-export function setToken(token: string): void {
+export function setToken(token: string | null): void {
   accessToken = token;
 }
 
-export async function getToken(): Promise<string> {
+export async function getToken(): Promise<string | null> {
   return accessToken;
 }

@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/extend-expect";
-import { allApisKey, usersKey } from "constants/keys";
+import { testAllApisKey, testUserKey } from "constants/keys";
 import * as apisDB from "test/data/apisDb";
 import * as usersDB from "test/data/usersDb";
 import { server } from "test/mocks/server";
@@ -14,8 +14,8 @@ beforeAll(() => {
   // Enable the mocking in tests.
   // Bypass to ignore pingAll/pingOne axios fetches
   server.listen({ onUnhandledRequest: "bypass" });
-  localStorage.removeItem(usersKey);
-  localStorage.removeItem(allApisKey);
+  localStorage.removeItem(testUserKey);
+  localStorage.removeItem(testAllApisKey);
 });
 
 afterEach(async () => {
@@ -27,7 +27,8 @@ afterEach(async () => {
 afterAll(async () => {
   // Clean up once the tests are done.
   server.close();
-  localStorage.removeItem(usersKey);
-  localStorage.removeItem(allApisKey);
-  setToken("");
+  localStorage.removeItem(testUserKey);
+  localStorage.removeItem(testAllApisKey);
+  localStorage.removeItem("MSW_COOKIE_STORE");
+  setToken(null);
 });

@@ -4,20 +4,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.showStats = exports.getApi = exports.updateApi = exports.getAllApis = exports.deleteApi = exports.createApi = void 0;
+const datetime_1 = require("utils/datetime");
+const keys_1 = require("constants/keys");
 const messages_1 = require("constants/messages");
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");
-const checkPermissions_1 = __importDefault(require("middleware/checkPermissions"));
-const validateUser_1 = __importDefault(require("middleware/validateUser"));
+const checkPermissions_1 = __importDefault(require("utils/checkPermissions"));
+const validateKeys_1 = require("utils/validateKeys");
+const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
-const moment_1 = __importDefault(require("moment"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const validateKeys_1 = require("middleware/validateKeys");
-const keys_1 = require("constants/keys");
-const datetime_1 = require("constants/datetime");
 const createApi = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
+        const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -41,7 +40,7 @@ const createApi = async (req, res) => {
 exports.createApi = createApi;
 const getAllApis = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
+        const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -92,7 +91,7 @@ const getAllApis = async (req, res) => {
 exports.getAllApis = getAllApis;
 const updateApi = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
+        const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -120,7 +119,7 @@ const updateApi = async (req, res) => {
 exports.updateApi = updateApi;
 const deleteApi = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
+        const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -144,7 +143,7 @@ const deleteApi = async (req, res) => {
 exports.deleteApi = deleteApi;
 const getApi = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
+        const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -165,11 +164,11 @@ const getApi = async (req, res) => {
     }
 };
 exports.getApi = getApi;
-let monthlyApis = [{ date: datetime_1.currentMonthYear, count: 0 }];
+let monthlyApis = [{ date: "", count: 0 }];
 const showStats = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
-        if (!user) {
+        const user = await (0, validateUserExists_1.default)(req, res);
+        if (!user || !user._id) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
@@ -206,10 +205,7 @@ const showStats = async (req, res) => {
             monthlyApis = aggregate
                 .map((item) => {
                 const { _id: { year, month }, count, } = item;
-                const date = (0, moment_1.default)()
-                    .month(month - 1)
-                    .year(year)
-                    .format("MMM Y");
+                const date = (0, datetime_1.formatCurrentMonthYear)(year, month);
                 return { date, count };
             })
                 .reverse();

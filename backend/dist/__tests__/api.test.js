@@ -28,7 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
-const getCurrentUserId_1 = __importDefault(require("middleware/getCurrentUserId"));
+const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const mockApi_1 = require("mocks/mockApi");
 const mockApis_1 = require("mocks/mockApis");
 const mockApisStats_1 = require("mocks/mockApisStats");
@@ -67,7 +67,8 @@ describe("testing api controller", () => {
         });
         const { accessToken } = response.body;
         currentUserId = await (0, getCurrentUserId_1.default)(accessToken);
-        await agent.auth(accessToken, { type: "bearer" });
+        const cookie = response.header["set-cookie"];
+        await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
         await agent.delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockApisDbUrl}`);
         await agent.post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockApisDbUrl}`);
     });
@@ -135,12 +136,6 @@ describe("testing api controller", () => {
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining(mockApisStats_1.mockApisStats));
         });
-        it("should throw unauthenticated error with wrong token", async () => {
-            const response = await agent
-                .get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`)
-                .set("Authorization", `Bearer INVALID_TOKEN`);
-            expect(response.statusCode).toBe(401);
-        });
         describe("testing the pinging of APIs", () => {
             it("should ping api", async () => {
                 const pingResponse = await agent.post(`${urls_1.baseApiUrl}${urls_1.pingOneApiUrl}/${apiObjId}`);
@@ -164,6 +159,20 @@ describe("testing api controller", () => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body.allApis.reverse()).toMatchObject(mockUpdatedApis_1.mockUpdatedApis);
             }, 30000);
+        });
+        describe("testing auth for api routes", () => {
+            it("should throw unauthenticated error with wrong token", async () => {
+                const response = await agent
+                    .get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`)
+                    .set("Authorization", `Bearer INVALID_TOKEN`);
+                expect(response.statusCode).toBe(401);
+            });
+        });
+        it("should throw unauthenticated error with wrong cookie", async () => {
+            const response = await agent
+                .get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`)
+                .set("Cookie", `STALE_COOKIE`);
+            expect(response.statusCode).toBe(401);
         });
     });
 });

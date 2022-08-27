@@ -1,15 +1,17 @@
 import Wrapper from "assets/wrappers/Navbar";
 import Logo from "components/Logo";
-import { setToken } from "constants/token";
+import { landingRoute } from "constants/routes";
 import { toggleSidebar } from "features/user/userSlice";
 import { clearStore } from "features/user/userThunk";
 import { useState } from "react";
 import { FaAlignLeft, FaCaretDown, FaUserCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [showLogout, setShowLogout] = useState(false);
   const { user } = useAppSelector((store) => store.user);
 
@@ -19,7 +21,7 @@ const Navbar: React.FC = () => {
 
   const logout = async () => {
     dispatch(clearStore());
-    setToken("");
+    navigate(landingRoute);
     toast.success("Logging out...");
   };
 

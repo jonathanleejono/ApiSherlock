@@ -5,6 +5,7 @@ interface UserBaseData {
 interface RegisterUserData extends UserBaseData {
   name: string;
   password: string;
+  timezoneGMT: number;
 }
 
 interface LoginUserData extends UserBaseData {
@@ -13,12 +14,16 @@ interface LoginUserData extends UserBaseData {
 
 interface UserDataResponse extends UserBaseData {
   name: string;
+  timezoneGMT: number;
 }
 
 type UpdateUserData = UserDataResponse;
 
-interface AuthUserResponse {
+interface AuthUser {
   user: UserDataResponse;
+}
+
+interface AuthUserResponse extends AuthUser {
   accessToken: string;
 }
 
@@ -26,6 +31,7 @@ export {
   UserBaseData,
   RegisterUserData,
   LoginUserData,
+  AuthUser,
   AuthUserResponse,
   UserDataResponse,
   UpdateUserData,

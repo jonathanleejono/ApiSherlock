@@ -1,16 +1,22 @@
+import {
+  ApiHostOptions,
+  ApiMonitoringOptions,
+  ApiStatusOptions,
+} from "enum/apis";
+
 interface ApiRequestData {
   url: string;
-  host: "AWS" | "GCP" | "Azure" | "Heroku" | "DigitalOcean" | "Other";
-  monitoring: "on" | "off";
+  host: ApiHostOptions;
+  monitoring: ApiMonitoringOptions;
 }
 
 interface ApiDataResponse extends ApiRequestData {
   _id: string;
-  status: "healthy" | "unhealthy" | "pending";
-  lastPinged: number | "Never pinged";
+  status: ApiStatusOptions;
+  lastPinged: string | "Never pinged";
   createdBy: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: string;
+  updatedAt: string;
   __v: number;
 }
 
@@ -33,23 +39,19 @@ interface MonthlyApis {
 
 interface AllApisStatsResponse {
   defaultStats: ApiDefaultStats;
-  // the backend output for monthlyApis is an array
-  monthlyApis: [MonthlyApis];
+  monthlyApis: MonthlyApis[];
 }
 
-type QueryParamsOptions = {
-  [key: string]: string | number;
-};
-
-interface QueryParams extends QueryParamsOptions {
+interface QueryParams {
   sort: string;
   page: number;
-  monitoring: "on" | "off" | "" | "All";
-  status: "healthy" | "unhealthy" | "pending" | "" | "All";
+  monitoring: ApiMonitoringOptions | "" | "All";
+  status: ApiStatusOptions | "" | "All";
   search: string;
 }
 
 export {
+  ApiMonitoringOptions,
   ApiDataResponse,
   AllApisResponse,
   ApiRequestData,

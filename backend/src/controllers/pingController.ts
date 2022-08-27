@@ -1,5 +1,5 @@
 import axios from "axios";
-import { currentDayYearHour } from "constants/datetime";
+import { getDateWithUTCOffset } from "utils/datetime";
 import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
@@ -7,13 +7,13 @@ import {
 import { badRequestError, notFoundError, unAuthenticatedError } from "errors";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import checkPermissions from "middleware/checkPermissions";
-import validateUser from "middleware/validateUser";
+import checkPermissions from "utils/checkPermissions";
+import validateUserExists from "utils/validateUserExists";
 import ApiCollection from "models/ApiCollection";
 
 const pingAll = async (req: Request, res: Response): Promise<any> => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -36,7 +36,10 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
         if (res && res.status === 200) {
           await ApiCollection.findOneAndUpdate(
             { _id: allApisToMonitor[index].id },
-            { status: "healthy", lastPinged: currentDayYearHour },
+            {
+              status: "healthy",
+              lastPinged: getDateWithUTCOffset(user.timezoneGMT),
+            },
             {
               new: true,
               runValidators: true,
@@ -46,7 +49,10 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
       } catch (error) {
         await ApiCollection.findOneAndUpdate(
           { _id: allApisToMonitor[index].id },
-          { status: "unhealthy", lastPinged: currentDayYearHour },
+          {
+            status: "unhealthy",
+            lastPinged: getDateWithUTCOffset(user.timezoneGMT),
+          },
           {
             new: true,
             runValidators: true,
@@ -65,7 +71,7 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
 
 const pingOne = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -88,7 +94,10 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
       if (res && res.status === 200) {
         await ApiCollection.findOneAndUpdate(
           { _id: api.id },
-          { status: "healthy", lastPinged: currentDayYearHour },
+          {
+            status: "healthy",
+            lastPinged: getDateWithUTCOffset(user.timezoneGMT),
+          },
           {
             new: true,
             runValidators: true,
@@ -98,7 +107,10 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
     } catch (error) {
       await ApiCollection.findOneAndUpdate(
         { _id: api.id },
-        { status: "unhealthy", lastPinged: currentDayYearHour },
+        {
+          status: "unhealthy",
+          lastPinged: getDateWithUTCOffset(user.timezoneGMT),
+        },
         {
           new: true,
           runValidators: true,

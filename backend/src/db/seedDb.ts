@@ -1,20 +1,19 @@
 import { Request, Response } from "express";
 import ApiCollection from "models/ApiCollection";
 import UserCollection from "models/UserCollection";
-
 import dotenv from "dotenv";
 import { mockApis } from "mocks/mockApis";
 import { mockUser } from "mocks/mockUser";
 import { badRequestError, unAuthenticatedError } from "errors/index";
-import validateUser from "middleware/validateUser";
+import validateUserExists from "utils/validateUserExists";
+
 dotenv.config();
-// can also add dotenv validation packages
 
 const resetUsersCollection = async (
   _: Request,
   res: Response
 ): Promise<void> => {
-  if (process.env.NODE_ENV !== "testing") {
+  if (process.env.NODE_ENV !== "test") {
     badRequestError(res, "Can only seed db in testing");
     return;
   } else {
@@ -24,7 +23,7 @@ const resetUsersCollection = async (
 };
 
 const resetApiCollection = async (_: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV !== "testing") {
+  if (process.env.NODE_ENV !== "test") {
     badRequestError(res, "Can only seed db in testing");
     return;
   } else {
@@ -33,17 +32,17 @@ const resetApiCollection = async (_: Request, res: Response): Promise<void> => {
   }
 };
 
-const { name, email, password } = mockUser;
+const { name, email, password, timezoneGMT } = mockUser;
 
 const seedUsersCollection = async (
   _: Request,
   res: Response
 ): Promise<void> => {
-  if (process.env.NODE_ENV !== "testing") {
+  if (process.env.NODE_ENV !== "tes") {
     badRequestError(res, "Can only seed db in testing");
     return;
   } else {
-    await UserCollection.create({ name, email, password });
+    await UserCollection.create({ name, email, password, timezoneGMT });
     res.status(201).json({ msg: "DB seeded!" });
   }
 };
@@ -52,12 +51,12 @@ const seedApiCollection = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  if (process.env.NODE_ENV !== "testing") {
+  if (process.env.NODE_ENV !== "test") {
     badRequestError(res, "Can only seed db in testing");
     return;
   } else {
     try {
-      const user = await validateUser(req, res);
+      const user = await validateUserExists(req, res);
 
       if (!user) {
         unAuthenticatedError(res, "Invalid Credentials");

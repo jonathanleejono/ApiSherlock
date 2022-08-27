@@ -2,7 +2,7 @@ import { unAuthenticatedError } from "errors";
 import { Request, Response } from "express";
 import UserCollection from "models/UserCollection";
 
-const validateUser = async (req: Request, res: Response) => {
+const validateUserExists = async (req: Request, res: Response) => {
   if (!req.user) {
     unAuthenticatedError(res, "Unauthenticated action");
     return;
@@ -25,4 +25,4 @@ const validateUser = async (req: Request, res: Response) => {
   return user;
 };
 
-export default validateUser;
+export default validateUserExists;

@@ -5,8 +5,9 @@ import {
   editApiSuccessMsg,
   pleaseFillOutAllValues,
 } from "constants/messages";
+import { apiHostOptions, apiMonitoringOptions } from "constants/options";
 import { allApisRoute } from "constants/routes";
-import { clearValues, handleChange } from "features/api/apiSlice";
+import { handleApiInput, resetApiState } from "features/api/apiSlice";
 import { editApi } from "features/api/apiThunk";
 import { handleToast } from "notifications/toast";
 import { useNavigate } from "react-router-dom";
@@ -14,19 +15,12 @@ import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const EditApi = () => {
-  const {
-    isLoading,
-    monitoring,
-    monitoringOptions,
-    url,
-    host,
-    hostOptions,
-    apiId,
-  } = useAppSelector((store) => store.api);
-
   const navigate = useNavigate();
-
   const dispatch = useAppDispatch();
+
+  const { isLoading, monitoring, url, host, apiId } = useAppSelector(
+    (store) => store.api
+  );
 
   const handleSubmit = async (event: React.FormEvent<EventTarget>) => {
     event.preventDefault();
@@ -56,7 +50,7 @@ const EditApi = () => {
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    dispatch(handleChange({ name, value }));
+    dispatch(handleApiInput({ name, value }));
   };
 
   return (
@@ -78,7 +72,7 @@ const EditApi = () => {
             name="host"
             value={host}
             handleChange={handleInput}
-            list={hostOptions}
+            list={apiHostOptions}
           />
           {/* API Monitoring (ie. auto ping) */}
           <FormRowSelect
@@ -86,7 +80,7 @@ const EditApi = () => {
             name="monitoring"
             value={monitoring}
             handleChange={handleInput}
-            list={monitoringOptions}
+            list={apiMonitoringOptions}
           />
 
           <div className="btn-container">
@@ -103,7 +97,7 @@ const EditApi = () => {
               className="btn btn-block clear-btn"
               onClick={(e) => {
                 e.preventDefault();
-                dispatch(clearValues());
+                dispatch(resetApiState());
               }}
             >
               clear

@@ -6,21 +6,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.refreshAccessToken = exports.updateUser = exports.login = exports.register = void 0;
 const cookies_1 = require("constants/cookies");
 const keys_1 = require("constants/keys");
+const timezoneOffsets_1 = require("constants/timezoneOffsets");
 const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const validateKeys_1 = require("middleware/validateKeys");
-const validateUser_1 = __importDefault(require("middleware/validateUser"));
+const validateKeys_1 = require("utils/validateKeys");
+const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const UserCollection_1 = __importDefault(require("models/UserCollection"));
 dotenv_1.default.config();
 const { JWT_ACCESS_TOKEN_LIFETIME, JWT_REFRESH_TOKEN_LIFETIME } = process.env;
 const register = async (req, res) => {
     try {
         (0, validateKeys_1.validateInputKeys)(req, res, `Invalid register, can only use: `, keys_1.validRegisterKeys);
-        const { name, email, password } = req.body;
+        const { name, email, password, timezoneGMT } = req.body;
         if (!name || !email || !password) {
             (0, index_1.badRequestError)(res, "Please provide all values");
+            return;
+        }
+        if (!timezoneOffsets_1.timezoneOffsets.includes(timezoneGMT)) {
+            (0, index_1.badRequestError)(res, `Invalid timezone, please select one of: ${timezoneOffsets_1.timezoneOffsets}`);
             return;
         }
         const emailAlreadyExists = await UserCollection_1.default.findOne({ email });
@@ -28,7 +33,12 @@ const register = async (req, res) => {
             (0, index_1.badRequestError)(res, "Please use a different email");
             return;
         }
-        const user = await UserCollection_1.default.create({ name, email, password });
+        const user = await UserCollection_1.default.create({
+            name,
+            email,
+            password,
+            timezoneGMT,
+        });
         const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME);
         const refreshToken = user.createJWT(JWT_REFRESH_TOKEN_LIFETIME);
         res
@@ -43,6 +53,7 @@ const register = async (req, res) => {
             user: {
                 email: user.email,
                 name: user.name,
+                timezoneGMT: user.timezoneGMT,
             },
             accessToken,
         });
@@ -87,6 +98,7 @@ const login = async (req, res) => {
             user: {
                 email: user.email,
                 name: user.name,
+                timezoneGMT: user.timezoneGMT,
             },
             accessToken,
         });
@@ -100,15 +112,19 @@ const login = async (req, res) => {
 exports.login = login;
 const updateUser = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
+        const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
         (0, validateKeys_1.validateInputKeys)(req, res, `Invalid update, can only update: `, keys_1.validUpdateKeys);
-        const { email, name } = req.body;
-        if (!email || !name) {
+        const { email, name, timezoneGMT } = req.body;
+        if (!email || !name || !timezoneGMT) {
             (0, index_1.badRequestError)(res, "Please provide all values");
+            return;
+        }
+        if (!timezoneOffsets_1.timezoneOffsets.includes(timezoneGMT)) {
+            (0, index_1.badRequestError)(res, `Invalid timezone, please select one of: ${timezoneOffsets_1.timezoneOffsets}`);
             return;
         }
         if (user.email !== email) {
@@ -120,6 +136,7 @@ const updateUser = async (req, res) => {
         }
         user.email = email;
         user.name = name;
+        user.timezoneGMT = timezoneGMT;
         await user.save();
         const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME);
         const refreshToken = user.createJWT(JWT_REFRESH_TOKEN_LIFETIME);
@@ -135,6 +152,7 @@ const updateUser = async (req, res) => {
             user: {
                 email: user.email,
                 name: user.name,
+                timezoneGMT: user.timezoneGMT,
             },
             accessToken,
         });

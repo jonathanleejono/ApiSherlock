@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { UserDataResponse } from "interfaces/users";
 import { loginUser, registerUser, updateUser } from "features/user/userThunk";
 import { userSliceName } from "constants/actionTypes";
+import { getUserFromLocalStorage } from "utils/localStorage";
 
 interface UsersState {
   isLoading: boolean;
@@ -13,7 +14,7 @@ interface UsersState {
 const initialState: UsersState = {
   isLoading: false,
   isSidebarOpen: false,
-  user: { name: "", email: "" },
+  user: getUserFromLocalStorage(),
   userAuthenticated: false,
 };
 
@@ -35,8 +36,7 @@ const userSlice = createSlice({
       builder.addCase(registerUser.fulfilled, (state, { payload }) => {
         state.isLoading = false;
         const { user } = payload;
-        state.user["name"] = user.name;
-        state.user["email"] = user.email;
+        state.user = user;
         state.userAuthenticated = true;
       }),
       builder.addCase(registerUser.rejected, (state) => {
@@ -49,8 +49,7 @@ const userSlice = createSlice({
       builder.addCase(loginUser.fulfilled, (state, { payload }) => {
         state.isLoading = false;
         const { user } = payload;
-        state.user["name"] = user.name;
-        state.user["email"] = user.email;
+        state.user = user;
         state.userAuthenticated = true;
       }),
       builder.addCase(loginUser.rejected, (state) => {
@@ -63,8 +62,7 @@ const userSlice = createSlice({
       builder.addCase(updateUser.fulfilled, (state, { payload }) => {
         state.isLoading = false;
         const { user } = payload;
-        state.user["name"] = user.name;
-        state.user["email"] = user.email;
+        state.user = user;
         state.userAuthenticated = true;
       }),
       builder.addCase(updateUser.rejected, (state) => {

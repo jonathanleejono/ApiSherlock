@@ -21,7 +21,7 @@ import {
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
 } from "constants/urls";
-import getCurrentUserId from "middleware/getCurrentUserId";
+import getCurrentUserId from "utils/getCurrentUserId";
 import { mockApi } from "mocks/mockApi";
 import { mockApis } from "mocks/mockApis";
 import { mockApisStats } from "mocks/mockApisStats";
@@ -30,6 +30,7 @@ import { mockUser } from "mocks/mockUser";
 import mongoose from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
+import { ApiMonitoringOptions } from "enum/apis";
 
 const agent = supertest(app);
 
@@ -65,8 +66,13 @@ describe("testing api controller", () => {
         password: mockUser.password,
       });
     const { accessToken } = response.body;
+
+    // req.user.userId isn't present in supertest,
+    // which is why a getCurrentUserId function is used
     currentUserId = await getCurrentUserId(accessToken);
-    await agent.auth(accessToken, { type: "bearer" });
+
+    const cookie = response.header["set-cookie"];
+    await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
     await agent.delete(`${baseSeedDbUrl}${resetMockApisDbUrl}`);
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });
@@ -101,7 +107,7 @@ describe("testing api controller", () => {
 
     it("should get all APIs with query params", async (): Promise<void> => {
       const response = await agent.get(
-        `${baseApiUrl}${getAllApisUrl}/?monitoring=off`
+        `${baseApiUrl}${getAllApisUrl}/?monitoring=${ApiMonitoringOptions.OFF}`
       );
 
       testApiResponse.url = mockQueryParamApi.url;
@@ -167,13 +173,6 @@ describe("testing api controller", () => {
       expect(response.body).toEqual(expect.objectContaining(mockApisStats));
     });
 
-    it("should throw unauthenticated error with wrong token", async (): Promise<void> => {
-      const response = await agent
-        .get(`${baseApiUrl}${getAllApisUrl}`)
-        .set("Authorization", `Bearer INVALID_TOKEN`);
-      expect(response.statusCode).toBe(401);
-    });
-
     describe("testing the pinging of APIs", () => {
       it("should ping api", async (): Promise<void> => {
         const pingResponse = await agent.post(
@@ -212,6 +211,22 @@ describe("testing api controller", () => {
         //don't forget to reverse allApis
         expect(response.body.allApis.reverse()).toMatchObject(mockUpdatedApis);
       }, 30000);
+    });
+
+    describe("testing auth for api routes", () => {
+      it("should throw unauthenticated error with wrong token", async (): Promise<void> => {
+        const response = await agent
+          .get(`${baseApiUrl}${getAllApisUrl}`)
+          .set("Authorization", `Bearer INVALID_TOKEN`);
+        expect(response.statusCode).toBe(401);
+      });
+    });
+
+    it("should throw unauthenticated error with wrong cookie", async (): Promise<void> => {
+      const response = await agent
+        .get(`${baseApiUrl}${getAllApisUrl}`)
+        .set("Cookie", `STALE_COOKIE`);
+      expect(response.statusCode).toBe(401);
     });
   });
 });

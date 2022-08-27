@@ -5,8 +5,9 @@ import {
   createApiSuccessMsg,
   pleaseFillOutAllValues,
 } from "constants/messages";
+import { apiHostOptions, apiMonitoringOptions } from "constants/options";
 import { allApisRoute } from "constants/routes";
-import { clearValues, handleChange } from "features/api/apiSlice";
+import { handleApiInput, resetApiState } from "features/api/apiSlice";
 import { createApi } from "features/api/apiThunk";
 import { handleToast } from "notifications/toast";
 import { useEffect } from "react";
@@ -15,16 +16,16 @@ import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const AddApi = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
   useEffect(() => {
-    dispatch(clearValues());
+    dispatch(resetApiState());
   }, []);
 
-  const { isLoading, monitoring, monitoringOptions, url, host, hostOptions } =
-    useAppSelector((store) => store.api);
-
-  const dispatch = useAppDispatch();
-
-  const navigate = useNavigate();
+  const { isLoading, monitoring, url, host } = useAppSelector(
+    (store) => store.api
+  );
 
   const handleSubmit = async (event: React.FormEvent<EventTarget>) => {
     event.preventDefault();
@@ -49,7 +50,7 @@ const AddApi = () => {
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    dispatch(handleChange({ name, value }));
+    dispatch(handleApiInput({ name, value }));
   };
 
   return (
@@ -71,7 +72,7 @@ const AddApi = () => {
             name="host"
             value={host}
             handleChange={handleInput}
-            list={hostOptions}
+            list={apiHostOptions}
           />
           {/* API Monitoring (ie. auto ping) */}
           <FormRowSelect
@@ -79,7 +80,7 @@ const AddApi = () => {
             name="monitoring"
             value={monitoring}
             handleChange={handleInput}
-            list={monitoringOptions}
+            list={apiMonitoringOptions}
           />
 
           <div className="btn-container">
@@ -96,7 +97,7 @@ const AddApi = () => {
               className="btn btn-block clear-btn"
               onClick={(e) => {
                 e.preventDefault();
-                dispatch(clearValues());
+                dispatch(resetApiState());
               }}
             >
               clear
