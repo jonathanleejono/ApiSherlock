@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import links from "utils/links";
+import links from "constants/links";
 
 import PropTypes, { InferProps } from "prop-types";
 

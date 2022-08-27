@@ -3,24 +3,25 @@ import { useAppDispatch, useAppSelector } from "state/hooks";
 import { FormRow, FormRowSelect } from ".";
 import Wrapper from "assets/wrappers/SearchContainer";
 import { getAllApis } from "features/allApis/allApisThunk";
+import {
+  apiMonitoringOptions,
+  apiSortOptions,
+  apiStatusOptions,
+} from "constants/options";
 
 const SearchContainer: React.FC = () => {
   const dispatch = useAppDispatch();
 
-  const {
-    isLoading,
-    search,
-    status,
-    sort,
-    statusOptions,
-    sortOptions,
-    monitoring,
-    monitoringOptions,
-  } = useAppSelector((store) => store.allApis);
+  const { isLoading, search, status, sort, monitoring } = useAppSelector(
+    (store) => store.allApis
+  );
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (isLoading) return;
     const { name, value } = event.target;
+
+    //handleChange is used here, because search params
+    //are needed in universal state
     dispatch(handleChange({ name, value }));
     dispatch(getAllApis());
   };
@@ -50,7 +51,7 @@ const SearchContainer: React.FC = () => {
             name="status"
             value={status}
             handleChange={handleSearch}
-            list={["All", ...statusOptions]}
+            list={["All", ...apiStatusOptions]}
           />
           {/* search by monitoring */}
           <FormRowSelect
@@ -58,7 +59,7 @@ const SearchContainer: React.FC = () => {
             name="monitoring"
             value={monitoring}
             handleChange={handleSearch}
-            list={["All", ...monitoringOptions]}
+            list={["All", ...apiMonitoringOptions]}
           />
           {/* sort */}
           <FormRowSelect
@@ -66,7 +67,7 @@ const SearchContainer: React.FC = () => {
             name="sort"
             value={sort}
             handleChange={handleSearch}
-            list={sortOptions}
+            list={apiSortOptions}
           />
           <button
             type="reset"

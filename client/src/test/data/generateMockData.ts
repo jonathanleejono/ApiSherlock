@@ -1,4 +1,11 @@
 import { faker } from "@faker-js/faker";
+import {
+  apiHostOptions,
+  apiMonitoringOptions,
+  apiStatusOptions,
+} from "constants/options";
+import { RegisterUserData } from "interfaces/users";
+import { constructDateTime } from "utils/datetime";
 
 export const mockUserPassword = "zFtay!5sh?m&&z7190pG";
 
@@ -7,36 +14,27 @@ function randomChoice(options: string[]) {
   return options[choice];
 }
 
-function buildMockUser(overrides?: any) {
+function buildMockUser(): RegisterUserData {
   return {
-    _id: faker.datatype.uuid(),
     name: faker.name.firstName(),
     email: faker.internet.email(),
     password: mockUserPassword,
-    ...overrides,
+    timezoneGMT: -4,
   };
 }
 
-function buildMockApi(overrides?: any) {
+function buildMockApi() {
   return {
     _id: faker.datatype.uuid(),
     url: faker.internet.url(),
-    host: randomChoice([
-      "AWS",
-      "GCP",
-      "Azure",
-      "Heroku",
-      "DigitalOcean",
-      "Other",
-    ]),
-    status: randomChoice(["healthy", "unhealthy", "pending"]),
+    host: randomChoice(apiHostOptions),
+    status: randomChoice(apiStatusOptions),
     lastPinged: "Never pinged",
-    monitoring: randomChoice(["on", "off"]),
+    monitoring: randomChoice(apiMonitoringOptions),
     createdBy: faker.datatype.uuid(),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+    createdAt: constructDateTime(),
+    updatedAt: constructDateTime(),
     __v: 0,
-    ...overrides,
   };
 }
 

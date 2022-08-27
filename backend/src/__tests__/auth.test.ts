@@ -12,14 +12,16 @@ import {
   updateUserUrl,
 } from "constants/urls";
 import { cookieName } from "constants/cookies";
+import { User } from "models/UserDocument";
 
-const user = {
+const user: User = {
   name: "jane",
   email: "janedoe2@gmail.com",
   password: "password",
+  timezoneGMT: -5,
 };
 
-const { name, email, password } = user;
+const { name, email, password, timezoneGMT } = user;
 
 describe("testing users controller", () => {
   beforeAll(async () => {
@@ -37,9 +39,10 @@ describe("testing users controller", () => {
       const response = await request(app)
         .post(`${baseAuthUrl}${registerUserUrl}`)
         .send({
-          name,
-          email,
-          password,
+          name: name,
+          email: email,
+          password: password,
+          timezoneGMT: timezoneGMT,
         });
 
       expect(response.statusCode).toBe(201);
@@ -49,7 +52,7 @@ describe("testing users controller", () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           accessToken: expect.any(String),
-          user: { name: name, email: email },
+          user: { name, email, timezoneGMT },
         })
       );
     });
@@ -67,7 +70,11 @@ describe("testing users controller", () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           accessToken: expect.any(String),
-          user: { name: mockUser.name, email: mockUser.email },
+          user: {
+            name: mockUser.name,
+            email: mockUser.email,
+            timezoneGMT: mockUser.timezoneGMT,
+          },
         })
       );
     });
@@ -87,14 +94,20 @@ describe("testing users controller", () => {
         .send({
           name: "bob",
           email: mockUser.email,
+          timezoneGMT: mockUser.timezoneGMT,
         })
-        .set("Authorization", `Bearer ${accessToken}`);
+        .set("Authorization", `Bearer ${accessToken}`)
+        .set("Cookie", loginResponse.header["set-cookie"]);
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(
         expect.objectContaining({
           accessToken: expect.any(String),
-          user: { name: "bob", email: mockUser.email },
+          user: {
+            name: "bob",
+            email: mockUser.email,
+            timezoneGMT: mockUser.timezoneGMT,
+          },
         })
       );
     });
@@ -119,8 +132,6 @@ describe("testing users controller", () => {
           email: mockUser.email,
           password: mockUser.password,
         });
-
-      console.log(loginResponse);
 
       const cookieHeader = loginResponse.headers["set-cookie"];
 

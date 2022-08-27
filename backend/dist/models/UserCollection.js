@@ -7,6 +7,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const validator_1 = __importDefault(require("validator"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const timezoneOffsets_1 = require("constants/timezoneOffsets");
 const UserSchema = new mongoose_1.default.Schema({
     name: {
         type: String,
@@ -28,6 +29,11 @@ const UserSchema = new mongoose_1.default.Schema({
         required: [true, "Please provide password"],
         minlength: 6,
         select: false,
+    },
+    timezoneGMT: {
+        type: Number,
+        enum: timezoneOffsets_1.timezoneOffsets,
+        default: 0,
     },
 });
 UserSchema.pre("save", async function () {

@@ -1,8 +1,5 @@
 import jwt from "jsonwebtoken";
-
-interface JwtPayload {
-  userId: string;
-}
+import { JwtPayload } from "interfaces/jwtPayload";
 
 const getCurrentUserId = async (accessToken: string) => {
   try {

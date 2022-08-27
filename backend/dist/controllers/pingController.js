@@ -5,16 +5,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pingOne = exports.pingAll = void 0;
 const axios_1 = __importDefault(require("axios"));
-const datetime_1 = require("constants/datetime");
+const datetime_1 = require("utils/datetime");
 const messages_1 = require("constants/messages");
 const errors_1 = require("errors");
 const http_status_codes_1 = require("http-status-codes");
-const checkPermissions_1 = __importDefault(require("middleware/checkPermissions"));
-const validateUser_1 = __importDefault(require("middleware/validateUser"));
+const checkPermissions_1 = __importDefault(require("utils/checkPermissions"));
+const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const pingAll = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
+        const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
             (0, errors_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -31,14 +31,20 @@ const pingAll = async (req, res) => {
             try {
                 const res = await axios_1.default.get(allApisToMonitor[index].url);
                 if (res && res.status === 200) {
-                    await ApiCollection_1.default.findOneAndUpdate({ _id: allApisToMonitor[index].id }, { status: "healthy", lastPinged: datetime_1.currentDayYearHour }, {
+                    await ApiCollection_1.default.findOneAndUpdate({ _id: allApisToMonitor[index].id }, {
+                        status: "healthy",
+                        lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
+                    }, {
                         new: true,
                         runValidators: true,
                     });
                 }
             }
             catch (error) {
-                await ApiCollection_1.default.findOneAndUpdate({ _id: allApisToMonitor[index].id }, { status: "unhealthy", lastPinged: datetime_1.currentDayYearHour }, {
+                await ApiCollection_1.default.findOneAndUpdate({ _id: allApisToMonitor[index].id }, {
+                    status: "unhealthy",
+                    lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
+                }, {
                     new: true,
                     runValidators: true,
                 });
@@ -55,7 +61,7 @@ const pingAll = async (req, res) => {
 exports.pingAll = pingAll;
 const pingOne = async (req, res) => {
     try {
-        const user = await (0, validateUser_1.default)(req, res);
+        const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
             (0, errors_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -70,14 +76,20 @@ const pingOne = async (req, res) => {
         try {
             const res = await axios_1.default.get(api.url);
             if (res && res.status === 200) {
-                await ApiCollection_1.default.findOneAndUpdate({ _id: api.id }, { status: "healthy", lastPinged: datetime_1.currentDayYearHour }, {
+                await ApiCollection_1.default.findOneAndUpdate({ _id: api.id }, {
+                    status: "healthy",
+                    lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
+                }, {
                     new: true,
                     runValidators: true,
                 });
             }
         }
         catch (error) {
-            await ApiCollection_1.default.findOneAndUpdate({ _id: api.id }, { status: "unhealthy", lastPinged: datetime_1.currentDayYearHour }, {
+            await ApiCollection_1.default.findOneAndUpdate({ _id: api.id }, {
+                status: "unhealthy",
+                lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
+            }, {
                 new: true,
                 runValidators: true,
             });

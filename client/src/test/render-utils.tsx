@@ -15,7 +15,10 @@ async function render(
   ui: ReactElement,
   {
     route = "/landing",
-    authUser = { user: { name: "", email: "" }, accessToken: "" },
+    authUser = {
+      user: { name: "", email: "", timezoneGMT: 0 },
+      accessToken: "",
+    },
     ...renderOptions
   }: {
     route?: string;

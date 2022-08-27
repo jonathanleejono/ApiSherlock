@@ -6,9 +6,10 @@ import {
   updateUserActionType,
   userSliceName,
 } from "constants/actionTypes";
+import { setToken } from "constants/token";
 import { loginUserUrl, registerUserUrl, updateUserUrl } from "constants/urls";
 import { clearAllApisState } from "features/allApis/allApisSlice";
-import { clearValues } from "features/api/apiSlice";
+import { resetApiState } from "features/api/apiSlice";
 import { resetUserState } from "features/user/userSlice";
 import { ValidationErrors } from "interfaces/errors";
 import {
@@ -19,6 +20,7 @@ import {
 } from "interfaces/users";
 import customFetch from "utils/axios";
 import { checkPermissions } from "utils/checkPermissions";
+import { removeUserFromLocalStorage } from "utils/localStorage";
 
 const registerUser = createAsyncThunk<
   // Return type of the payload creator
@@ -77,9 +79,11 @@ const clearStore = createAsyncThunk<
   }
 >(`${userSliceName}${clearStoreActionType}`, async (_, thunkAPI) => {
   try {
+    setToken(null);
+    removeUserFromLocalStorage();
     thunkAPI.dispatch(resetUserState());
     thunkAPI.dispatch(clearAllApisState());
-    thunkAPI.dispatch(clearValues());
+    thunkAPI.dispatch(resetApiState());
     return Promise.resolve();
   } catch (error) {
     thunkAPI.rejectWithValue(error.response.data);

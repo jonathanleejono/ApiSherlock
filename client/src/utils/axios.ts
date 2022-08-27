@@ -6,7 +6,6 @@ import {
   refreshAccessTokenUrl,
   registerUserUrl,
 } from "constants/urls";
-import { toast } from "react-toastify";
 
 const customFetch = axios.create({
   baseURL: baseUrl,
@@ -15,8 +14,7 @@ const customFetch = axios.create({
 
 customFetch.interceptors.request.use(async (config: AxiosRequestConfig) => {
   if (!config || !config.headers || !config.url) {
-    toast.error("Fetching data error");
-    console.log({ error: "Fetching data error" });
+    console.error("Fetching data error");
     return;
   }
 

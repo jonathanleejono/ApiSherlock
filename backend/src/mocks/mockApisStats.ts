@@ -1,12 +1,16 @@
-import moment from "moment";
+import { formatCurrentMonthYear } from "utils/datetime";
 
-const currentMonthYear = moment().format("MMM YYYY");
+// plus 1 because months are 0 to 11
+const month = new Date().getMonth() + 1;
+const year = new Date().getFullYear();
+
+const date = formatCurrentMonthYear(year, month);
 
 export const mockApisStats = {
   defaultStats: { healthy: 0, unhealthy: 0, pending: 5 },
   monthlyApis: [
     {
-      date: `${currentMonthYear}`,
+      date: `${date}`,
       count: 5,
     },
   ],

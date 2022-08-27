@@ -1,38 +1,29 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { allApisSliceName } from "constants/actionTypes";
+import { ApiSortOptions } from "enum/apis";
 import { getAllApis, getAllApisStats } from "features/allApis/allApisThunk";
-import { ApiDataResponse, MonthlyApis } from "interfaces/apis";
+import {
+  ApiDataResponse,
+  ApiDefaultStats,
+  MonthlyApis,
+  QueryParams,
+} from "interfaces/apis";
 
-interface AllApisFiltersState {
-  search: string;
-  status: string;
-  sort: string;
-  monitoring: string;
-  page: number;
-}
-
-interface AllApisStats {
-  healthy: number;
-  unhealthy: number;
-  pending: number;
-}
-
-interface AllApisState extends AllApisFiltersState {
+interface AllApisState extends QueryParams {
   isLoading: boolean;
   allApis: ApiDataResponse[];
   totalApis: number;
   numOfPages: number;
-  defaultStats: Partial<AllApisStats>;
-  monthlyApis: [MonthlyApis];
-  statusOptions: string[];
-  sortOptions: string[];
-  monitoringOptions: string[];
+  defaultStats: Partial<ApiDefaultStats>;
+  monthlyApis: MonthlyApis[];
 }
 
-const initialFiltersState: AllApisFiltersState = {
+//this is separate so this can be
+//reset separately
+const initialFiltersState: QueryParams = {
   search: "",
   status: "",
-  sort: "Latest",
+  sort: ApiSortOptions.Latest,
   monitoring: "",
   page: 1,
 };
@@ -44,9 +35,6 @@ const initialState: AllApisState = {
   numOfPages: 0,
   defaultStats: { healthy: 0, unhealthy: 0, pending: 0 },
   monthlyApis: [{ date: "", count: 0 }],
-  statusOptions: ["healthy", "unhealthy", "pending"],
-  sortOptions: ["Latest", "Oldest", "A-Z", "Z-A"],
-  monitoringOptions: ["on", "off"],
   ...initialFiltersState,
 };
 
@@ -65,7 +53,6 @@ const allApisSlice = createSlice({
       state.isLoading = false;
     },
     handleChange: (state: AllApisOptions, { payload: { name, value } }) => {
-      state.page = 1;
       state[name] = value;
     },
     clearFilters: (state) => ({ ...state, ...initialFiltersState }),

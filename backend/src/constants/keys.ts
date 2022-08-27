@@ -1,8 +1,8 @@
-export const validRegisterKeys = ["name", "email", "password"];
+export const validRegisterKeys = ["name", "email", "password", "timezoneGMT"];
 
 export const validLoginKeys = ["email", "password"];
 
-export const validUpdateKeys = ["name", "email"];
+export const validUpdateKeys = ["name", "email", "timezoneGMT"];
 
 export const validCreateApiKeys = ["url", "host", "monitoring"];
 

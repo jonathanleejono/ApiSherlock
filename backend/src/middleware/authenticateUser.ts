@@ -1,10 +1,8 @@
 import jwt from "jsonwebtoken";
 import { unAuthenticatedError } from "errors/index";
 import { Request, Response, NextFunction } from "express";
-
-interface JwtPayload {
-  userId: string;
-}
+import { JwtPayload } from "interfaces/jwtPayload";
+import { cookieName } from "constants/cookies";
 
 const authenticateUser = async (
   req: Request,
@@ -13,24 +11,33 @@ const authenticateUser = async (
 ) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer")) {
-    unAuthenticatedError(res, "Authentication Invalid");
+  if (
+    !authHeader ||
+    !authHeader.startsWith("Bearer") ||
+    !req.cookies[cookieName]
+  ) {
+    unAuthenticatedError(res, "Invalid credentials, please login again");
     return;
   }
 
   const accessToken = authHeader.split(" ")[1];
 
   try {
-    const payload = jwt.verify(
+    const accessTokenPayload = jwt.verify(
       accessToken,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
 
-    req.user = { userId: payload.userId };
+    jwt.verify(
+      req.cookies[cookieName],
+      process.env.JWT_SECRET as string
+    ) as JwtPayload;
+
+    req.user = { userId: accessTokenPayload.userId };
 
     next();
   } catch (error) {
-    unAuthenticatedError(res, "Authentication Invalid");
+    unAuthenticatedError(res, "Please login again");
     return;
   }
 };

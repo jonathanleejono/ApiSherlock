@@ -13,8 +13,9 @@ const user = {
     name: "jane",
     email: "janedoe2@gmail.com",
     password: "password",
+    timezoneGMT: -5,
 };
-const { name, email, password } = user;
+const { name, email, password, timezoneGMT } = user;
 describe("testing users controller", () => {
     beforeAll(async () => {
         await (0, supertest_1.default)(server_1.default).delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockUsersDbUrl}`);
@@ -29,15 +30,16 @@ describe("testing users controller", () => {
             const response = await (0, supertest_1.default)(server_1.default)
                 .post(`${urls_1.baseAuthUrl}${urls_1.registerUserUrl}`)
                 .send({
-                name,
-                email,
-                password,
+                name: name,
+                email: email,
+                password: password,
+                timezoneGMT: timezoneGMT,
             });
             expect(response.statusCode).toBe(201);
             expect(response.headers["content-type"]).toEqual(expect.stringContaining("json"));
             expect(response.body).toEqual(expect.objectContaining({
                 accessToken: expect.any(String),
-                user: { name: name, email: email },
+                user: { name, email, timezoneGMT },
             }));
         });
         it("should login a user", async () => {
@@ -50,7 +52,11 @@ describe("testing users controller", () => {
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining({
                 accessToken: expect.any(String),
-                user: { name: mockUser_1.mockUser.name, email: mockUser_1.mockUser.email },
+                user: {
+                    name: mockUser_1.mockUser.name,
+                    email: mockUser_1.mockUser.email,
+                    timezoneGMT: mockUser_1.mockUser.timezoneGMT,
+                },
             }));
         });
         it("should update a user", async () => {
@@ -66,12 +72,18 @@ describe("testing users controller", () => {
                 .send({
                 name: "bob",
                 email: mockUser_1.mockUser.email,
+                timezoneGMT: mockUser_1.mockUser.timezoneGMT,
             })
-                .set("Authorization", `Bearer ${accessToken}`);
+                .set("Authorization", `Bearer ${accessToken}`)
+                .set("Cookie", loginResponse.header["set-cookie"]);
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining({
                 accessToken: expect.any(String),
-                user: { name: "bob", email: mockUser_1.mockUser.email },
+                user: {
+                    name: "bob",
+                    email: mockUser_1.mockUser.email,
+                    timezoneGMT: mockUser_1.mockUser.timezoneGMT,
+                },
             }));
         });
         it("should give unauthenticated response for wrong password", async () => {
@@ -92,7 +104,6 @@ describe("testing users controller", () => {
                 email: mockUser_1.mockUser.email,
                 password: mockUser_1.mockUser.password,
             });
-            console.log(loginResponse);
             const cookieHeader = loginResponse.headers["set-cookie"];
             expect(loginResponse.statusCode).toBe(200);
             expect(cookieHeader).toBeTruthy();

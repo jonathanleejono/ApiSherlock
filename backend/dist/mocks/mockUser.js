@@ -5,5 +5,6 @@ exports.mockUser = {
     name: "jane",
     email: "janedoe1@gmail.com",
     password: "password",
+    timezoneGMT: -4,
 };
 //# sourceMappingURL=mockUser.js.map

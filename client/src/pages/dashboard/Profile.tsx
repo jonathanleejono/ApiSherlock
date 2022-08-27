@@ -1,38 +1,39 @@
 import Wrapper from "assets/wrappers/DashboardFormPage";
-import { FormRow } from "components";
+import { FormRow, FormRowSelect } from "components";
 import {
   pleaseFillOutAllValues,
   updateUserErrorMsg,
   updateUserSuccessMsg,
 } from "constants/messages";
-import { clearStore, updateUser } from "features/user/userThunk";
+import { timezoneOffsets } from "constants/timezoneOffsets";
 import { setToken } from "constants/token";
+import { clearStore, updateUser } from "features/user/userThunk";
 import { handleToast } from "notifications/toast";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "state/hooks";
+import { addUserToLocalStorage } from "utils/localStorage";
 
 const Profile = () => {
   const dispatch = useAppDispatch();
+
   const { user, isLoading } = useAppSelector((store) => store.user);
 
-  if (!user) {
-    dispatch(clearStore());
-    toast.error("Unauthenticated");
-  }
+  const [values, setValues] = useState(user);
 
-  const [name, setName] = useState(user?.name);
-  const [email, setEmail] = useState(user?.email);
+  const { name, email, timezoneGMT } = values;
 
   const handleSubmit = async (event: React.FormEvent<EventTarget>) => {
     event.preventDefault();
 
-    if (!name || !email) {
+    if (!name || !email || !timezoneGMT) {
       toast.error(pleaseFillOutAllValues);
       return;
     }
 
-    const resultAction = await dispatch(updateUser({ name, email }));
+    const resultAction = await dispatch(
+      updateUser({ name, email, timezoneGMT })
+    );
 
     const resp = handleToast(
       resultAction,
@@ -42,11 +43,26 @@ const Profile = () => {
     );
 
     if (resp.data === "success") {
-      const { accessToken } = resp.payload;
+      const { user, accessToken } = resp.payload;
       setToken(accessToken);
+      addUserToLocalStorage(user);
     } else if (resp.data === "error") {
       dispatch(clearStore());
     }
+  };
+
+  //converts "timezoneGMT" variable name into string
+  const timezoneKey = Object.keys({ timezoneGMT })[0];
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+
+    //list of timezone options are float numbers,
+    //so values need to be parsed to *float* (not int)
+    setValues({
+      ...values,
+      [name]: name === timezoneKey ? parseFloat(value) : value,
+    });
   };
 
   return (
@@ -59,18 +75,21 @@ const Profile = () => {
             type="text"
             name="name"
             value={name}
-            handleChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setName(e.target.value)
-            }
+            handleChange={handleChange}
           />
           <FormRow
             labelText="Email"
             type="email"
             name="email"
             value={email}
-            handleChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setEmail(e.target.value)
-            }
+            handleChange={handleChange}
+          />
+          <FormRowSelect
+            labelText="Timezone"
+            name="timezoneGMT"
+            value={timezoneGMT}
+            handleChange={handleChange}
+            list={timezoneOffsets}
           />
           <button className="btn btn-block" type="submit" disabled={isLoading}>
             {isLoading ? "Please Wait..." : "save changes"}

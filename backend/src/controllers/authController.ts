@@ -10,13 +10,15 @@ import {
   validRegisterKeys,
   validUpdateKeys,
 } from "constants/keys";
+import { timezoneOffsets } from "constants/timezoneOffsets";
 import dotenv from "dotenv";
 import { badRequestError, unAuthenticatedError } from "errors/index";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
+import { JwtPayload } from "interfaces/jwtPayload";
 import jwt from "jsonwebtoken";
-import { validateInputKeys } from "middleware/validateKeys";
-import validateUser from "middleware/validateUser";
+import { validateInputKeys } from "utils/validateKeys";
+import validateUserExists from "utils/validateUserExists";
 import UserCollection from "models/UserCollection";
 
 dotenv.config();
@@ -32,10 +34,18 @@ const register = async (req: Request, res: Response): Promise<void> => {
       validRegisterKeys
     );
 
-    const { name, email, password } = req.body;
+    const { name, email, password, timezoneGMT } = req.body;
 
     if (!name || !email || !password) {
       badRequestError(res, "Please provide all values");
+      return;
+    }
+
+    if (!timezoneOffsets.includes(timezoneGMT)) {
+      badRequestError(
+        res,
+        `Invalid timezone, please select one of: ${timezoneOffsets}`
+      );
       return;
     }
 
@@ -46,7 +56,12 @@ const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const user = await UserCollection.create({ name, email, password });
+    const user = await UserCollection.create({
+      name,
+      email,
+      password,
+      timezoneGMT,
+    });
 
     const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME as string);
 
@@ -65,6 +80,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
         user: {
           email: user.email,
           name: user.name,
+          timezoneGMT: user.timezoneGMT,
         },
         accessToken,
       });
@@ -128,6 +144,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
         user: {
           email: user.email,
           name: user.name,
+          timezoneGMT: user.timezoneGMT,
         },
         accessToken,
       });
@@ -140,7 +157,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
 
 const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -154,10 +171,18 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       validUpdateKeys
     );
 
-    const { email, name } = req.body;
+    const { email, name, timezoneGMT } = req.body;
 
-    if (!email || !name) {
+    if (!email || !name || !timezoneGMT) {
       badRequestError(res, "Please provide all values");
+      return;
+    }
+
+    if (!timezoneOffsets.includes(timezoneGMT)) {
+      badRequestError(
+        res,
+        `Invalid timezone, please select one of: ${timezoneOffsets}`
+      );
       return;
     }
 
@@ -171,6 +196,7 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
 
     user.email = email;
     user.name = name;
+    user.timezoneGMT = timezoneGMT;
 
     await user.save();
 
@@ -191,6 +217,7 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
         user: {
           email: user.email,
           name: user.name,
+          timezoneGMT: user.timezoneGMT,
         },
         accessToken,
       });
@@ -200,10 +227,6 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 };
-
-interface JwtPayload {
-  userId: string;
-}
 
 const refreshAccessToken = async (
   req: Request,

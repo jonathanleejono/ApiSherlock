@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { apiSliceName } from "constants/actionTypes";
+import { ApiHostOptions, ApiMonitoringOptions } from "enum/apis";
 import { createApi, deleteApi, editApi } from "features/api/apiThunk";
 
 interface ApiState {
@@ -7,19 +8,15 @@ interface ApiState {
   apiId: string;
   url: string;
   host: string;
-  hostOptions: string[];
   monitoring: string;
-  monitoringOptions: string[];
 }
 
 const initialState: ApiState = {
   isLoading: false,
   apiId: "",
   url: "",
-  host: "AWS", // AWS is default because it's the first option
-  hostOptions: ["AWS", "GCP", "Azure", "Heroku", "DigitalOcean", "Other"],
-  monitoring: "on",
-  monitoringOptions: ["on", "off"],
+  host: ApiHostOptions.AWS, // AWS is default because it's the first option
+  monitoring: ApiMonitoringOptions.ON,
 };
 
 type ApiOptions = {
@@ -30,10 +27,10 @@ const apiSlice = createSlice({
   name: `${apiSliceName}`,
   initialState,
   reducers: {
-    handleChange: (state: ApiOptions, { payload: { name, value } }) => {
+    handleApiInput: (state: ApiOptions, { payload: { name, value } }) => {
       state[name] = value;
     },
-    clearValues: () => ({
+    resetApiState: () => ({
       ...initialState,
     }),
     setEditApi: (state, { payload }) => ({ ...state, ...payload }),
@@ -69,6 +66,6 @@ const apiSlice = createSlice({
   },
 });
 
-export const { handleChange, clearValues, setEditApi } = apiSlice.actions;
+export const { resetApiState, setEditApi, handleApiInput } = apiSlice.actions;
 
 export default apiSlice.reducer;

@@ -1,11 +1,16 @@
 import { faker } from "@faker-js/faker";
 import axios from "axios";
-import { allApisKey } from "constants/keys";
+import { constructDateTime, getDateWithUTCOffset } from "utils/datetime";
+import { testAllApisKey } from "constants/keys";
 import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
 } from "constants/messages";
-import { BadRequestError, NotFoundError, UnAuthenticatedError } from "errors";
+import {
+  BadRequestError,
+  NotFoundError,
+  UnAuthenticatedError,
+} from "test/errors";
 import {
   AllApisResponse,
   AllApisStatsResponse,
@@ -16,9 +21,9 @@ import {
   QueryParams,
 } from "interfaces/apis";
 import { PingResponse } from "interfaces/ping";
-import { currentDayYear } from "constants/datetime";
 import { mockApis } from "test/data/mockApis";
-// import { matchSorter } from "match-sorter";
+import { getUser } from "test/data/usersDb";
+import { ApiSortOptions, ApiStatusOptions } from "enum/apis";
 
 type ApiOptions = {
   [key: string]: ApiDataResponse;
@@ -26,13 +31,13 @@ type ApiOptions = {
 
 let allApisInMemory: ApiOptions = {};
 
-// set key "allApisKey", set value to allApis = {}
+// set key "testAllApisKey", set value to allApis = {}
 const persist = () =>
-  window.localStorage.setItem(allApisKey, JSON.stringify(allApisInMemory));
+  window.localStorage.setItem(testAllApisKey, JSON.stringify(allApisInMemory));
 
-// get by key "allApisKey", set allApis = {} to new allApis value
+// get by key "testAllApisKey", set allApis = {} to new allApis value
 const load = () => {
-  const getAllApisKey = window.localStorage.getItem(allApisKey);
+  const getAllApisKey = window.localStorage.getItem(testAllApisKey);
   const _allApisKey: string = getAllApisKey !== null ? getAllApisKey : "";
   Object.assign(allApisInMemory, JSON.parse(_allApisKey));
 };
@@ -90,11 +95,11 @@ async function createApi({
     url,
     host,
     monitoring,
-    status: status ? status : "pending",
+    status: status ? status : ApiStatusOptions.Pending,
     lastPinged: lastPinged ? lastPinged : "Never pinged",
     __v: __v ? __v : 0,
-    createdAt: createdAt ? createdAt : Date.now(),
-    updatedAt: updatedAt ? updatedAt : Date.now(),
+    createdAt: createdAt ? createdAt : constructDateTime(),
+    updatedAt: updatedAt ? updatedAt : constructDateTime(),
   };
 
   persist();
@@ -150,9 +155,9 @@ async function generateMockApis(userId: string): Promise<ApiDataResponse[]> {
       status: mockApi.status,
       lastPinged: mockApi.lastPinged,
       monitoring: mockApi.monitoring,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      __v: 0,
+      createdAt: mockApi.createdAt,
+      updatedAt: mockApi.updatedAt,
+      __v: mockApi.__v,
     };
 
     persist();
@@ -225,10 +230,10 @@ async function getAllApis(
     return 0;
   });
 
-  sorting(_allApis, "createdAt", sort, "Latest", true);
-  sorting(_allApis, "createdAt", sort, "Oldest", false);
-  sorting(_allApis, "url", sort, "A-Z", true);
-  sorting(_allApis, "url", sort, "Z-A", false);
+  sorting(_allApis, "createdAt", sort, ApiSortOptions.Latest, true);
+  sorting(_allApis, "createdAt", sort, ApiSortOptions.Oldest, false);
+  sorting(_allApis, "url", sort, ApiSortOptions.A_Z, true);
+  sorting(_allApis, "url", sort, ApiSortOptions.Z_A, false);
 
   const totalApis = _allApis.length;
   const numOfPages = Math.ceil(totalApis / 10);
@@ -239,6 +244,8 @@ export let pendingApiStats = 0;
 
 // GET allApis Stats
 async function getAllApisStats(userId: string): Promise<AllApisStatsResponse> {
+  const user = await getUser();
+
   //generate mock apis first, so data is displayed in stats
   await generateMockApis(userId);
 
@@ -252,14 +259,14 @@ async function getAllApisStats(userId: string): Promise<AllApisStatsResponse> {
     pending: 0,
   };
 
-  const monthlyApis: [MonthlyApis] = [{ date: "", count: 0 }];
+  const monthlyApis: MonthlyApis[] = [{ date: "", count: 0 }];
 
   Object.keys(mockApisByUser).forEach((_: string, index: number) => {
     const apiStatus = mockApisByUser[index].status;
     defaultStats[apiStatus] += 1;
   });
 
-  monthlyApis[0].date = currentDayYear;
+  monthlyApis[0].date = getDateWithUTCOffset(user.timezoneGMT, false);
   monthlyApis[0].count = mockApisByUser.length;
 
   pendingApiStats = defaultStats.pending;
@@ -278,11 +285,11 @@ async function pingAllApis(userId: string): Promise<PingResponse> {
       const resp = await axios.get(_allApis[index].url);
 
       if (resp && resp.status === 200) {
-        _allApis[index].status = "healthy";
-        _allApis[index].lastPinged = Date.now();
+        _allApis[index].status = ApiStatusOptions.Healthy;
+        _allApis[index].lastPinged = constructDateTime();
       } else if (!resp) {
-        _allApis[index].status = "unhealthy";
-        _allApis[index].lastPinged = Date.now();
+        _allApis[index].status = ApiStatusOptions.Unhealthy;
+        _allApis[index].lastPinged = constructDateTime();
       }
     } catch (error) {
       return error;
@@ -298,11 +305,11 @@ async function pingOneApi(apiId: string): Promise<PingResponse> {
     const resp = await axios.get(api.url);
 
     if (resp && resp.status === 200) {
-      api.status = "healthy";
-      api.lastPinged = Date.now();
+      api.status = ApiStatusOptions.Healthy;
+      api.lastPinged = constructDateTime();
     } else {
-      api.status = "unhealthy";
-      api.lastPinged = Date.now();
+      api.status = ApiStatusOptions.Unhealthy;
+      api.lastPinged = constructDateTime();
     }
   } catch (error) {
     return error;

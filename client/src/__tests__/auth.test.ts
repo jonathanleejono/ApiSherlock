@@ -28,13 +28,13 @@ describe("testing MSW server and auth setup", () => {
 
     expect(request.headers.get("Authorization")).toBe(`Bearer ${accessToken}`);
 
-    setToken(""); //reset token
+    setToken(null); //reset token
   });
 
   test("refresh token activates when no accessToken is provided", async () => {
     const emptyToken = await getToken();
 
-    expect(emptyToken).toBe("");
+    expect(emptyToken).toBe(null);
 
     // this mock api response must come before customFetch/axios fetches
     server.use(

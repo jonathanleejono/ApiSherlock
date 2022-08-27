@@ -1,4 +1,8 @@
-import { BadRequestError, NotFoundError, UnAuthenticatedError } from "errors";
+import {
+  BadRequestError,
+  NotFoundError,
+  UnAuthenticatedError,
+} from "test/errors";
 import {
   AuthUserResponse,
   LoginUserData,
@@ -6,18 +10,24 @@ import {
   UpdateUserData,
   UserDataResponse,
 } from "interfaces/users";
-import { usersKey } from "constants/keys";
+import { testUserKey } from "constants/keys";
 import { Buffer } from "buffer";
 import { RestRequest, DefaultBodyType, PathParams } from "msw";
+import { timezoneOffsets } from "constants/timezoneOffsets";
 
 // the password is needed to be retrieved and compared
-let userInMemory: RegisterUserData = { name: "", email: "", password: "" };
+let userInMemory: RegisterUserData = {
+  name: "",
+  email: "",
+  password: "",
+  timezoneGMT: 0,
+};
 
 const persist = () =>
-  localStorage.setItem(usersKey, JSON.stringify(userInMemory));
+  localStorage.setItem(testUserKey, JSON.stringify(userInMemory));
 
 const load = () => {
-  const getUsersKey = localStorage.getItem(usersKey);
+  const getUsersKey = localStorage.getItem(testUserKey);
   const _usersKey: string = getUsersKey !== null ? getUsersKey : "";
   Object.assign(userInMemory, JSON.parse(_usersKey));
 };
@@ -33,20 +43,25 @@ if (NODE_ENV === "test" || REACT_APP_MSW_DEV === "on") {
   }
 }
 
-function validateUserForm({ name, email, password }: RegisterUserData) {
-  if (!name || !email || !password) {
-    const error = new BadRequestError("Please fill out all fields");
-    throw error;
-  }
-}
-
 // REGISTER
 async function registerUser({
   name,
   email,
   password,
+  timezoneGMT,
 }: RegisterUserData): Promise<AuthUserResponse> {
-  validateUserForm({ name, email, password });
+  if (!name || !email || !password || !timezoneGMT) {
+    const error = new BadRequestError("Please fill out all fields");
+    throw error;
+  }
+
+  if (!timezoneOffsets.includes(timezoneGMT)) {
+    const error = new BadRequestError(
+      `Invalid timezone, can only use: ${timezoneOffsets} `
+    );
+    throw error;
+  }
+
   const _id = userHash(email);
 
   if (userInMemory) {
@@ -62,7 +77,7 @@ async function registerUser({
   }
 
   const passwordHash = userHash(password);
-  userInMemory = { name, email, password: passwordHash };
+  userInMemory = { name, email, password: passwordHash, timezoneGMT };
   persist();
   const user = await getUser();
   const accessToken = generateToken(_id);
@@ -111,7 +126,7 @@ async function updateUser(
 // DELETE
 async function deleteUser() {
   checkUserExists();
-  userInMemory = { name: "", email: "", password: "" };
+  userInMemory = { name: "", email: "", password: "", timezoneGMT: 0 };
   persist();
 }
 
@@ -131,26 +146,36 @@ async function getUser(): Promise<UserDataResponse> {
 }
 
 function showUserWithoutPassword(user: RegisterUserData): UserDataResponse {
-  const { name, email } = user;
-  return { name, email };
+  const { name, email, timezoneGMT } = user;
+  return { name, email, timezoneGMT };
 }
 
 function generateToken(userId: string) {
   // make sure to install Buffer browser dependency
   // and import {Buffer} at the top
-  const accessToken: string = Buffer.from(userId, "utf8").toString("base64");
-  return accessToken;
+  const token: string = Buffer.from(userId, "utf8").toString("base64");
+  return token;
 }
 
 const getToken = (req: RestRequest<DefaultBodyType, PathParams<string>>) =>
   req.headers.get("Authorization")?.replace("Bearer ", "");
 
-async function getUserByToken(
+export const cookieName = "testApiSherlockId";
+
+async function authenticateUser(
   req: RestRequest<DefaultBodyType, PathParams<string>>
 ) {
+  const cookie = req.cookies[cookieName];
+
+  if (!cookie) {
+    const error = new UnAuthenticatedError("A refresh token must be provided");
+    throw error;
+  }
+
   const accessToken = getToken(req);
+
   if (!accessToken) {
-    const error = new UnAuthenticatedError("A accessToken must be provided");
+    const error = new UnAuthenticatedError("An access token must be provided");
     throw error;
   }
   let userId;
@@ -174,7 +199,7 @@ async function getUserByToken(
   }
 }
 
-export function userHash(str: string) {
+function userHash(str: string) {
   let hash = 5381,
     i = str.length;
 
@@ -185,16 +210,18 @@ export function userHash(str: string) {
 }
 
 async function resetDB() {
-  userInMemory = { name: "", email: "", password: "" };
+  userInMemory = { name: "", email: "", password: "", timezoneGMT: 0 };
   persist();
 }
 
 export {
   loginUser,
   registerUser,
-  getUserByToken,
+  getUser,
+  authenticateUser,
   updateUser,
   deleteUser,
   resetDB,
   generateToken,
+  userHash,
 };

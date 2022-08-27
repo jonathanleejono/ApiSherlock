@@ -16,29 +16,30 @@ import {
 
 const router: Router = express.Router();
 
-const registerLimiter = rateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
-  handler: (_, res: Response) => {
-    res.status(429).json({
-      msg: "Too many requests from this IP, please try again after 15 minutes",
-    });
-  },
-});
+function createRateLimiter(minutes: number, maxRequests: number) {
+  const _rateLimiter = rateLimiter({
+    windowMs: minutes * 60 * 1000,
+    max: maxRequests,
+    handler: (_, res: Response) => {
+      res.status(429).json({
+        msg: `Too many requests from this IP, 
+        please try again after ${minutes} minutes`,
+      });
+    },
+  });
 
-const loginLimiter = rateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
-  handler: (_, res: Response) => {
-    res.status(429).json({
-      msg: "Too many requests from this IP, please try again after 15 minutes",
-    });
-  },
-});
+  return _rateLimiter;
+}
 
-router.route(`${registerUserUrl}`).post(registerLimiter, register);
-router.route(`${loginUserUrl}`).post(loginLimiter, login);
+router.route(`${registerUserUrl}`).post(createRateLimiter(15, 3), register);
+router.route(`${loginUserUrl}`).post(createRateLimiter(15, 10), login);
+
+//user shouldn't be able to access another user's profile,
+//which is why authenticateUser is here
 router.route(`${updateUserUrl}`).patch(authenticateUser, updateUser);
+
+//can't add authenticateUser middleware here, because user
+//doesn't have an access token, so only cookies are validated
 router.route(`${refreshAccessTokenUrl}`).get(refreshAccessToken);
 
 export default router;

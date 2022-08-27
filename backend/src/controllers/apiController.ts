@@ -1,3 +1,9 @@
+import { formatCurrentMonthYear } from "utils/datetime";
+import {
+  validCreateApiKeys,
+  validGetAllApisKeys,
+  validUpdateApiKeys,
+} from "constants/keys";
 import { deleteApiSuccessMsg } from "constants/messages";
 import {
   badRequestError,
@@ -6,22 +12,18 @@ import {
 } from "errors/index";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import checkPermissions from "middleware/checkPermissions";
-import validateUser from "middleware/validateUser";
+import { ApiQueryParams } from "interfaces/apiQueryParams";
+import { AllMonthlyApis } from "interfaces/monthlyApis";
+import checkPermissions from "utils/checkPermissions";
+import { validateInputKeys } from "utils/validateKeys";
+import validateUserExists from "utils/validateUserExists";
 import ApiCollection from "models/ApiCollection";
-import moment from "moment";
 import mongoose from "mongoose";
-import { validateInputKeys } from "middleware/validateKeys";
-import {
-  validCreateApiKeys,
-  validGetAllApisKeys,
-  validUpdateApiKeys,
-} from "constants/keys";
-import { currentMonthYear } from "constants/datetime";
+import { ApiSortOptions } from "enum/apis";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -56,7 +58,7 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
 
 const getAllApis = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -73,14 +75,7 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
 
     const { status, monitoring, sort, search } = req.query;
 
-    interface QueryParams {
-      createdBy: string;
-      status?: string;
-      monitoring?: string;
-      url?: { $regex: string; $options: string };
-    }
-
-    const queryObject: QueryParams = {
+    const queryObject: ApiQueryParams = {
       createdBy: user._id,
     };
 
@@ -100,16 +95,16 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
 
     result = result.sort("-_id");
 
-    if (sort === "Latest") {
+    if (sort === ApiSortOptions.Latest) {
       result = result.sort("-createdAt");
     }
-    if (sort === "Oldest") {
+    if (sort === ApiSortOptions.Oldest) {
       result = result.sort("createdAt");
     }
-    if (sort === "A-Z") {
+    if (sort === ApiSortOptions.A_Z) {
       result = result.sort("url");
     }
-    if (sort === "Z-A") {
+    if (sort === ApiSortOptions.Z_A) {
       result = result.sort("-url");
     }
 
@@ -135,7 +130,7 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
 
 const updateApi = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -179,7 +174,7 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
 
 const deleteApi = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -209,7 +204,7 @@ const deleteApi = async (req: Request, res: Response): Promise<void> => {
 
 const getApi = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -235,13 +230,13 @@ const getApi = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-let monthlyApis = [{ date: currentMonthYear, count: 0 }];
+let monthlyApis: AllMonthlyApis = [{ date: "", count: 0 }];
 
 const showStats = async (req: Request, res: Response) => {
   try {
-    const user = await validateUser(req, res);
+    const user = await validateUserExists(req, res);
 
-    if (!user) {
+    if (!user || !user._id) {
       unAuthenticatedError(res, "Invalid Credentials");
       return;
     }
@@ -289,10 +284,7 @@ const showStats = async (req: Request, res: Response) => {
             count,
           } = item;
 
-          const date = moment()
-            .month(month - 1)
-            .year(year)
-            .format("MMM Y");
+          const date = formatCurrentMonthYear(year, month);
 
           return { date, count };
         })

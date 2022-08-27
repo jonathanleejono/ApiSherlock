@@ -11,16 +11,16 @@ import { editApiRoute } from "constants/routes";
 import { setEditApi } from "features/api/apiSlice";
 import { deleteApi } from "features/api/apiThunk";
 import { pingOne } from "features/ping/pingThunk";
-import moment from "moment";
 import { handleToast } from "notifications/toast";
 import PropTypes, { InferProps } from "prop-types";
 import { BsFillCalendar2PlusFill } from "react-icons/bs";
 import { FaCode, FaLayerGroup, FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { useAppDispatch } from "state/hooks";
+import { useAppDispatch, useAppSelector } from "state/hooks";
+import { formatMonthYear } from "utils/datetime";
 
 const propTypes = {
-  createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  createdAt: PropTypes.string.isRequired,
   url: PropTypes.string.isRequired,
   host: PropTypes.string.isRequired,
   lastPinged: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
@@ -43,9 +43,10 @@ const Api: React.FC<ApiProps> = ({
   _id,
 }) => {
   const dispatch = useAppDispatch();
+  const { user } = useAppSelector((store) => store.user);
 
-  const date = moment(createdAt).utcOffset("-04:00").format("MMM Do YYYY");
-  const createdDate = "Created Date: " + date;
+  const createdDate =
+    "Created Date: " + formatMonthYear(createdAt, user.timezoneGMT);
   const apiLastPinged = "Last Pinged: " + lastPinged;
   const apiMonitoring = "Monitoring: " + monitoring;
 
