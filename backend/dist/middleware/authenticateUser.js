@@ -8,16 +8,15 @@ const index_1 = require("errors/index");
 const cookies_1 = require("constants/cookies");
 const authenticateUser = async (req, res, next) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader ||
-        !authHeader.startsWith("Bearer") ||
-        !req.cookies[cookies_1.cookieName]) {
+    const refreshToken = req.cookies[cookies_1.cookieName];
+    if (!authHeader || !authHeader.startsWith("Bearer") || !refreshToken) {
         (0, index_1.unAuthenticatedError)(res, "Invalid credentials, please login again");
         return;
     }
     const accessToken = authHeader.split(" ")[1];
     try {
         const accessTokenPayload = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
-        jsonwebtoken_1.default.verify(req.cookies[cookies_1.cookieName], process.env.JWT_SECRET);
+        jsonwebtoken_1.default.verify(refreshToken, process.env.JWT_SECRET);
         req.user = { userId: accessTokenPayload.userId };
         next();
     }

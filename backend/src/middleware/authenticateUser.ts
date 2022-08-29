@@ -10,12 +10,9 @@ const authenticateUser = async (
   next: NextFunction
 ) => {
   const authHeader = req.headers.authorization;
+  const refreshToken = req.cookies[cookieName];
 
-  if (
-    !authHeader ||
-    !authHeader.startsWith("Bearer") ||
-    !req.cookies[cookieName]
-  ) {
+  if (!authHeader || !authHeader.startsWith("Bearer") || !refreshToken) {
     unAuthenticatedError(res, "Invalid credentials, please login again");
     return;
   }
@@ -28,10 +25,7 @@ const authenticateUser = async (
       process.env.JWT_SECRET as string
     ) as JwtPayload;
 
-    jwt.verify(
-      req.cookies[cookieName],
-      process.env.JWT_SECRET as string
-    ) as JwtPayload;
+    jwt.verify(refreshToken, process.env.JWT_SECRET as string) as JwtPayload;
 
     req.user = { userId: accessTokenPayload.userId };
 

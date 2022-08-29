@@ -5,13 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pingOne = exports.pingAll = void 0;
 const axios_1 = __importDefault(require("axios"));
-const datetime_1 = require("utils/datetime");
 const messages_1 = require("constants/messages");
 const errors_1 = require("errors");
 const http_status_codes_1 = require("http-status-codes");
-const checkPermissions_1 = __importDefault(require("utils/checkPermissions"));
-const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
+const checkPermissions_1 = __importDefault(require("utils/checkPermissions"));
+const datetime_1 = require("utils/datetime");
+const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const pingAll = async (req, res) => {
     try {
         const user = await (0, validateUserExists_1.default)(req, res);

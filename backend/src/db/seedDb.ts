@@ -38,7 +38,7 @@ const seedUsersCollection = async (
   _: Request,
   res: Response
 ): Promise<void> => {
-  if (process.env.NODE_ENV !== "tes") {
+  if (process.env.NODE_ENV !== "test") {
     badRequestError(res, "Can only seed db in testing");
     return;
   } else {

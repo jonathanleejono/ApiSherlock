@@ -1,23 +1,25 @@
 import { badRequestError } from "errors";
-import { Request, Response } from "express";
+import { Response } from "express";
 
-let inputKeys;
+function checkIfDuplicateExists(arr: string[]): boolean {
+  return new Set(arr).size !== arr.length;
+}
 
-export function validateInputKeys(
-  req: Request,
+export function validKeys(
   res: Response,
+  arrReqInput: string[],
   errorMsg: string,
-  validKeys: string[],
-  keyType?: "query" | "body"
-) {
-  if (keyType === "query") {
-    inputKeys = req.query;
-  } else inputKeys = req.body;
-
-  Object.keys(inputKeys).forEach((key: string) => {
-    if (!validKeys.includes(key)) {
-      badRequestError(res, `${errorMsg}` + `${validKeys}`.replace(/,/g, ", "));
-    }
-  });
-  return;
+  arrValid: string[]
+): boolean {
+  if (!arrReqInput.every((elem) => arrValid.includes(elem))) {
+    badRequestError(res, `${errorMsg}` + `${arrValid}`.replace(/,/g, ", "));
+    return false;
+  } else if (checkIfDuplicateExists(arrReqInput)) {
+    badRequestError(
+      res,
+      `Duplicate info, please only provide one of each field`
+    );
+    return false;
+  }
+  return true;
 }

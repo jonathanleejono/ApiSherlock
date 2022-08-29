@@ -11,14 +11,15 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const validateKeys_1 = require("utils/validateKeys");
 const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
-const UserCollection_1 = __importDefault(require("models/UserCollection"));
 dotenv_1.default.config();
 const { JWT_ACCESS_TOKEN_LIFETIME, JWT_REFRESH_TOKEN_LIFETIME } = process.env;
 const register = async (req, res) => {
     try {
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid register, can only use: `, keys_1.validRegisterKeys);
+        if (!(0, validateKeys_1.validKeys)(res, Object.keys(req.body), `Invalid register, can only use: `, keys_1.validRegisterKeys))
+            return;
         const { name, email, password, timezoneGMT } = req.body;
         if (!name || !email || !password) {
             (0, index_1.badRequestError)(res, "Please provide all values");
@@ -67,7 +68,8 @@ const register = async (req, res) => {
 exports.register = register;
 const login = async (req, res) => {
     try {
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid login, can only use: `, keys_1.validLoginKeys);
+        if (!(0, validateKeys_1.validKeys)(res, Object.keys(req.body), `Invalid login, can only use: `, keys_1.validLoginKeys))
+            return;
         const { email, password } = req.body;
         if (!email || !password) {
             (0, index_1.badRequestError)(res, "Please provide all values");
@@ -117,7 +119,8 @@ const updateUser = async (req, res) => {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid update, can only update: `, keys_1.validUpdateKeys);
+        if (!(0, validateKeys_1.validKeys)(res, Object.keys(req.body), `Invalid update, can only update: `, keys_1.validUpdateKeys))
+            return;
         const { email, name, timezoneGMT } = req.body;
         if (!email || !name || !timezoneGMT) {
             (0, index_1.badRequestError)(res, "Please provide all values");

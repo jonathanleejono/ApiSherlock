@@ -17,9 +17,9 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { JwtPayload } from "interfaces/jwtPayload";
 import jwt from "jsonwebtoken";
-import { validateInputKeys } from "utils/validateKeys";
-import validateUserExists from "utils/validateUserExists";
 import UserCollection from "models/UserCollection";
+import { validKeys } from "utils/validateKeys";
+import validateUserExists from "utils/validateUserExists";
 
 dotenv.config();
 
@@ -27,12 +27,15 @@ const { JWT_ACCESS_TOKEN_LIFETIME, JWT_REFRESH_TOKEN_LIFETIME } = process.env;
 
 const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    validateInputKeys(
-      req,
-      res,
-      `Invalid register, can only use: `,
-      validRegisterKeys
-    );
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.body),
+        `Invalid register, can only use: `,
+        validRegisterKeys
+      )
+    )
+      return;
 
     const { name, email, password, timezoneGMT } = req.body;
 
@@ -93,12 +96,15 @@ const register = async (req: Request, res: Response): Promise<void> => {
 
 const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    validateInputKeys(
-      req,
-      res,
-      `Invalid login, can only use: `,
-      validLoginKeys
-    );
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.body),
+        `Invalid login, can only use: `,
+        validLoginKeys
+      )
+    )
+      return;
 
     const { email, password } = req.body;
 
@@ -109,7 +115,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
 
     const user = await UserCollection.findOne({ email }).select("+password");
 
-    if (!user || !user.password) {
+    if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
       return;
     }
@@ -120,7 +126,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
     );
 
     if (!isPasswordCorrect) {
-      unAuthenticatedError(res, "Invalid Credentials");
+      unAuthenticatedError(res, "Incorrect Credentials");
       return;
     }
 
@@ -164,12 +170,15 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    validateInputKeys(
-      req,
-      res,
-      `Invalid update, can only update: `,
-      validUpdateKeys
-    );
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.body),
+        `Invalid update, can only update: `,
+        validUpdateKeys
+      )
+    )
+      return;
 
     const { email, name, timezoneGMT } = req.body;
 

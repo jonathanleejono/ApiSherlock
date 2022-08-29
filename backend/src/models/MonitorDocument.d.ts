@@ -1,7 +1,7 @@
 import { MonitorDateDayOfWeekOptions } from "enum";
 import { MonitorIntervalScheduleOptions } from "enum";
 import mongoose from "mongoose";
-import { UnifiedModel } from "./UnifiedModel";
+import { UnifiedModel } from "models/UnifiedModel";
 
 // time of ping
 // day of the week (can be monday, tuesday, wed)
@@ -20,4 +20,4 @@ export interface Monitor extends UnifiedModel {
   createdBy: mongoose.Types.ObjectId;
 }
 
-export default interface MonitorDocument extends Monitor {}
+export default interface MonitorDocument extends Monitor, mongoose.Document {}

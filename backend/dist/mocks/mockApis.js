@@ -9,7 +9,6 @@ exports.mockApis = [
         status: apis_1.ApiStatusOptions.Pending,
         lastPinged: "Never pinged",
         monitoring: apis_1.ApiMonitoringOptions.ON,
-        __v: 0,
     },
     {
         url: "https://www.hello-herokuapp2.com/ping",
@@ -17,7 +16,6 @@ exports.mockApis = [
         status: apis_1.ApiStatusOptions.Pending,
         lastPinged: "Never pinged",
         monitoring: apis_1.ApiMonitoringOptions.OFF,
-        __v: 0,
     },
     {
         url: "https://www.not1arealwebsitehopefully5.com/ping",
@@ -25,7 +23,6 @@ exports.mockApis = [
         status: apis_1.ApiStatusOptions.Pending,
         lastPinged: "Never pinged",
         monitoring: apis_1.ApiMonitoringOptions.ON,
-        __v: 0,
     },
     {
         url: "https://www.not1arealwebsitehopefully2.com/ping",
@@ -33,7 +30,6 @@ exports.mockApis = [
         status: apis_1.ApiStatusOptions.Pending,
         lastPinged: "Never pinged",
         monitoring: apis_1.ApiMonitoringOptions.ON,
-        __v: 0,
     },
     {
         url: "https://www.not1arealwebsitehopefully3.com/ping",
@@ -41,7 +37,6 @@ exports.mockApis = [
         status: apis_1.ApiStatusOptions.Pending,
         lastPinged: "Never pinged",
         monitoring: apis_1.ApiMonitoringOptions.ON,
-        __v: 0,
     },
 ];
 //# sourceMappingURL=mockApis.js.map

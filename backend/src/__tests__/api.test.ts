@@ -21,34 +21,35 @@ import {
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
 } from "constants/urls";
-import getCurrentUserId from "utils/getCurrentUserId";
+import { ApiMonitoringOptions } from "enum/apis";
 import { mockApi } from "mocks/mockApi";
 import { mockApis } from "mocks/mockApis";
 import { mockApisStats } from "mocks/mockApisStats";
 import { mockUpdatedApis } from "mocks/mockUpdatedApis";
 import { mockUser } from "mocks/mockUser";
-import mongoose from "mongoose";
+import { Api } from "models/ApiDocument";
+import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
-import { ApiMonitoringOptions } from "enum/apis";
+import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
 
-let currentUserId: string | { error: any } = "";
-let apiObjId: string; // using this apiObjId for patch and ping one
-let apiToDeleteId: string;
+let currentUserId: Schema.Types.ObjectId;
+let apiObjId: Schema.Types.ObjectId; // using this apiObjId for patch and ping one
+let apiToDeleteId: Schema.Types.ObjectId;
 
 const mockUpdatedApi = mockUpdatedApis[0];
 
 const mockQueryParamApi = mockApis[1];
 
-let testApiResponse = {
-  url: "",
-  host: "",
-  monitoring: "",
+let testApiResponse: Partial<Api> = {
+  url: expect.any(String),
+  host: expect.any(String),
+  monitoring: expect.any(String),
   status: expect.any(String),
   lastPinged: expect.any(String),
-  createdBy: "",
+  createdBy: expect.any(String),
   _id: expect.any(String),
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
@@ -70,6 +71,11 @@ describe("testing api controller", () => {
     // req.user.userId isn't present in supertest,
     // which is why a getCurrentUserId function is used
     currentUserId = await getCurrentUserId(accessToken);
+
+    if (!currentUserId) {
+      console.error("Couldn't get current user id");
+      return;
+    }
 
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
@@ -113,7 +119,7 @@ describe("testing api controller", () => {
       testApiResponse.url = mockQueryParamApi.url;
       testApiResponse.host = mockQueryParamApi.host;
       testApiResponse.monitoring = mockQueryParamApi.monitoring;
-      testApiResponse.createdBy = currentUserId as string;
+      testApiResponse.createdBy = currentUserId;
 
       expect(response.statusCode).toBe(200);
       // testApiResponse needs to be an array
@@ -147,7 +153,7 @@ describe("testing api controller", () => {
           url: updatedData.url,
         });
 
-      testApiResponse._id = `${apiObjId}`;
+      testApiResponse._id = apiObjId;
       testApiResponse.url = updatedData.url;
       testApiResponse.host = mockApi.host;
       testApiResponse.monitoring = mockApi.monitoring;
@@ -191,7 +197,7 @@ describe("testing api controller", () => {
         testApiResponse.url = mockUpdatedApi.url;
         testApiResponse.status = mockUpdatedApi.status;
         testApiResponse.monitoring = mockUpdatedApi.monitoring;
-        testApiResponse.createdBy = `${currentUserId}`;
+        testApiResponse.createdBy = currentUserId;
 
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual(expect.objectContaining(testApiResponse));

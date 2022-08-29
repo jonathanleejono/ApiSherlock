@@ -1,10 +1,10 @@
-import { formatCurrentMonthYear } from "utils/datetime";
 import {
   validCreateApiKeys,
   validGetAllApisKeys,
   validUpdateApiKeys,
 } from "constants/keys";
 import { deleteApiSuccessMsg } from "constants/messages";
+import { ApiSortOptions } from "enum/apis";
 import {
   badRequestError,
   notFoundError,
@@ -13,13 +13,12 @@ import {
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { ApiQueryParams } from "interfaces/apiQueryParams";
-import { AllMonthlyApis } from "interfaces/monthlyApis";
-import checkPermissions from "utils/checkPermissions";
-import { validateInputKeys } from "utils/validateKeys";
-import validateUserExists from "utils/validateUserExists";
+import { ApiDefaultStats, MonthlyApis } from "interfaces/apiStats";
 import ApiCollection from "models/ApiCollection";
-import mongoose from "mongoose";
-import { ApiSortOptions } from "enum/apis";
+import checkPermissions from "utils/checkPermissions";
+import { formatCurrentMonthYear } from "utils/datetime";
+import { validKeys } from "utils/validateKeys";
+import validateUserExists from "utils/validateUserExists";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -30,12 +29,15 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    validateInputKeys(
-      req,
-      res,
-      `Invalid API creation, can only input: `,
-      validCreateApiKeys
-    );
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.body),
+        `Invalid API creation, can only input: `,
+        validCreateApiKeys
+      )
+    )
+      return;
 
     const { url, host, monitoring } = req.body;
 
@@ -65,13 +67,15 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    validateInputKeys(
-      req,
-      res,
-      `Invalid search params, can only use: `,
-      validGetAllApisKeys,
-      "query"
-    );
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.query),
+        `Invalid search params, can only use: `,
+        validGetAllApisKeys
+      )
+    )
+      return;
 
     const { status, monitoring, sort, search } = req.query;
 
@@ -139,6 +143,11 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
 
     const { id: apiId } = req.params;
 
+    if (!apiId) {
+      badRequestError(res, "Please provide API id");
+      return;
+    }
+
     const api = await ApiCollection.findOne({ _id: apiId });
 
     if (!api) {
@@ -148,12 +157,15 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
 
     checkPermissions(res, user._id, api.createdBy);
 
-    validateInputKeys(
-      req,
-      res,
-      `Error updating API, can only use: `,
-      validUpdateApiKeys
-    );
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.body),
+        `Error updating API, can only use: `,
+        validUpdateApiKeys
+      )
+    )
+      return;
 
     const updatedApi = await ApiCollection.findOneAndUpdate(
       { _id: apiId },
@@ -182,6 +194,11 @@ const deleteApi = async (req: Request, res: Response): Promise<void> => {
     }
 
     const { id: apiId } = req.params;
+
+    if (!apiId) {
+      badRequestError(res, "Please provide API id");
+      return;
+    }
 
     const api = await ApiCollection.findOne({ _id: apiId });
 
@@ -213,6 +230,11 @@ const getApi = async (req: Request, res: Response): Promise<void> => {
 
     const { id: apiId } = req.params;
 
+    if (!apiId) {
+      badRequestError(res, "Please provide API id");
+      return;
+    }
+
     const api = await ApiCollection.findOne({ _id: apiId });
 
     if (!api) {
@@ -230,18 +252,18 @@ const getApi = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-let monthlyApis: AllMonthlyApis = [{ date: "", count: 0 }];
+let monthlyApis: MonthlyApis[] = [{ date: "", count: 0 }];
 
 const showStats = async (req: Request, res: Response) => {
   try {
     const user = await validateUserExists(req, res);
 
-    if (!user || !user._id) {
+    if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
       return;
     }
 
-    const userId = new mongoose.Types.ObjectId(user._id);
+    const userId = user._id;
 
     const statsStatus = await ApiCollection.aggregate([
       { $match: { createdBy: userId } },
@@ -255,7 +277,7 @@ const showStats = async (req: Request, res: Response) => {
       return acc;
     }, {});
 
-    const defaultStats = {
+    const defaultStats: ApiDefaultStats = {
       healthy: stats.healthy || 0,
       unhealthy: stats.unhealthy || 0,
       pending: stats.pending || 0,

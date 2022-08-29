@@ -1,4 +1,6 @@
-export const mockUpdatedApis = [
+import { Api } from "models/ApiDocument";
+
+export const mockUpdatedApis: Partial<Api>[] = [
   {
     url: "https://battery-cellify.herokuapp22.com/ping",
     host: "Heroku",

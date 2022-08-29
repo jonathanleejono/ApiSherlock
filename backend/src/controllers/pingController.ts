@@ -1,5 +1,4 @@
 import axios from "axios";
-import { getDateWithUTCOffset } from "utils/datetime";
 import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
@@ -7,9 +6,10 @@ import {
 import { badRequestError, notFoundError, unAuthenticatedError } from "errors";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import checkPermissions from "utils/checkPermissions";
-import validateUserExists from "utils/validateUserExists";
 import ApiCollection from "models/ApiCollection";
+import checkPermissions from "utils/checkPermissions";
+import { getDateWithUTCOffset } from "utils/datetime";
+import validateUserExists from "utils/validateUserExists";
 
 const pingAll = async (req: Request, res: Response): Promise<any> => {
   try {

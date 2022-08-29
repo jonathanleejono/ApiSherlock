@@ -28,7 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
-const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
+const apis_1 = require("enum/apis");
 const mockApi_1 = require("mocks/mockApi");
 const mockApis_1 = require("mocks/mockApis");
 const mockApisStats_1 = require("mocks/mockApisStats");
@@ -37,7 +37,7 @@ const mockUser_1 = require("mocks/mockUser");
 const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
 const supertest_1 = __importStar(require("supertest"));
-const apis_1 = require("enum/apis");
+const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
 let currentUserId = "";
 let apiObjId;
@@ -50,7 +50,7 @@ let testApiResponse = {
     monitoring: "",
     status: expect.any(String),
     lastPinged: expect.any(String),
-    createdBy: "",
+    createdBy: expect.any(String),
     _id: expect.any(String),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -94,7 +94,7 @@ describe("testing api controller", () => {
             testApiResponse.url = mockQueryParamApi.url;
             testApiResponse.host = mockQueryParamApi.host;
             testApiResponse.monitoring = mockQueryParamApi.monitoring;
-            testApiResponse.createdBy = currentUserId;
+            testApiResponse.createdBy = new mongoose_1.default.Types.ObjectId(`${currentUserId}`);
             expect(response.statusCode).toBe(200);
             expect(response.body.allApis).toMatchObject([testApiResponse]);
             expect(response.body.totalApis).toEqual(1);
@@ -120,7 +120,7 @@ describe("testing api controller", () => {
                 .send({
                 url: updatedData.url,
             });
-            testApiResponse._id = `${apiObjId}`;
+            testApiResponse._id = new mongoose_1.default.Schema.Types.ObjectId(`${apiObjId}`);
             testApiResponse.url = updatedData.url;
             testApiResponse.host = mockApi_1.mockApi.host;
             testApiResponse.monitoring = mockApi_1.mockApi.monitoring;
@@ -147,7 +147,7 @@ describe("testing api controller", () => {
                 testApiResponse.url = mockUpdatedApi.url;
                 testApiResponse.status = mockUpdatedApi.status;
                 testApiResponse.monitoring = mockUpdatedApi.monitoring;
-                testApiResponse.createdBy = `${currentUserId}`;
+                testApiResponse.createdBy = new mongoose_1.default.Types.ObjectId(`${currentUserId}`);
                 expect(response.statusCode).toBe(200);
                 expect(response.body).toEqual(expect.objectContaining(testApiResponse));
             });

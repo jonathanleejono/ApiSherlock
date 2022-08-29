@@ -1,6 +1,8 @@
+import { Schema } from "mongoose";
+
 export interface ApiQueryParams {
-      createdBy: string;
-      status?: string;
-      monitoring?: string;
-      url?: { $regex: string; $options: string };
-    }
+  createdBy: Schema.Types.ObjectId;
+  status?: string;
+  monitoring?: string;
+  url?: { $regex: string; $options: string };
+}

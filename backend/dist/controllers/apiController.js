@@ -22,7 +22,8 @@ const createApi = async (req, res) => {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid API creation, can only input: `, keys_1.validCreateApiKeys);
+        if (!(0, validateKeys_1.validKeys)(res, Object.keys(req.body), `Invalid API creation, can only input: `, keys_1.validCreateApiKeys))
+            return;
         const { url, host, monitoring } = req.body;
         if (!url || !host || !monitoring) {
             (0, index_1.badRequestError)(res, "Please provide all values");
@@ -46,10 +47,11 @@ const getAllApis = async (req, res) => {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid search params, can only use: `, keys_1.validGetAllApisKeys, "query");
+        if (!(0, validateKeys_1.validKeys)(res, Object.keys(req.query), `Invalid search params, can only use: `, keys_1.validGetAllApisKeys))
+            return;
         const { status, monitoring, sort, search } = req.query;
         const queryObject = {
-            createdBy: user._id,
+            createdBy: `${user._id}`,
         };
         if (status && status !== "All") {
             queryObject.status = status;
@@ -98,13 +100,18 @@ const updateApi = async (req, res) => {
             return;
         }
         const { id: apiId } = req.params;
+        if (!apiId) {
+            (0, index_1.badRequestError)(res, "Please provide API id");
+            return;
+        }
         const api = await ApiCollection_1.default.findOne({ _id: apiId });
         if (!api) {
             (0, index_1.notFoundError)(res, `No API with id :${apiId}`);
             return;
         }
         (0, checkPermissions_1.default)(res, user._id, api.createdBy);
-        (0, validateKeys_1.validateInputKeys)(req, res, `Error updating API, can only use: `, keys_1.validUpdateApiKeys);
+        if (!(0, validateKeys_1.validKeys)(res, Object.keys(req.body), `Error updating API, can only use: `, keys_1.validUpdateApiKeys))
+            return;
         const updatedApi = await ApiCollection_1.default.findOneAndUpdate({ _id: apiId }, req.body, {
             new: true,
             runValidators: true,
@@ -126,6 +133,10 @@ const deleteApi = async (req, res) => {
             return;
         }
         const { id: apiId } = req.params;
+        if (!apiId) {
+            (0, index_1.badRequestError)(res, "Please provide API id");
+            return;
+        }
         const api = await ApiCollection_1.default.findOne({ _id: apiId });
         if (!api) {
             (0, index_1.notFoundError)(res, `No API with id :${apiId}`);
@@ -150,6 +161,10 @@ const getApi = async (req, res) => {
             return;
         }
         const { id: apiId } = req.params;
+        if (!apiId) {
+            (0, index_1.badRequestError)(res, "Please provide API id");
+            return;
+        }
         const api = await ApiCollection_1.default.findOne({ _id: apiId });
         if (!api) {
             (0, index_1.notFoundError)(res, `No API with id :${apiId}`);
@@ -169,11 +184,11 @@ let monthlyApis = [{ date: "", count: 0 }];
 const showStats = async (req, res) => {
     try {
         const user = await (0, validateUserExists_1.default)(req, res);
-        if (!user || !user._id) {
+        if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        const userId = new mongoose_1.default.Types.ObjectId(user._id);
+        const userId = new mongoose_1.default.Types.ObjectId(`${user._id}`);
         const statsStatus = await ApiCollection_1.default.aggregate([
             { $match: { createdBy: userId } },
             { $group: { _id: "$status", count: { $sum: 1 } } },

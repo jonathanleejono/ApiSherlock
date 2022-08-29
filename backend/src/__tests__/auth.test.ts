@@ -14,7 +14,7 @@ import {
 import { cookieName } from "constants/cookies";
 import { User } from "models/UserDocument";
 
-const user: User = {
+const user: Partial<User> = {
   name: "jane",
   email: "janedoe2@gmail.com",
   password: "password",

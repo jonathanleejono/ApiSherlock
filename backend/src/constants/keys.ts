@@ -1,12 +1,18 @@
-export const validRegisterKeys = ["name", "email", "password", "timezoneGMT"];
+import { mockApi } from "mocks/mockApi";
+import { mockUser } from "mocks/mockUser";
 
-export const validLoginKeys = ["email", "password"];
+// mockUser uses User typing
+const { name, email, password, timezoneGMT } = mockUser;
 
-export const validUpdateKeys = ["name", "email", "timezoneGMT"];
+export const validRegisterKeys = Object.keys(mockUser);
 
-export const validCreateApiKeys = ["url", "host", "monitoring"];
+export const validLoginKeys = Object.keys({ email, password });
 
-export const validUpdateApiKeys = [...validCreateApiKeys];
+export const validUpdateKeys = Object.keys({ name, email, timezoneGMT });
+
+export const validCreateApiKeys = Object.keys(mockApi);
+
+export const validUpdateApiKeys = validCreateApiKeys;
 
 export const validGetAllApisKeys = [
   "status",
