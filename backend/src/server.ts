@@ -77,7 +77,10 @@ app.use(pingHealthCheckUrl, (_, res) => {
 
 app.use(`${baseAuthUrl}`, authRouter);
 app.use(`${baseApiUrl}`, authenticateUser, apiRouter);
-app.use(`${baseSeedDbUrl}`, seedDbRouter);
+
+if (process.env.NODE_ENV === "test") {
+  app.use(`${baseSeedDbUrl}`, seedDbRouter);
+}
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

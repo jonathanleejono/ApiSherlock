@@ -1,1 +1,1 @@
-{"version":3,"file":"mockApi.js","sourceRoot":"","sources":["../../src/mocks/mockApi.ts"],"names":[],"mappings":";;;AAAA,oCAAiE;AAGpD,QAAA,OAAO,GAAiB;IACnC,GAAG,EAAE,gDAAgD;IACrD,IAAI,EAAE,qBAAc,CAAC,MAAM;IAC3B,UAAU,EAAE,2BAAoB,CAAC,EAAE;CACpC,CAAC"}
+{"version":3,"file":"mockApi.js","sourceRoot":"","sources":["../../src/mocks/mockApi.ts"],"names":[],"mappings":";;;AAAA,oCAAiE;AAUpD,QAAA,OAAO,GAClB;IACE,GAAG,EAAE,gDAAgD;IACrD,IAAI,EAAE,qBAAc,CAAC,MAAM;IAC3B,UAAU,EAAE,2BAAoB,CAAC,EAAE;CACpC,CAAC"}

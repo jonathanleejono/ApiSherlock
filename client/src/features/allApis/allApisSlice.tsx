@@ -6,10 +6,10 @@ import {
   ApiDataResponse,
   ApiDefaultStats,
   MonthlyApis,
-  QueryParams,
+  ApiQueryParams,
 } from "interfaces/apis";
 
-interface AllApisState extends QueryParams {
+interface AllApisState extends ApiQueryParams {
   isLoading: boolean;
   allApis: ApiDataResponse[];
   totalApis: number;
@@ -20,12 +20,13 @@ interface AllApisState extends QueryParams {
 
 //this is separate so this can be
 //reset separately
-const initialFiltersState: QueryParams = {
+const initialFiltersState: ApiQueryParams = {
   search: "",
   status: "",
   sort: ApiSortOptions.Latest,
   monitoring: "",
   page: 1,
+  host: "",
 };
 
 const initialState: AllApisState = {

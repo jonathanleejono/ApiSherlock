@@ -5,7 +5,10 @@ import {
   editApiSuccessMsg,
   pleaseFillOutAllValues,
 } from "constants/messages";
-import { apiHostOptions, apiMonitoringOptions } from "constants/options";
+import {
+  validApiHostOptions,
+  validApiMonitoringOptions,
+} from "constants/options/apis";
 import { allApisRoute } from "constants/routes";
 import { handleApiInput, resetApiState } from "features/api/apiSlice";
 import { editApi } from "features/api/apiThunk";
@@ -72,7 +75,7 @@ const EditApi = () => {
             name="host"
             value={host}
             handleChange={handleInput}
-            list={apiHostOptions}
+            list={validApiHostOptions}
           />
           {/* API Monitoring (ie. auto ping) */}
           <FormRowSelect
@@ -80,7 +83,7 @@ const EditApi = () => {
             name="monitoring"
             value={monitoring}
             handleChange={handleInput}
-            list={apiMonitoringOptions}
+            list={validApiMonitoringOptions}
           />
 
           <div className="btn-container">

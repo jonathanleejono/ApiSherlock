@@ -40,14 +40,16 @@ app.use(urls_1.pingHealthCheckUrl, (_, res) => {
 });
 app.use(`${urls_1.baseAuthUrl}`, authRoutes_1.default);
 app.use(`${urls_1.baseApiUrl}`, authenticateUser_1.default, apiRoutes_1.default);
-app.use(`${urls_1.baseSeedDbUrl}`, seedDbRoutes_1.default);
+if (process.env.NODE_ENV === "test") {
+    app.use(`${urls_1.baseSeedDbUrl}`, seedDbRoutes_1.default);
+}
 app.use(notFoundRoute_1.default);
 app.use(errorHandler_1.default);
 const port = process.env.PORT || 5000;
 const start = async () => {
     try {
         await (0, connect_1.default)(process.env.MONGO_URL);
-        if (process.env.NODE_ENV !== "testing") {
+        if (process.env.NODE_ENV !== "test") {
             app.listen(port, () => {
                 console.log(`Server is listening on port ${port}...`);
             });

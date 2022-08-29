@@ -1,8 +1,11 @@
 import {
   validCreateApiKeys,
-  validGetAllApisKeys,
+  validApiSearchParams,
   validUpdateApiKeys,
-} from "constants/keys";
+  validApiHostOptions,
+  validApiMonitoringOptions,
+  validApiStatusOptions,
+} from "constants/options/apis";
 import { deleteApiSuccessMsg } from "constants/messages";
 import { ApiSortOptions } from "enum/apis";
 import {
@@ -17,7 +20,11 @@ import { ApiDefaultStats, MonthlyApis } from "interfaces/apiStats";
 import ApiCollection from "models/ApiCollection";
 import checkPermissions from "utils/checkPermissions";
 import { formatCurrentMonthYear } from "utils/datetime";
-import { validKeys } from "utils/validateKeys";
+import {
+  emptyValuesExist,
+  validKeys,
+  validValues,
+} from "utils/validateKeysValues";
 import validateUserExists from "utils/validateUserExists";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
@@ -39,12 +46,29 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
     )
       return;
 
-    const { url, host, monitoring } = req.body;
+    if (emptyValuesExist(res, Object.values(req.body))) return;
 
-    if (!url || !host || !monitoring) {
-      badRequestError(res, "Please provide all values");
+    const { host, monitoring } = req.body;
+
+    if (
+      !validValues(
+        res,
+        host,
+        `Invalid host, please select one of: `,
+        validApiHostOptions
+      )
+    )
       return;
-    }
+
+    if (
+      !validValues(
+        res,
+        monitoring,
+        `Invalid monitoring, please select one of: `,
+        validApiMonitoringOptions
+      )
+    )
+      return;
 
     req.body.createdBy = user._id;
 
@@ -72,24 +96,59 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
         res,
         Object.keys(req.query),
         `Invalid search params, can only use: `,
-        validGetAllApisKeys
+        validApiSearchParams
       )
     )
       return;
 
-    const { status, monitoring, sort, search } = req.query;
+    const { host, status, monitoring, sort, search, page, limit } = req.query;
 
     const queryObject: ApiQueryParams = {
       createdBy: user._id,
     };
 
-    if (status && status !== "All") {
+    if (
+      host &&
+      !validValues(
+        res,
+        host as string,
+        `Invalid host search, please select one of: `,
+        [...validApiHostOptions, "All"]
+      )
+    )
+      return;
+    else if (host && host !== "All") {
+      queryObject.host = host as string;
+    }
+
+    if (
+      status &&
+      !validValues(
+        res,
+        status as string,
+        `Invalid status search, please select one of: `,
+        [...validApiStatusOptions, "All"]
+      )
+    )
+      return;
+    else if (status && status !== "All") {
       queryObject.status = status as string;
     }
 
-    if (monitoring && monitoring !== "All") {
+    if (
+      monitoring &&
+      !validValues(
+        res,
+        monitoring as string,
+        `Invalid monitoring search, please select one of: `,
+        [...validApiMonitoringOptions, "All"]
+      )
+    )
+      return;
+    else if (monitoring && monitoring !== "All") {
       queryObject.monitoring = monitoring as string;
     }
+
     if (search) {
       queryObject.url = { $regex: search as string, $options: "i" };
     }
@@ -113,16 +172,18 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
     }
 
     // setup pagination
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const _page = Number(page) || 1;
+    const _limit = Number(limit) || 10;
+    const skip = (_page - 1) * _limit;
 
-    result = result.skip(skip).limit(limit);
+    result = result.skip(skip).limit(_limit);
 
     const allApis = await result;
 
-    const totalApis = await ApiCollection.countDocuments(queryObject);
-    const numOfPages = Math.ceil(totalApis / limit);
+    // you could use await ApiCollection.countDocuments(queryObject),
+    // if you wanted a specific filter for the count
+    const totalApis = allApis.length;
+    const numOfPages = Math.ceil(totalApis / _limit);
 
     res.status(StatusCodes.OK).json({ allApis, totalApis, numOfPages });
   } catch (error) {
@@ -148,15 +209,6 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const api = await ApiCollection.findOne({ _id: apiId });
-
-    if (!api) {
-      notFoundError(res, `No API with id :${apiId}`);
-      return;
-    }
-
-    checkPermissions(res, user._id, api.createdBy);
-
     if (
       !validKeys(
         res,
@@ -166,6 +218,41 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
       )
     )
       return;
+
+    if (emptyValuesExist(res, Object.values(req.body))) return;
+
+    const { host, monitoring } = req.body;
+
+    if (
+      host &&
+      !validValues(
+        res,
+        host,
+        `Invalid host, please select one of: `,
+        validApiHostOptions
+      )
+    )
+      return;
+
+    if (
+      monitoring &&
+      !validValues(
+        res,
+        monitoring,
+        `Invalid monitoring, please select one of: `,
+        validApiMonitoringOptions
+      )
+    )
+      return;
+
+    const api = await ApiCollection.findOne({ _id: apiId });
+
+    if (!api) {
+      notFoundError(res, `No API with id: ${apiId}`);
+      return;
+    }
+
+    checkPermissions(res, user._id, api.createdBy);
 
     const updatedApi = await ApiCollection.findOneAndUpdate(
       { _id: apiId },
@@ -203,7 +290,7 @@ const deleteApi = async (req: Request, res: Response): Promise<void> => {
     const api = await ApiCollection.findOne({ _id: apiId });
 
     if (!api) {
-      notFoundError(res, `No API with id :${apiId}`);
+      notFoundError(res, `No API with id: ${apiId}`);
       return;
     }
 
@@ -238,7 +325,7 @@ const getApi = async (req: Request, res: Response): Promise<void> => {
     const api = await ApiCollection.findOne({ _id: apiId });
 
     if (!api) {
-      notFoundError(res, `No API with id :${apiId}`);
+      notFoundError(res, `No API with id: ${apiId}`);
       return;
     }
 

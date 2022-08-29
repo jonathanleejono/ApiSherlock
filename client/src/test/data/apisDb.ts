@@ -18,7 +18,7 @@ import {
   ApiDefaultStats,
   ApiRequestData,
   MonthlyApis,
-  QueryParams,
+  ApiQueryParams,
 } from "interfaces/apis";
 import { PingResponse } from "interfaces/ping";
 import { mockApis } from "test/data/mockApis";
@@ -169,7 +169,7 @@ async function generateMockApis(userId: string): Promise<ApiDataResponse[]> {
 // GET ALL BY OWNER - WITH AUTH
 async function getAllApis(
   userId: string,
-  queryObject: QueryParams
+  queryObject: ApiQueryParams
 ): Promise<AllApisResponse> {
   // generate mocks in test,
   // but don't reset mock apis in dev

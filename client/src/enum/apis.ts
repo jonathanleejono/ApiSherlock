@@ -25,3 +25,12 @@ export enum ApiStatusOptions {
   Unhealthy = "unhealthy",
   Pending = "pending",
 }
+
+export enum ApiQueryParams {
+  STATUS = "status",
+  MONITORING = "monitoring",
+  SORT = "sort",
+  SEARCH = "search",
+  PAGE = "page",
+  LIMIT = "limit",
+}

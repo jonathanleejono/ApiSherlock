@@ -6,7 +6,6 @@ function checkIfDuplicateExists(arr) {
     return new Set(arr).size !== arr.length;
 }
 function validKeys(res, arrReqInput, errorMsg, arrValid) {
-    console.log(arrReqInput);
     if (!arrReqInput.every((elem) => arrValid.includes(elem))) {
         (0, errors_1.badRequestError)(res, `${errorMsg}` + `${arrValid}`.replace(/,/g, ", "));
         return false;

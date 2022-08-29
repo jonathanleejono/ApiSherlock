@@ -12,42 +12,64 @@ const mockUser_1 = require("mocks/mockUser");
 const index_1 = require("errors/index");
 const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 dotenv_1.default.config();
+const TEST_ENV = process.env.NODE_ENV === "test";
 const resetUsersCollection = async (_, res) => {
-    if (process.env.NODE_ENV !== "test") {
-        (0, index_1.badRequestError)(res, "Can only seed db in testing");
-        return;
+    try {
+        if (!TEST_ENV) {
+            (0, index_1.badRequestError)(res, "Can only seed db in testing");
+            return;
+        }
+        else {
+            await UserCollection_1.default.collection.drop();
+            res.status(200).json({ msg: "DB reset!" });
+        }
     }
-    else {
-        await UserCollection_1.default.collection.drop();
-        res.status(200).json({ msg: "DB reset!" });
+    catch (error) {
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.resetUsersCollection = resetUsersCollection;
 const resetApiCollection = async (_, res) => {
-    if (process.env.NODE_ENV !== "test") {
-        (0, index_1.badRequestError)(res, "Can only seed db in testing");
-        return;
+    try {
+        if (!TEST_ENV) {
+            (0, index_1.badRequestError)(res, "Can only seed db in testing");
+            return;
+        }
+        else {
+            await ApiCollection_1.default.collection.drop();
+            res.status(200).json({ msg: "DB reset!" });
+        }
     }
-    else {
-        await ApiCollection_1.default.collection.drop();
-        res.status(200).json({ msg: "DB reset!" });
+    catch (error) {
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.resetApiCollection = resetApiCollection;
 const { name, email, password, timezoneGMT } = mockUser_1.mockUser;
 const seedUsersCollection = async (_, res) => {
-    if (process.env.NODE_ENV !== "tes") {
-        (0, index_1.badRequestError)(res, "Can only seed db in testing");
-        return;
+    try {
+        if (!TEST_ENV) {
+            (0, index_1.badRequestError)(res, "Can only seed db in testing");
+            return;
+        }
+        else {
+            await UserCollection_1.default.create({ name, email, password, timezoneGMT });
+            res.status(201).json({ msg: "DB seeded!" });
+        }
     }
-    else {
-        await UserCollection_1.default.create({ name, email, password, timezoneGMT });
-        res.status(201).json({ msg: "DB seeded!" });
+    catch (error) {
+        console.log(error);
+        (0, index_1.badRequestError)(res, error);
+        return;
     }
 };
 exports.seedUsersCollection = seedUsersCollection;
 const seedApiCollection = async (req, res) => {
-    if (process.env.NODE_ENV !== "test") {
+    if (!TEST_ENV) {
         (0, index_1.badRequestError)(res, "Can only seed db in testing");
         return;
     }

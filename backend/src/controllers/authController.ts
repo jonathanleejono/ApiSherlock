@@ -8,8 +8,8 @@ import {
 import {
   validLoginKeys,
   validRegisterKeys,
-  validUpdateKeys,
-} from "constants/keys";
+  validUpdateUserKeys,
+} from "constants/options/user";
 import { timezoneOffsets } from "constants/timezoneOffsets";
 import dotenv from "dotenv";
 import { badRequestError, unAuthenticatedError } from "errors/index";
@@ -18,7 +18,11 @@ import { StatusCodes } from "http-status-codes";
 import { JwtPayload } from "interfaces/jwtPayload";
 import jwt from "jsonwebtoken";
 import UserCollection from "models/UserCollection";
-import { validKeys } from "utils/validateKeys";
+import {
+  emptyValuesExist,
+  validKeys,
+  validValues,
+} from "utils/validateKeysValues";
 import validateUserExists from "utils/validateUserExists";
 
 dotenv.config();
@@ -37,20 +41,19 @@ const register = async (req: Request, res: Response): Promise<void> => {
     )
       return;
 
+    if (emptyValuesExist(res, Object.values(req.body))) return;
+
     const { name, email, password, timezoneGMT } = req.body;
 
-    if (!name || !email || !password) {
-      badRequestError(res, "Please provide all values");
-      return;
-    }
-
-    if (!timezoneOffsets.includes(timezoneGMT)) {
-      badRequestError(
+    if (
+      !validValues(
         res,
-        `Invalid timezone, please select one of: ${timezoneOffsets}`
-      );
+        timezoneGMT,
+        `Invalid timezone, please select one of: `,
+        timezoneOffsets
+      )
+    )
       return;
-    }
 
     const emailAlreadyExists = await UserCollection.findOne({ email });
 
@@ -106,12 +109,9 @@ const login = async (req: Request, res: Response): Promise<void> => {
     )
       return;
 
-    const { email, password } = req.body;
+    if (emptyValuesExist(res, Object.values(req.body))) return;
 
-    if (!email || !password) {
-      badRequestError(res, "Please provide all values");
-      return;
-    }
+    const { email, password } = req.body;
 
     const user = await UserCollection.findOne({ email }).select("+password");
 
@@ -175,27 +175,30 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
         res,
         Object.keys(req.body),
         `Invalid update, can only update: `,
-        validUpdateKeys
+        validUpdateUserKeys
       )
     )
       return;
 
+    // not all validUpdateUserKeys need to be present,
+    // but if a key is present but the value is empty,
+    // an error is returned
+    if (emptyValuesExist(res, Object.values(req.body))) return;
+
     const { email, name, timezoneGMT } = req.body;
 
-    if (!email || !name || !timezoneGMT) {
-      badRequestError(res, "Please provide all values");
-      return;
-    }
-
-    if (!timezoneOffsets.includes(timezoneGMT)) {
-      badRequestError(
+    if (
+      timezoneGMT &&
+      !validValues(
         res,
-        `Invalid timezone, please select one of: ${timezoneOffsets}`
-      );
+        timezoneGMT,
+        `Invalid timezone, please select one of: `,
+        timezoneOffsets
+      )
+    )
       return;
-    }
 
-    if (user.email !== email) {
+    if (email && user.email !== email) {
       const emailAlreadyExists = await UserCollection.findOne({ email });
       if (emailAlreadyExists) {
         badRequestError(res, "Please use a different email");

@@ -11,6 +11,7 @@ import {
   registerUserErrorMsg,
   updateUserErrorMsg,
 } from "constants/messages";
+import { validApiSearchParams } from "constants/options/apis";
 import {
   baseUrl,
   createApiUrl,
@@ -26,7 +27,7 @@ import {
   updateUserUrl,
 } from "constants/urls";
 import { ApiStatusOptions } from "enum/apis";
-import { QueryParams } from "interfaces/apis";
+import { ApiQueryParams } from "interfaces/apis";
 import { rest } from "msw";
 import * as apisDB from "test/data/apisDb";
 import * as usersDB from "test/data/usersDb";
@@ -139,28 +140,21 @@ const handlers = [
         [key: string]: string | number;
       };
 
-      interface CustomQueryParams extends QueryParams, QueryParamsOptions {}
+      interface CustomQueryParams extends ApiQueryParams, QueryParamsOptions {}
 
       const queryObject: CustomQueryParams = {
         sort: "",
         page: 1,
         monitoring: "",
+        host: "",
         status: "",
         search: "",
       };
 
-      const validQueryParams = [
-        "sort",
-        "status",
-        "monitoring",
-        "page",
-        "search",
-      ];
-
       const queryParams = req.url.searchParams;
 
-      Object.keys(validQueryParams).forEach((_: string, index: number) => {
-        const validQueryParam = validQueryParams[index] as string;
+      Object.keys(validApiSearchParams).forEach((_: string, index: number) => {
+        const validQueryParam = validApiSearchParams[index] as string;
         if (queryParams.has(validQueryParam)) {
           queryObject[validQueryParam] = queryParams.get(
             validQueryParam

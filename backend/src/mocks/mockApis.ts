@@ -5,7 +5,7 @@ import {
 } from "enum/apis";
 import { Api } from "models/ApiDocument";
 
-export const mockApis: Partial<Api>[] = [
+export const mockApis: Omit<Api, "_id" | "createdBy">[] = [
   {
     url: "https://battery-cellify.herokuapp.com/ping",
     host: ApiHostOptions.Heroku,

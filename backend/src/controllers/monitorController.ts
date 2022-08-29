@@ -26,6 +26,11 @@
 // };
 
 // const createMonitor2 = async (req: Request, res: Response): Promise<void> => {
+//   //  if monitoring is off
+//   //  if there are the right input keys
+//   //  if monitor values are missing
+//   //  if monitor already exists
+
 //   try {
 //     const user = await validateUserExists(req, res);
 
@@ -60,120 +65,120 @@
 //   }
 // };
 
-// // -------------------------------------------
+// // // -------------------------------------------
 
-// const getMonitor = async (req: Request, res: Response): Promise<any> => {
-//   const monitor = Monitor.findOne({
-//     createdBy: req?.user?.userId,
-//   });
+// // const getMonitor = async (req: Request, res: Response): Promise<any> => {
+// //   const monitor = Monitor.findOne({
+// //     createdBy: req?.user?.userId,
+// //   });
 
-//   res.status(StatusCodes.OK);
+// //   res.status(StatusCodes.OK);
 
-//   return { monitor };
-// };
+// //   return { monitor };
+// // };
 
-// // ------------------------------------------
+// // // ------------------------------------------
 
-// const updateMonitor = async (req: Request, res: Response): Promise<void> => {
-//   const { id: monitorId } = req.params;
+// // const updateMonitor = async (req: Request, res: Response): Promise<void> => {
+// //   const { id: monitorId } = req.params;
 
-//   const { intervalSetting, intervalSchedule, time, dayOfWeek } = req.body;
+// //   const { intervalSetting, intervalSchedule, time, dayOfWeek } = req.body;
 
-//   if (!intervalSetting || !intervalSchedule || !time || !dayOfWeek) {
-//     throw new BadRequestError("Please provide all values");
-//   }
-//   const monitor = await Monitor.findOne({ _id: monitorId });
+// //   if (!intervalSetting || !intervalSchedule || !time || !dayOfWeek) {
+// //     throw new BadRequestError("Please provide all values");
+// //   }
+// //   const monitor = await Monitor.findOne({ _id: monitorId });
 
-//   if (!monitor) {
-//     throw new NotFoundError(`No monitor with id :${monitorId}`);
-//   }
+// //   if (!monitor) {
+// //     throw new NotFoundError(`No monitor with id :${monitorId}`);
+// //   }
 
-//   // check authorization
-//   checkPermissions(req.user, monitor.createdBy);
+// //   // check authorization
+// //   checkPermissions(req.user, monitor.createdBy);
 
-//   const updatedMonitor = await Monitor.findOneAndUpdate(
-//     { _id: monitorId },
-//     req.body,
-//     {
-//       new: true,
-//       runValidators: true,
-//     }
-//   );
+// //   const updatedMonitor = await Monitor.findOneAndUpdate(
+// //     { _id: monitorId },
+// //     req.body,
+// //     {
+// //       new: true,
+// //       runValidators: true,
+// //     }
+// //   );
 
-//   res.status(StatusCodes.OK).json({ updatedMonitor });
-// };
+// //   res.status(StatusCodes.OK).json({ updatedMonitor });
+// // };
 
-// // ----------------------------------
+// // // ----------------------------------
 
-// // if monitoring goes from ON to OFF, make api call to delete monitor
-// const deleteMonitor = async (req: Request, res: Response): Promise<void> => {
-//   const { id: monitorId } = req.params;
+// // // if monitoring goes from ON to OFF, make api call to delete monitor
+// // const deleteMonitor = async (req: Request, res: Response): Promise<void> => {
+// //   const { id: monitorId } = req.params;
 
-//   const monitor = await Monitor.findOne({ _id: monitorId });
+// //   const monitor = await Monitor.findOne({ _id: monitorId });
 
-//   if (!monitor) {
-//     throw new NotFoundError(`No monitor with id :${monitorId}`);
-//   }
+// //   if (!monitor) {
+// //     throw new NotFoundError(`No monitor with id :${monitorId}`);
+// //   }
 
-//   checkPermissions(req.user, monitor.createdBy);
+// //   checkPermissions(req.user, monitor.createdBy);
 
-//   await monitor.remove();
+// //   await monitor.remove();
 
-//   res.status(StatusCodes.OK).json({ msg: "Success! Monitor removed" });
-// };
+// //   res.status(StatusCodes.OK).json({ msg: "Success! Monitor removed" });
+// // };
 
-// // ----------------------------------
+// // // ----------------------------------
 
-// const activateMonitor = async (req: Request, res: Response): Promise<void> => {
-//   // make the get request to array of Apis's URLS <- THE URLS OF THE APIS (ie. api.url) <--- use axios (think of frontend call, but make it to the backend) <- look at Backend assessment axios example
-//   // to know which Apis, find all that have monitoring set to on
-//   // make it based on the time of a monitor <- query to find the monitor (ie. get monitor)
+// // const activateMonitor = async (req: Request, res: Response): Promise<void> => {
+// //   // make the get request to array of Apis's URLS <- THE URLS OF THE APIS (ie. api.url) <--- use axios (think of frontend call, but make it to the backend) <- look at Backend assessment axios example
+// //   // to know which Apis, find all that have monitoring set to on
+// //   // make it based on the time of a monitor <- query to find the monitor (ie. get monitor)
 
-//   const queryObject = {
-//     createdBy: req?.user?.userId,
-//     monitoring: "on",
-//   };
+// //   const queryObject = {
+// //     createdBy: req?.user?.userId,
+// //     monitoring: "on",
+// //   };
 
-//   let result = Api.find(queryObject);
+// //   let result = Api.find(queryObject);
 
-//   const allApisToMonitor = await result;
+// //   const allApisToMonitor = await result;
 
-//   const monitor = await Monitor.findOne({
-//     createdBy: req?.user?.userId,
-//   });
+// //   const monitor = await Monitor.findOne({
+// //     createdBy: req?.user?.userId,
+// //   });
 
-//   const seconds = 1000;
-//   const minutes = seconds * 60;
-//   const hourly = minutes * 60;
-//   const daily = hourly * 24;
-//   const weekly = daily * 7;
+// //   const seconds = 1000;
+// //   const minutes = seconds * 60;
+// //   const hourly = minutes * 60;
+// //   const daily = hourly * 24;
+// //   const weekly = daily * 7;
 
-//   if (monitor?.intervalSchedule && monitor?.intervalSchedule === "seconds") {
-//     function doStuff() {
-//       console.log("hello71");
-//     }
-//     setInterval(doStuff, 5000);
-//   }
+// //   if (monitor?.intervalSchedule && monitor?.intervalSchedule === "seconds") {
+// //     function doStuff() {
+// //       console.log("hello71");
+// //     }
+// //     setInterval(doStuff, 5000);
+// //   }
 
-//   // Object.keys(allApisToMonitor).forEach((api) => {
-//   //   console.log("yo: ", api);
-//   //   console.log("y2o: ", allApisToMonitor[api].url);
-//   //   // console.log("yo1: ", api.url);
-//   // });
+// //   // Object.keys(allApisToMonitor).forEach((api) => {
+// //   //   console.log("yo: ", api);
+// //   //   console.log("y2o: ", allApisToMonitor[api].url);
+// //   //   // console.log("yo1: ", api.url);
+// //   // });
 
-//   res.json({ allApisToMonitor });
-// };
+// //   res.json({ allApisToMonitor });
+// // };
 
-// export {
-//   createMonitor,
-//   deleteMonitor,
-//   getMonitor,
-//   updateMonitor,
-//   activateMonitor,
-// };
+// // export {
+// //   createMonitor,
+// //   deleteMonitor,
+// //   getMonitor,
+// //   updateMonitor,
+// //   activateMonitor,
+// // };
 
-// // createMonitor
-// // getMonitor
-// // updateMonitor
-// // activateMonitor
-// // deactivateMonitor <- delete monitor
+// // // createMonitor
+// // // getMonitor
+// // // updateMonitor
+// // // activateMonitor
+// // // deactivateMonitor <- delete monitor

@@ -9,26 +9,40 @@ import validateUserExists from "utils/validateUserExists";
 
 dotenv.config();
 
+const TEST_ENV = process.env.NODE_ENV === "test";
+
 const resetUsersCollection = async (
   _: Request,
   res: Response
 ): Promise<void> => {
-  if (process.env.NODE_ENV !== "test") {
-    badRequestError(res, "Can only seed db in testing");
+  try {
+    if (!TEST_ENV) {
+      badRequestError(res, "Can only seed db in testing");
+      return;
+    } else {
+      await UserCollection.collection.drop();
+      res.status(200).json({ msg: "DB reset!" });
+    }
+  } catch (error) {
+    console.log(error);
+    badRequestError(res, error);
     return;
-  } else {
-    await UserCollection.collection.drop();
-    res.status(200).json({ msg: "DB reset!" });
   }
 };
 
 const resetApiCollection = async (_: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV !== "test") {
-    badRequestError(res, "Can only seed db in testing");
+  try {
+    if (!TEST_ENV) {
+      badRequestError(res, "Can only seed db in testing");
+      return;
+    } else {
+      await ApiCollection.collection.drop();
+      res.status(200).json({ msg: "DB reset!" });
+    }
+  } catch (error) {
+    console.log(error);
+    badRequestError(res, error);
     return;
-  } else {
-    await ApiCollection.collection.drop();
-    res.status(200).json({ msg: "DB reset!" });
   }
 };
 
@@ -38,12 +52,18 @@ const seedUsersCollection = async (
   _: Request,
   res: Response
 ): Promise<void> => {
-  if (process.env.NODE_ENV !== "test") {
-    badRequestError(res, "Can only seed db in testing");
+  try {
+    if (!TEST_ENV) {
+      badRequestError(res, "Can only seed db in testing");
+      return;
+    } else {
+      await UserCollection.create({ name, email, password, timezoneGMT });
+      res.status(201).json({ msg: "DB seeded!" });
+    }
+  } catch (error) {
+    console.log(error);
+    badRequestError(res, error);
     return;
-  } else {
-    await UserCollection.create({ name, email, password, timezoneGMT });
-    res.status(201).json({ msg: "DB seeded!" });
   }
 };
 
@@ -51,7 +71,7 @@ const seedApiCollection = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  if (process.env.NODE_ENV !== "test") {
+  if (!TEST_ENV) {
     badRequestError(res, "Can only seed db in testing");
     return;
   } else {
