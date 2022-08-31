@@ -27,6 +27,7 @@ import seedDbRouter from "routes/seedDbRoutes";
 import xss from "xss-clean";
 
 const app = express();
+
 dotenv.config();
 
 if (process.env.NODE_ENV !== "production") {

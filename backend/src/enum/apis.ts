@@ -5,7 +5,8 @@ export enum ApiHostOptions {
   Heroku = "Heroku",
   DigitalOcean = "DigitalOcean",
   Other = "Other",
-  //   Vercel = "Vercel",
+  Vercel = "Vercel",
+  Netlify = "Netlify",
 }
 
 export enum ApiMonitoringOptions {

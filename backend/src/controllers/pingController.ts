@@ -12,6 +12,7 @@ import checkPermissions from "utils/checkPermissions";
 import { getDateWithUTCOffset } from "utils/datetime";
 import validateUserExists from "utils/validateUserExists";
 
+//eslint-disable-next-line
 const pingAll = async (req: Request, res: Response): Promise<any> => {
   try {
     const user = await validateUserExists(req, res);

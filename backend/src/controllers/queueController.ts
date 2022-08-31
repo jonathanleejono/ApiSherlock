@@ -3,6 +3,8 @@ import { Queue, QueueScheduler, Worker } from "bullmq";
 import {
   getQueue,
   getRepeatOptions,
+  jobBaseName,
+  queueBaseName,
   setQueue,
   setRepeatOptions,
 } from "constants/queue";
@@ -32,10 +34,6 @@ const redisConfiguration = {
     password: PROD_ENV ? REDIS_PASSWORD : undefined,
   },
 };
-
-const queueBaseName = "pingApiScheduleQueue";
-
-const jobBaseName = "pingApisJob";
 
 export const startQueue = async (
   req: Request,

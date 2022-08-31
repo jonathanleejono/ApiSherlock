@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import { mockApis } from "mocks/mockApis";
 import { mockUser } from "mocks/mockUser";
 import ApiCollection from "models/ApiCollection";
+import MonitorCollection from "models/MonitorCollection";
 import UserCollection from "models/UserCollection";
 import validateUserExists from "utils/validateUserExists";
 
@@ -37,6 +38,25 @@ const resetApiCollection = async (_: Request, res: Response): Promise<void> => {
       return;
     } else {
       await ApiCollection.collection.drop();
+      res.status(200).json({ msg: "DB reset!" });
+    }
+  } catch (error) {
+    console.log(error);
+    badRequestError(res, error);
+    return;
+  }
+};
+
+const resetMonitorCollection = async (
+  _: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!TEST_ENV) {
+      badRequestError(res, "Can only seed db in testing");
+      return;
+    } else {
+      await MonitorCollection.collection.drop();
       res.status(200).json({ msg: "DB reset!" });
     }
   } catch (error) {
@@ -83,6 +103,7 @@ const seedApiCollection = async (
         return;
       }
 
+      //eslint-disable-next-line
       const testApis: any = mockApis.map((api) => ({
         ...api,
         createdBy: user._id,
@@ -102,6 +123,7 @@ const seedApiCollection = async (
 export {
   resetUsersCollection,
   resetApiCollection,
+  resetMonitorCollection,
   seedUsersCollection,
   seedApiCollection,
 };

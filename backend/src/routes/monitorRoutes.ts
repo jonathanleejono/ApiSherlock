@@ -1,3 +1,4 @@
+import { handleMonitorUrl } from "constants/urls";
 import {
   createMonitor,
   deleteMonitor,
@@ -5,7 +6,6 @@ import {
   updateMonitor,
 } from "controllers/monitorController";
 import express, { Response, Router } from "express";
-
 import rateLimiter from "express-rate-limit";
 
 const router: Router = express.Router();
@@ -25,10 +25,9 @@ function createRateLimiter(minutes: number, maxRequests: number) {
   return _rateLimiter;
 }
 
-// the route path in server.ts is "/api/monitors"
 router
-  .route("/")
-  .post(createRateLimiter(15, 3), createMonitor)
+  .route(`${handleMonitorUrl}`)
+  .post(createRateLimiter(15, 10), createMonitor)
   .get(getMonitor)
   .patch(updateMonitor)
   .delete(deleteMonitor);

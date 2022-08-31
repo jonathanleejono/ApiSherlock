@@ -4,7 +4,11 @@
     "es2021": true,
     "node": true
   },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/eslint-recommended"
+  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "sourceType": "module"
@@ -24,8 +28,9 @@
     "no-unsafe-optional-chaining": 0,
     "import/prefer-default-export": 0,
     "import/no-extraneous-dependencies": 0,
+    "@typescript-eslint/no-unused-vars": "error",
     "no-unused-vars": [
-      1,
+      0,
       {
         "ignoreRestSiblings": false
       }

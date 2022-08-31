@@ -1,15 +1,3 @@
-import { Response, Router } from "express";
-import rateLimiter from "express-rate-limit";
-
-import {
-  createApi,
-  deleteApi,
-  getAllApis,
-  updateApi,
-  getApi,
-  showStats,
-} from "controllers/apiController";
-import { pingAll, pingOne } from "controllers/pingController";
 import {
   createApiUrl,
   deleteApiUrl,
@@ -20,6 +8,17 @@ import {
   pingAllApisUrl,
   pingOneApiUrl,
 } from "constants/urls";
+import {
+  createApi,
+  deleteApi,
+  getAllApis,
+  getApi,
+  showStats,
+  updateApi,
+} from "controllers/apiController";
+import { pingAll, pingOne } from "controllers/pingController";
+import { Response, Router } from "express";
+import rateLimiter from "express-rate-limit";
 
 const router = Router();
 

@@ -43,7 +43,7 @@ const mockUpdatedApi = mockUpdatedApis[0];
 
 const mockQueryParamApi = mockApis[1];
 
-let testApiResponse: Partial<Api> = {
+const testApiResponse: Partial<Api> = {
   url: expect.any(String),
   host: expect.any(String),
   monitoring: expect.any(String),

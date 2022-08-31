@@ -1,7 +1,7 @@
+import { handleQueueUrl } from "constants/urls";
+import { removeQueue, startQueue } from "controllers/queueController";
 import { Response, Router } from "express";
 import rateLimiter from "express-rate-limit";
-
-import { removeQueue, startQueue } from "controllers/queueController";
 
 const router = Router();
 
@@ -21,7 +21,7 @@ function createRateLimiter(minutes: number, maxRequests: number) {
 }
 
 router
-  .route(`/`)
+  .route(`${handleQueueUrl}`)
   .post(createRateLimiter(15, 2), startQueue)
   .delete(createRateLimiter(15, 2), removeQueue);
 
