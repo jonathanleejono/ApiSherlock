@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cors_1 = __importDefault(require("cors"));
 const connect_1 = __importDefault(require("db/connect"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -18,9 +19,10 @@ const notFoundRoute_1 = __importDefault(require("middleware/notFoundRoute"));
 const morgan_1 = __importDefault(require("morgan"));
 const apiRoutes_1 = __importDefault(require("routes/apiRoutes"));
 const authRoutes_1 = __importDefault(require("routes/authRoutes"));
+const monitorRoutes_1 = __importDefault(require("routes/monitorRoutes"));
+const queueRoutes_1 = __importDefault(require("routes/queueRoutes"));
 const seedDbRoutes_1 = __importDefault(require("routes/seedDbRoutes"));
 const xss_clean_1 = __importDefault(require("xss-clean"));
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
 if (process.env.NODE_ENV !== "production") {
@@ -40,6 +42,8 @@ app.use(urls_1.pingHealthCheckUrl, (_, res) => {
 });
 app.use(`${urls_1.baseAuthUrl}`, authRoutes_1.default);
 app.use(`${urls_1.baseApiUrl}`, authenticateUser_1.default, apiRoutes_1.default);
+app.use(`${urls_1.baseMonitorUrl}`, authenticateUser_1.default, monitorRoutes_1.default);
+app.use(`${urls_1.baseQueueUrl}`, authenticateUser_1.default, queueRoutes_1.default);
 if (process.env.NODE_ENV === "test") {
     app.use(`${urls_1.baseSeedDbUrl}`, seedDbRoutes_1.default);
 }

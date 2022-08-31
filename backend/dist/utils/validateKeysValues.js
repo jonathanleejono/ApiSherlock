@@ -26,7 +26,7 @@ function validValues(res, reqInput, errorMsg, validOptions) {
 }
 exports.validValues = validValues;
 function emptyValuesExist(res, arr) {
-    if (!arr.every((element) => element !== false && element !== "")) {
+    if (!arr.every((element) => element !== null && element !== undefined && element !== "")) {
         (0, errors_1.badRequestError)(res, "Please fill out all values");
         return true;
     }

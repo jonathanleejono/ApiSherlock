@@ -1,184 +1,234 @@
-// import { Request, Response } from "express";
-// import { StatusCodes } from "http-status-codes";
-// import validateUserExists from "utils/validateUserExists";
-// import { validateInputKeys } from "utils/validateKeys";
-// import { badRequestError, unAuthenticatedError } from "errors/index";
-// // import { default as Api, default as ApiCollection } from "models/ApiCollection";
-// import Monitor from "models/MonitorCollection";
-// import checkPermissions from "utils/checkPermissions";
-// import MonitorCollection from "models/MonitorCollection";
-// import { validCreateApiKeys } from "constants/keys";
+import { deleteMonitorSuccessMsg } from "constants/messages";
+import {
+  validCreateMonitorKeys,
+  validMonitorIntervalScheduleOptions,
+  validUpdateMonitorKeys,
+} from "constants/options/monitor";
+import {
+  badRequestError,
+  notFoundError,
+  unAuthenticatedError,
+} from "errors/index";
+import { Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import MonitorCollection from "models/MonitorCollection";
+import {
+  emptyValuesExist,
+  validKeys,
+  validValues,
+} from "utils/validateKeysValues";
+import { validMonitorDate } from "utils/validateMonitorDate";
+import validateUserExists from "utils/validateUserExists";
 
-// const createMonitor = async (req: Request, res: Response): Promise<void> => {
-//   const { intervalSetting, intervalSchedule, time, dayOfWeek } = req.body;
+const createMonitor = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await validateUserExists(req, res);
 
-//   if (!intervalSetting || !intervalSchedule || !time || !dayOfWeek) {
-//     throw new BadRequestError("Please provide all values");
-//   }
+    if (!user) {
+      unAuthenticatedError(res, "Invalid Credentials");
+      return;
+    }
 
-//   // add exception handling -> only one monitor can be created
+    const monitorAlreadyExists = await MonitorCollection.findOne({
+      createdBy: user._id,
+    });
 
-//   req.body.createdBy = req?.user?.userId;
+    if (monitorAlreadyExists) {
+      badRequestError(res, "Error, can only have one monitor");
+      return;
+    }
 
-//   const monitor = await Monitor.create(req.body);
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.body),
+        `Invalid monitor creation, can only input: `,
+        validCreateMonitorKeys
+      )
+    )
+      return;
 
-//   res.status(StatusCodes.CREATED).json({ monitor });
-// };
+    if (emptyValuesExist(res, Object.values(req.body))) return;
 
-// const createMonitor2 = async (req: Request, res: Response): Promise<void> => {
-//   //  if monitoring is off
-//   //  if there are the right input keys
-//   //  if monitor values are missing
-//   //  if monitor already exists
+    const {
+      useInterval,
+      useDate,
+      intervalSchedule,
+      dateDayOfWeek,
+      dateHour,
+      dateMinute,
+    } = req.body;
 
-//   try {
-//     const user = await validateUserExists(req, res);
+    if (!useInterval && !useDate) {
+      badRequestError(
+        res,
+        "One of interval and date schedule must be used, please pick one"
+      );
+      return;
+    }
 
-//     if (!user) {
-//       unAuthenticatedError(res, "Invalid Credentials");
-//       return;
-//     }
+    if (useInterval && useDate) {
+      badRequestError(
+        res,
+        "Interval and date schedule can't both be used, please pick one"
+      );
+      return;
+    }
 
-//     validateInputKeys(
-//       req,
-//       res,
-//       `Invalid monitor creation, can only input: `,
-//       validCreateApiKeys
-//     );
+    if (
+      useInterval &&
+      !validValues(
+        res,
+        intervalSchedule,
+        `Invalid interval schedule, please select one of: `,
+        validMonitorIntervalScheduleOptions
+      )
+    )
+      return;
 
-//     const { url, host, monitoring } = req.body;
+    if (useDate && !validMonitorDate(res, dateDayOfWeek, dateHour, dateMinute))
+      return;
 
-//     if (!url || !host || !monitoring) {
-//       badRequestError(res, "Please provide all values");
-//       return;
-//     }
+    req.body.createdBy = user._id;
 
-//     req.body.createdBy = user._id;
+    const monitor = new MonitorCollection(req.body);
 
-//     const monitor = await MonitorCollection.create(req.body);
+    await monitor.validate();
 
-//     res.status(StatusCodes.CREATED).json(monitor);
-//   } catch (error) {
-//     console.log(error);
-//     badRequestError(res, error);
-//     return;
-//   }
-// };
+    await MonitorCollection.create(monitor);
 
-// // // -------------------------------------------
+    res.status(StatusCodes.CREATED).json(monitor);
+  } catch (error) {
+    badRequestError(res, error);
+    return;
+  }
+};
 
-// // const getMonitor = async (req: Request, res: Response): Promise<any> => {
-// //   const monitor = Monitor.findOne({
-// //     createdBy: req?.user?.userId,
-// //   });
+const getMonitor = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await validateUserExists(req, res);
 
-// //   res.status(StatusCodes.OK);
+    if (!user) {
+      unAuthenticatedError(res, "Invalid Credentials");
+      return;
+    }
 
-// //   return { monitor };
-// // };
+    //there should be only one monitor per user,
+    //so no need to use monitor's id
+    const monitor = await MonitorCollection.findOne({ createdBy: user._id });
 
-// // // ------------------------------------------
+    if (!monitor) {
+      notFoundError(res, `No monitor found`);
+      return;
+    }
 
-// // const updateMonitor = async (req: Request, res: Response): Promise<void> => {
-// //   const { id: monitorId } = req.params;
+    res.status(StatusCodes.OK).json(monitor);
+  } catch (error) {
+    badRequestError(res, error);
+    return;
+  }
+};
 
-// //   const { intervalSetting, intervalSchedule, time, dayOfWeek } = req.body;
+const updateMonitor = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await validateUserExists(req, res);
 
-// //   if (!intervalSetting || !intervalSchedule || !time || !dayOfWeek) {
-// //     throw new BadRequestError("Please provide all values");
-// //   }
-// //   const monitor = await Monitor.findOne({ _id: monitorId });
+    if (!user) {
+      unAuthenticatedError(res, "Invalid Credentials");
+      return;
+    }
 
-// //   if (!monitor) {
-// //     throw new NotFoundError(`No monitor with id :${monitorId}`);
-// //   }
+    const monitor = await MonitorCollection.findOne({ createdBy: user._id });
 
-// //   // check authorization
-// //   checkPermissions(req.user, monitor.createdBy);
+    if (!monitor) {
+      notFoundError(res, `No monitor found`);
+      return;
+    }
 
-// //   const updatedMonitor = await Monitor.findOneAndUpdate(
-// //     { _id: monitorId },
-// //     req.body,
-// //     {
-// //       new: true,
-// //       runValidators: true,
-// //     }
-// //   );
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.body),
+        `Error updating monitor, can only use: `,
+        validUpdateMonitorKeys
+      )
+    )
+      return;
 
-// //   res.status(StatusCodes.OK).json({ updatedMonitor });
-// // };
+    if (emptyValuesExist(res, Object.values(req.body))) return;
 
-// // // ----------------------------------
+    const {
+      useInterval,
+      useDate,
+      intervalSchedule,
+      dateDayOfWeek,
+      dateHour,
+      dateMinute,
+    } = req.body;
 
-// // // if monitoring goes from ON to OFF, make api call to delete monitor
-// // const deleteMonitor = async (req: Request, res: Response): Promise<void> => {
-// //   const { id: monitorId } = req.params;
+    if (useInterval && useDate) {
+      badRequestError(
+        res,
+        "Interval and date schedule can't both be used, please pick one"
+      );
+      return;
+    }
 
-// //   const monitor = await Monitor.findOne({ _id: monitorId });
+    if (!useInterval && !useDate) {
+      badRequestError(
+        res,
+        "One of interval and date schedule must be used, please pick one"
+      );
+      return;
+    }
 
-// //   if (!monitor) {
-// //     throw new NotFoundError(`No monitor with id :${monitorId}`);
-// //   }
+    if (
+      useInterval &&
+      !validValues(
+        res,
+        intervalSchedule,
+        `Invalid interval schedule, please select one of: `,
+        validMonitorIntervalScheduleOptions
+      )
+    )
+      return;
 
-// //   checkPermissions(req.user, monitor.createdBy);
+    if (useDate && !validMonitorDate(res, dateDayOfWeek, dateHour, dateMinute))
+      return;
 
-// //   await monitor.remove();
+    Object.assign(monitor, req.body);
 
-// //   res.status(StatusCodes.OK).json({ msg: "Success! Monitor removed" });
-// // };
+    await monitor.validate();
 
-// // // ----------------------------------
+    await monitor.save();
 
-// // const activateMonitor = async (req: Request, res: Response): Promise<void> => {
-// //   // make the get request to array of Apis's URLS <- THE URLS OF THE APIS (ie. api.url) <--- use axios (think of frontend call, but make it to the backend) <- look at Backend assessment axios example
-// //   // to know which Apis, find all that have monitoring set to on
-// //   // make it based on the time of a monitor <- query to find the monitor (ie. get monitor)
+    res.status(StatusCodes.OK).json(monitor);
+  } catch (error) {
+    badRequestError(res, error);
+    return;
+  }
+};
 
-// //   const queryObject = {
-// //     createdBy: req?.user?.userId,
-// //     monitoring: "on",
-// //   };
+const deleteMonitor = async (req: Request, res: Response): Promise<void> => {
+  const user = await validateUserExists(req, res);
 
-// //   let result = Api.find(queryObject);
+  if (!user) {
+    unAuthenticatedError(res, "Invalid Credentials");
+    return;
+  }
 
-// //   const allApisToMonitor = await result;
+  const monitor = await MonitorCollection.findOne({
+    createdBy: user._id,
+  });
 
-// //   const monitor = await Monitor.findOne({
-// //     createdBy: req?.user?.userId,
-// //   });
+  if (!monitor) {
+    notFoundError(res, "Error, no monitor found");
+    return;
+  }
 
-// //   const seconds = 1000;
-// //   const minutes = seconds * 60;
-// //   const hourly = minutes * 60;
-// //   const daily = hourly * 24;
-// //   const weekly = daily * 7;
+  await monitor.remove();
 
-// //   if (monitor?.intervalSchedule && monitor?.intervalSchedule === "seconds") {
-// //     function doStuff() {
-// //       console.log("hello71");
-// //     }
-// //     setInterval(doStuff, 5000);
-// //   }
+  res.status(StatusCodes.OK).json(deleteMonitorSuccessMsg);
+};
 
-// //   // Object.keys(allApisToMonitor).forEach((api) => {
-// //   //   console.log("yo: ", api);
-// //   //   console.log("y2o: ", allApisToMonitor[api].url);
-// //   //   // console.log("yo1: ", api.url);
-// //   // });
-
-// //   res.json({ allApisToMonitor });
-// // };
-
-// // export {
-// //   createMonitor,
-// //   deleteMonitor,
-// //   getMonitor,
-// //   updateMonitor,
-// //   activateMonitor,
-// // };
-
-// // // createMonitor
-// // // getMonitor
-// // // updateMonitor
-// // // activateMonitor
-// // // deactivateMonitor <- delete monitor
+export { createMonitor, deleteMonitor, getMonitor, updateMonitor };

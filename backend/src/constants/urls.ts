@@ -1,5 +1,7 @@
 const baseAuthUrl = `/api/auth`;
 const baseApiUrl = `/api/api`;
+const baseMonitorUrl = `/api/monitor`;
+const baseQueueUrl = `/api/queue`;
 const baseSeedDbUrl = `/api/mockDb`;
 
 const registerUserUrl = `/register`;
@@ -29,6 +31,8 @@ const pingHealthCheckUrl = `/api/ping`;
 export {
   baseAuthUrl,
   baseApiUrl,
+  baseMonitorUrl,
+  baseQueueUrl,
   baseSeedDbUrl,
   resetMockUsersDbUrl,
   seedMockUsersDbUrl,

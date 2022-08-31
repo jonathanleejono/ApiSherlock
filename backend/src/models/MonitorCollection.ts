@@ -1,23 +1,15 @@
 import {
-  monitorDateHourOptions,
-  monitorDateMinuteOptions,
-} from "constants/monitorTime";
-import {
-  MonitorDateDayOfWeekOptions,
-  monitorDateDayOfWeekOptions,
-  MonitorIntervalScheduleOptions,
-  monitorIntervalScheduleOptions,
-} from "enum/monitor";
+  validMonitorDateDayOfWeekOptions,
+  validMonitorDateHourOptions,
+  validMonitorDateMinuteOptions,
+  validMonitorIntervalScheduleOptions,
+} from "constants/options/monitor";
+import { MonitorIntervalScheduleOptions } from "enum/monitor";
 import MonitorDocument from "models/MonitorDocument";
 import mongoose, { Model, Schema } from "mongoose";
 
 const MonitorSchema: Schema<MonitorDocument> = new mongoose.Schema(
   {
-    monitoringOn: {
-      type: Boolean,
-      required: [true, "Please specify if monitoring is on or off"],
-      default: false,
-    },
     useInterval: {
       type: Boolean,
       required: [true, "Please specify if interval is used"],
@@ -30,26 +22,22 @@ const MonitorSchema: Schema<MonitorDocument> = new mongoose.Schema(
     },
     intervalSchedule: {
       type: String,
-      enum: monitorIntervalScheduleOptions,
-      required: [true, "Please provide interval schedule"],
+      enum: validMonitorIntervalScheduleOptions,
       default: MonitorIntervalScheduleOptions.WEEKLY,
     },
     dateDayOfWeek: {
       type: Number,
-      enum: monitorDateDayOfWeekOptions,
-      required: [true, "Please provide day of week"],
-      default: MonitorDateDayOfWeekOptions.MONDAY,
+      enum: validMonitorDateDayOfWeekOptions,
+      default: 0,
     },
     dateHour: {
       type: Number,
-      enum: monitorDateHourOptions,
-      required: [true, "Please provide monitoring hour"],
+      enum: validMonitorDateHourOptions,
       default: 0,
     },
     dateMinute: {
       type: Number,
-      enum: monitorDateMinuteOptions,
-      required: [true, "Please provide monitoring minutes"],
+      enum: validMonitorDateMinuteOptions,
       default: 0,
     },
     createdBy: {

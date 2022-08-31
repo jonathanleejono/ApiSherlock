@@ -43,7 +43,7 @@ const register = async (req: Request, res: Response): Promise<void> => {
 
     if (emptyValuesExist(res, Object.values(req.body))) return;
 
-    const { name, email, password, timezoneGMT } = req.body;
+    const { email, timezoneGMT } = req.body;
 
     if (
       !validValues(
@@ -61,13 +61,11 @@ const register = async (req: Request, res: Response): Promise<void> => {
       badRequestError(res, "Please use a different email");
       return;
     }
+    const user = new UserCollection(req.body);
 
-    const user = await UserCollection.create({
-      name,
-      email,
-      password,
-      timezoneGMT,
-    });
+    await user.validate();
+
+    await UserCollection.create(user);
 
     const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME as string);
 
@@ -91,7 +89,6 @@ const register = async (req: Request, res: Response): Promise<void> => {
         accessToken,
       });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -155,7 +152,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
         accessToken,
       });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -185,7 +181,7 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
     // an error is returned
     if (emptyValuesExist(res, Object.values(req.body))) return;
 
-    const { email, name, timezoneGMT } = req.body;
+    const { email, timezoneGMT } = req.body;
 
     if (
       timezoneGMT &&
@@ -206,9 +202,9 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    user.email = email;
-    user.name = name;
-    user.timezoneGMT = timezoneGMT;
+    Object.assign(user, req.body);
+
+    await user.validate();
 
     await user.save();
 
@@ -234,7 +230,6 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
         accessToken,
       });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -280,7 +275,6 @@ const refreshAccessToken = async (
 
     res.status(StatusCodes.OK).json({ accessToken: newAccessToken });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }

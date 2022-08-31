@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
-import ApiCollection from "models/ApiCollection";
-import UserCollection from "models/UserCollection";
 import dotenv from "dotenv";
+import { badRequestError, unAuthenticatedError } from "errors/index";
+import { Request, Response } from "express";
 import { mockApis } from "mocks/mockApis";
 import { mockUser } from "mocks/mockUser";
-import { badRequestError, unAuthenticatedError } from "errors/index";
+import ApiCollection from "models/ApiCollection";
+import UserCollection from "models/UserCollection";
 import validateUserExists from "utils/validateUserExists";
 
 dotenv.config();
@@ -46,8 +46,6 @@ const resetApiCollection = async (_: Request, res: Response): Promise<void> => {
   }
 };
 
-const { name, email, password, timezoneGMT } = mockUser;
-
 const seedUsersCollection = async (
   _: Request,
   res: Response
@@ -57,7 +55,9 @@ const seedUsersCollection = async (
       badRequestError(res, "Can only seed db in testing");
       return;
     } else {
-      await UserCollection.create({ name, email, password, timezoneGMT });
+      const user = new UserCollection(mockUser);
+      await user.validate();
+      await UserCollection.create(user);
       res.status(201).json({ msg: "DB seeded!" });
     }
   } catch (error) {
@@ -83,16 +83,13 @@ const seedApiCollection = async (
         return;
       }
 
-      Object.keys(mockApis).forEach(async (_, index: number) => {
-        await ApiCollection.create({
-          url: mockApis[index].url,
-          host: mockApis[index].host,
-          status: mockApis[index].status,
-          lastPinged: mockApis[index].lastPinged,
-          monitoring: mockApis[index].monitoring,
-          createdBy: user._id,
-        });
-      });
+      const testApis: any = mockApis.map((api) => ({
+        ...api,
+        createdBy: user._id,
+      }));
+
+      await ApiCollection.insertMany(testApis);
+
       res.status(200).json({ msg: "DB seeded!" });
     } catch (error) {
       console.log(error);

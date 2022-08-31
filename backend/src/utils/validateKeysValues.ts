@@ -38,10 +38,16 @@ export function validValues(
   return true;
 }
 
-// if not every element is not false or "",
-// or in other words, if any element is false or "", return error
+// if not every element is not null or undefined or "",
+// ie. if any element is null or undefined or "", return error
+// some values in models may be false, which is why a
+// catch all "element !== false" is not used
 export function emptyValuesExist(res: Response, arr: Array<any>): boolean {
-  if (!arr.every((element) => element !== false && element !== "")) {
+  if (
+    !arr.every(
+      (element) => element !== null && element !== undefined && element !== ""
+    )
+  ) {
     badRequestError(res, "Please fill out all values");
     return true;
   }

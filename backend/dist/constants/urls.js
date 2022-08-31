@@ -1,10 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.refreshAccessTokenUrl = exports.pingHealthCheckUrl = exports.pingOneApiUrl = exports.pingAllApisUrl = exports.getApiUrl = exports.editApiUrl = exports.deleteApiUrl = exports.getAllApisStatsUrl = exports.getAllApisUrl = exports.createApiUrl = exports.updateUserUrl = exports.loginUserUrl = exports.registerUserUrl = exports.seedMockApisDbUrl = exports.resetMockApisDbUrl = exports.seedMockUsersDbUrl = exports.resetMockUsersDbUrl = exports.baseSeedDbUrl = exports.baseApiUrl = exports.baseAuthUrl = void 0;
+exports.refreshAccessTokenUrl = exports.pingHealthCheckUrl = exports.pingOneApiUrl = exports.pingAllApisUrl = exports.getApiUrl = exports.editApiUrl = exports.deleteApiUrl = exports.getAllApisStatsUrl = exports.getAllApisUrl = exports.createApiUrl = exports.updateUserUrl = exports.loginUserUrl = exports.registerUserUrl = exports.seedMockApisDbUrl = exports.resetMockApisDbUrl = exports.seedMockUsersDbUrl = exports.resetMockUsersDbUrl = exports.baseSeedDbUrl = exports.baseQueueUrl = exports.baseMonitorUrl = exports.baseApiUrl = exports.baseAuthUrl = void 0;
 const baseAuthUrl = `/api/auth`;
 exports.baseAuthUrl = baseAuthUrl;
 const baseApiUrl = `/api/api`;
 exports.baseApiUrl = baseApiUrl;
+const baseMonitorUrl = `/api/monitor`;
+exports.baseMonitorUrl = baseMonitorUrl;
+const baseQueueUrl = `/api/queue`;
+exports.baseQueueUrl = baseQueueUrl;
 const baseSeedDbUrl = `/api/mockDb`;
 exports.baseSeedDbUrl = baseSeedDbUrl;
 const registerUserUrl = `/register`;

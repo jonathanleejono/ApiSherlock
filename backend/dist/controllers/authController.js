@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refreshAccessToken = exports.updateUser = exports.login = exports.register = void 0;
 const cookies_1 = require("constants/cookies");
-const user_1 = require("constants/keys/user");
+const user_1 = require("constants/options/user");
 const timezoneOffsets_1 = require("constants/timezoneOffsets");
 const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = require("errors/index");
@@ -22,7 +22,7 @@ const register = async (req, res) => {
             return;
         if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
             return;
-        const { name, email, password, timezoneGMT } = req.body;
+        const { email, timezoneGMT } = req.body;
         if (!(0, validateKeysValues_1.validValues)(res, timezoneGMT, `Invalid timezone, please select one of: `, timezoneOffsets_1.timezoneOffsets))
             return;
         const emailAlreadyExists = await UserCollection_1.default.findOne({ email });
@@ -30,12 +30,9 @@ const register = async (req, res) => {
             (0, index_1.badRequestError)(res, "Please use a different email");
             return;
         }
-        const user = await UserCollection_1.default.create({
-            name,
-            email,
-            password,
-            timezoneGMT,
-        });
+        const user = new UserCollection_1.default(req.body);
+        await user.validate();
+        await UserCollection_1.default.create(user);
         const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME);
         const refreshToken = user.createJWT(JWT_REFRESH_TOKEN_LIFETIME);
         res
@@ -56,7 +53,6 @@ const register = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -100,7 +96,6 @@ const login = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -113,11 +108,11 @@ const updateUser = async (req, res) => {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid update, can only update: `, user_1.validUpdateKeys))
+        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid update, can only update: `, user_1.validUpdateUserKeys))
             return;
         if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
             return;
-        const { email, name, timezoneGMT } = req.body;
+        const { email, timezoneGMT } = req.body;
         if (timezoneGMT &&
             !(0, validateKeysValues_1.validValues)(res, timezoneGMT, `Invalid timezone, please select one of: `, timezoneOffsets_1.timezoneOffsets))
             return;
@@ -128,9 +123,8 @@ const updateUser = async (req, res) => {
                 return;
             }
         }
-        user.email = email;
-        user.name = name;
-        user.timezoneGMT = timezoneGMT;
+        Object.assign(user, req.body);
+        await user.validate();
         await user.save();
         const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME);
         const refreshToken = user.createJWT(JWT_REFRESH_TOKEN_LIFETIME);
@@ -152,7 +146,6 @@ const updateUser = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -186,7 +179,6 @@ const refreshAccessToken = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json({ accessToken: newAccessToken });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }

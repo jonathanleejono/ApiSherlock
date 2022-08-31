@@ -72,11 +72,14 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
 
     req.body.createdBy = user._id;
 
-    const api = await ApiCollection.create(req.body);
+    const api = new ApiCollection(req.body);
+
+    await api.validate();
+
+    await ApiCollection.create(api);
 
     res.status(StatusCodes.CREATED).json(api);
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -187,7 +190,6 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json({ allApis, totalApis, numOfPages });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -254,18 +256,14 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
 
     checkPermissions(res, user._id, api.createdBy);
 
-    const updatedApi = await ApiCollection.findOneAndUpdate(
-      { _id: apiId },
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    Object.assign(api, req.body);
 
-    res.status(StatusCodes.OK).json(updatedApi);
+    await api.validate();
+
+    await api.save();
+
+    res.status(StatusCodes.OK).json(api);
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -300,7 +298,6 @@ const deleteApi = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json(deleteApiSuccessMsg);
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -333,7 +330,6 @@ const getApi = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json(api);
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -402,7 +398,6 @@ const showStats = async (req: Request, res: Response) => {
 
     res.status(StatusCodes.OK).json({ defaultStats, monthlyApis });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }

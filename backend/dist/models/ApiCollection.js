@@ -24,6 +24,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
+const apis_1 = require("constants/options/apis");
+const apis_2 = require("enum/apis");
 const ApiSchema = new mongoose_1.default.Schema({
     url: {
         type: String,
@@ -31,13 +33,13 @@ const ApiSchema = new mongoose_1.default.Schema({
     },
     host: {
         type: String,
-        enum: ["AWS", "GCP", "Azure", "Heroku", "DigitalOcean", "Other"],
-        default: "Other",
+        enum: apis_1.validApiHostOptions,
+        default: apis_2.ApiHostOptions.Other,
     },
     status: {
         type: String,
-        enum: ["healthy", "unhealthy", "pending"],
-        default: "pending",
+        enum: apis_1.validApiStatusOptions,
+        default: apis_2.ApiStatusOptions.Pending,
     },
     lastPinged: {
         type: String,
@@ -46,8 +48,8 @@ const ApiSchema = new mongoose_1.default.Schema({
     },
     monitoring: {
         type: String,
-        enum: ["on", "off"],
-        default: "off",
+        enum: apis_1.validApiMonitoringOptions,
+        default: apis_2.ApiMonitoringOptions.OFF,
     },
     createdBy: {
         type: mongoose_1.Schema.Types.ObjectId,

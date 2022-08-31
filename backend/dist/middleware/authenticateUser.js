@@ -3,9 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const index_1 = require("errors/index");
 const cookies_1 = require("constants/cookies");
+const index_1 = require("errors/index");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const authenticateUser = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     const refreshToken = req.cookies[cookies_1.cookieName];
@@ -21,7 +21,7 @@ const authenticateUser = async (req, res, next) => {
         next();
     }
     catch (error) {
-        (0, index_1.unAuthenticatedError)(res, "Please login again");
+        (0, index_1.unAuthenticatedError)(res, "Error in credentials, please login again");
         return;
     }
 };

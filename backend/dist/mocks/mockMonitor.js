@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mockMonitor = void 0;
 exports.mockMonitor = {
-    monitoringOn: false,
     useInterval: false,
     useDate: false,
     intervalSchedule: "",

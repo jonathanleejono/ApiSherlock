@@ -1,16 +1,7 @@
-import { MonitorDateDayOfWeekOptions } from "enum";
-import { MonitorIntervalScheduleOptions } from "enum";
-import mongoose from "mongoose";
 import { UnifiedModel } from "models/UnifiedModel";
-
-// time of ping
-// day of the week (can be monday, tuesday, wed)
-// if day of week is selected, can't be non-weekday timed: weekly, daily, hourly
-// OR weekly, daily, hourly
-// associate with user created by
+import mongoose from "mongoose";
 
 export interface Monitor extends UnifiedModel {
-  monitoringOn: boolean;
   useInterval: boolean;
   useDate: boolean;
   intervalSchedule: string;

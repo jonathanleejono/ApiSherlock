@@ -3,6 +3,7 @@ import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
 } from "constants/messages";
+import { ApiStatusOptions } from "enum/apis";
 import { badRequestError, notFoundError, unAuthenticatedError } from "errors";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -20,24 +21,24 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
       return;
     }
 
-    const allApisToMonitor = await ApiCollection.find({
+    const apis = await ApiCollection.find({
       createdBy: user._id,
-      monitoring: "on",
     });
 
-    if (!allApisToMonitor) {
+    if (!apis || !(apis.length > 0)) {
       notFoundError(res, `No APIs found`);
       return;
     }
 
-    Object.keys(allApisToMonitor).forEach(async (_, index: number) => {
+    //the try catch is to ignore not found url error
+    Object.keys(apis).forEach(async (_, index: number) => {
       try {
-        const res = await axios.get(allApisToMonitor[index].url);
+        const res = await axios.get(apis[index].url);
         if (res && res.status === 200) {
           await ApiCollection.findOneAndUpdate(
-            { _id: allApisToMonitor[index].id },
+            { _id: apis[index].id },
             {
-              status: "healthy",
+              status: ApiStatusOptions.Healthy,
               lastPinged: getDateWithUTCOffset(user.timezoneGMT),
             },
             {
@@ -48,9 +49,9 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
         }
       } catch (error) {
         await ApiCollection.findOneAndUpdate(
-          { _id: allApisToMonitor[index].id },
+          { _id: apis[index].id },
           {
-            status: "unhealthy",
+            status: ApiStatusOptions.Unhealthy,
             lastPinged: getDateWithUTCOffset(user.timezoneGMT),
           },
           {
@@ -63,7 +64,6 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
 
     res.status(StatusCodes.OK).json(pingAllApisSuccessMsg);
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -95,7 +95,7 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
         await ApiCollection.findOneAndUpdate(
           { _id: api.id },
           {
-            status: "healthy",
+            status: ApiStatusOptions.Healthy,
             lastPinged: getDateWithUTCOffset(user.timezoneGMT),
           },
           {
@@ -108,7 +108,7 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
       await ApiCollection.findOneAndUpdate(
         { _id: api.id },
         {
-          status: "unhealthy",
+          status: ApiStatusOptions.Unhealthy,
           lastPinged: getDateWithUTCOffset(user.timezoneGMT),
         },
         {
@@ -120,7 +120,6 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.OK).json(pingOneApiSuccessMsg);
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }

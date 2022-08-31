@@ -4,12 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.seedApiCollection = exports.seedUsersCollection = exports.resetApiCollection = exports.resetUsersCollection = void 0;
-const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
-const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const index_1 = require("errors/index");
 const mockApis_1 = require("mocks/mockApis");
 const mockUser_1 = require("mocks/mockUser");
-const index_1 = require("errors/index");
+const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
+const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 dotenv_1.default.config();
 const TEST_ENV = process.env.NODE_ENV === "test";
@@ -49,7 +49,6 @@ const resetApiCollection = async (_, res) => {
     }
 };
 exports.resetApiCollection = resetApiCollection;
-const { name, email, password, timezoneGMT } = mockUser_1.mockUser;
 const seedUsersCollection = async (_, res) => {
     try {
         if (!TEST_ENV) {
@@ -57,7 +56,9 @@ const seedUsersCollection = async (_, res) => {
             return;
         }
         else {
-            await UserCollection_1.default.create({ name, email, password, timezoneGMT });
+            const user = new UserCollection_1.default(mockUser_1.mockUser);
+            await user.validate();
+            await UserCollection_1.default.create(user);
             res.status(201).json({ msg: "DB seeded!" });
         }
     }
@@ -80,16 +81,8 @@ const seedApiCollection = async (req, res) => {
                 (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
                 return;
             }
-            Object.keys(mockApis_1.mockApis).forEach(async (_, index) => {
-                await ApiCollection_1.default.create({
-                    url: mockApis_1.mockApis[index].url,
-                    host: mockApis_1.mockApis[index].host,
-                    status: mockApis_1.mockApis[index].status,
-                    lastPinged: mockApis_1.mockApis[index].lastPinged,
-                    monitoring: mockApis_1.mockApis[index].monitoring,
-                    createdBy: user._id,
-                });
-            });
+            const testApis = mockApis_1.mockApis.map((api) => (Object.assign(Object.assign({}, api), { createdBy: user._id })));
+            await ApiCollection_1.default.insertMany(testApis);
             res.status(200).json({ msg: "DB seeded!" });
         }
         catch (error) {

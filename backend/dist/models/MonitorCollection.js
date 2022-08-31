@@ -23,15 +23,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const monitorTime_1 = require("constants/monitorTime");
-const monitor_1 = require("enum/monitor");
+const monitor_1 = require("constants/options/monitor");
+const monitor_2 = require("enum/monitor");
 const mongoose_1 = __importStar(require("mongoose"));
 const MonitorSchema = new mongoose_1.default.Schema({
-    monitoringOn: {
-        type: Boolean,
-        required: [true, "Please specify if monitoring is on or off"],
-        default: false,
-    },
     useInterval: {
         type: Boolean,
         required: [true, "Please specify if interval is used"],
@@ -44,26 +39,22 @@ const MonitorSchema = new mongoose_1.default.Schema({
     },
     intervalSchedule: {
         type: String,
-        enum: monitor_1.monitorIntervalScheduleOptions,
-        required: [true, "Please provide interval schedule"],
-        default: monitor_1.MonitorIntervalScheduleOptions.WEEKLY,
+        enum: monitor_1.validMonitorIntervalScheduleOptions,
+        default: monitor_2.MonitorIntervalScheduleOptions.WEEKLY,
     },
     dateDayOfWeek: {
         type: Number,
-        enum: monitor_1.monitorDateDayOfWeekOptions,
-        required: [true, "Please provide day of week"],
-        default: monitor_1.MonitorDateDayOfWeekOptions.MONDAY,
+        enum: monitor_1.validMonitorDateDayOfWeekOptions,
+        default: 0,
     },
     dateHour: {
         type: Number,
-        enum: monitorTime_1.monitorDateHourOptions,
-        required: [true, "Please provide monitoring hour"],
+        enum: monitor_1.validMonitorDateHourOptions,
         default: 0,
     },
     dateMinute: {
         type: Number,
-        enum: monitorTime_1.monitorDateMinuteOptions,
-        required: [true, "Please provide monitoring minutes"],
+        enum: monitor_1.validMonitorDateMinuteOptions,
         default: 0,
     },
     createdBy: {
