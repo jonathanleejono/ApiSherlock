@@ -32,13 +32,13 @@ const app = express();
 dotenv.config();
 
 //throws error if env variable (value) is missing
-const nonEmptyStr = makeValidator((x) => {
+const validateStr = makeValidator((x) => {
   if (!x) throw new Error("Value is empty");
 });
 
 //throws error if env variable (key) is missing
 cleanEnv(process.env, {
-  YAHOO: nonEmptyStr(),
+  SECRET: validateStr(),
 });
 
 if (process.env.NODE_ENV !== "production") {
