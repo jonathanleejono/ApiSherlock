@@ -11,7 +11,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectDB from "db/connect";
 import dotenv from "dotenv";
-import { cleanEnv, makeValidator } from "envalid";
+import { cleanEnv, makeValidator, port } from "envalid";
 import express from "express";
 import "express-async-errors";
 import mongoSanitize from "express-mongo-sanitize";
@@ -39,6 +39,7 @@ const validateStr = makeValidator((x) => {
 //throws error if env variable (key) is missing
 cleanEnv(process.env, {
   SECRET: validateStr(),
+  REDIS_PORT: port(),
 });
 
 if (process.env.NODE_ENV !== "production") {
