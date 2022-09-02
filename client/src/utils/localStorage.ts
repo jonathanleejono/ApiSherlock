@@ -1,6 +1,8 @@
-import { appUserKey, testAllApisKey, testUserKey } from "constants/keys";
 import { AuthUser } from "interfaces/users";
+import { testAllApisKey, testUserKey } from "test/data/testKeys";
 import { decryptData, encryptData } from "utils/encrypt";
+
+export const appUserKey = "user";
 
 const addUserToLocalStorage = (user: AuthUser) => {
   try {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApiQueryParams = exports.ApiStatusOptions = exports.ApiSortOptions = exports.ApiMonitoringOptions = exports.ApiHostOptions = void 0;
+exports.ApiQueryParamsEnum = exports.ApiStatusOptions = exports.ApiSortOptions = exports.ApiMonitoringOptions = exports.ApiHostOptions = void 0;
 var ApiHostOptions;
 (function (ApiHostOptions) {
     ApiHostOptions["AWS"] = "AWS";
@@ -30,14 +30,14 @@ var ApiStatusOptions;
     ApiStatusOptions["UNHEALTHY"] = "unhealthy";
     ApiStatusOptions["PENDING"] = "pending";
 })(ApiStatusOptions = exports.ApiStatusOptions || (exports.ApiStatusOptions = {}));
-var ApiQueryParams;
-(function (ApiQueryParams) {
-    ApiQueryParams["STATUS"] = "status";
-    ApiQueryParams["MONITORING"] = "monitoring";
-    ApiQueryParams["SORT"] = "sort";
-    ApiQueryParams["SEARCH"] = "search";
-    ApiQueryParams["PAGE"] = "page";
-    ApiQueryParams["LIMIT"] = "limit";
-    ApiQueryParams["HOST"] = "host";
-})(ApiQueryParams = exports.ApiQueryParams || (exports.ApiQueryParams = {}));
+var ApiQueryParamsEnum;
+(function (ApiQueryParamsEnum) {
+    ApiQueryParamsEnum["STATUS"] = "status";
+    ApiQueryParamsEnum["MONITORING"] = "monitoring";
+    ApiQueryParamsEnum["SORT"] = "sort";
+    ApiQueryParamsEnum["SEARCH"] = "search";
+    ApiQueryParamsEnum["PAGE"] = "page";
+    ApiQueryParamsEnum["LIMIT"] = "limit";
+    ApiQueryParamsEnum["HOST"] = "host";
+})(ApiQueryParamsEnum = exports.ApiQueryParamsEnum || (exports.ApiQueryParamsEnum = {}));
 //# sourceMappingURL=apis.js.map

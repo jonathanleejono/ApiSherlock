@@ -34,7 +34,7 @@ const createMonitor = async (req, res) => {
         const { monitorSetting, scheduleType, intervalSchedule, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM, } = req.body;
         if (!(0, validateKeysValues_1.validValues)(res, monitorSetting, `Invalid monitor setting, please select one of: `, monitor_1.validMonitorSettingOptions))
             return;
-        if (monitorSetting === monitor_2.MonitorSettingOptions.OFF) {
+        if (monitorSetting !== monitor_2.MonitorSettingOptions.ON) {
             (0, index_1.badRequestError)(res, "Monitor setting must be on to add monitor");
             return;
         }

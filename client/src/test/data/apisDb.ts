@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
 import axios from "axios";
-import { testAllApisKey } from "constants/keys";
 import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
@@ -17,6 +16,7 @@ import {
 } from "interfaces/apis";
 import { PingResponse } from "interfaces/ping";
 import { mockApis } from "test/data/mockApis";
+import { testAllApisKey } from "test/data/testKeys";
 import { getUser } from "test/data/usersDb";
 import {
   BadRequestError,

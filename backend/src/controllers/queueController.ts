@@ -78,9 +78,23 @@ export const startQueue = async (
 
     // cron-parser: second, minute, hour, day of month, month, day of week
     if (scheduleType === MonitorScheduleTypeOptions.DATE) {
-      // make sure this is +13 and not +12 because the frontend if off by 1 hour
-      const hour =
-        dateAMOrPM === MonitorDateAMOrPMOptions.PM ? dateHour + 13 : dateHour;
+      let hour;
+
+      //if it's 12AM, the hour should be 0:00AM to match cron
+      if (dateHour === 12 && dateAMOrPM === MonitorDateAMOrPMOptions.AM) {
+        hour = dateHour - 12;
+      }
+
+      //if it's PM and not 12PM, add 12 hours, eg. 3PM -> 15:00
+      if (dateHour !== 12 && dateAMOrPM === MonitorDateAMOrPMOptions.PM) {
+        hour = dateHour + 12;
+      }
+
+      //if it's 12PM, don't add or subtract anything, leave as 12:00
+      if (dateHour === 12 && dateAMOrPM === MonitorDateAMOrPMOptions.PM) {
+        hour = dateHour;
+      }
+
       setRepeatOptions({
         cron: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
         limit: 1,
@@ -180,7 +194,15 @@ export const startQueue = async (
       });
     }
 
-    addJobToQueue(`Ping apis for user`);
+    if (scheduleType === MonitorScheduleTypeOptions.INTERVAL) {
+      addJobToQueue(`Ping apis for user at ${intervalSchedule}`);
+    }
+
+    if (scheduleType === MonitorScheduleTypeOptions.DATE) {
+      addJobToQueue(
+        `Ping apis for user at ${dateDayOfWeek} ${dateHour}:${dateMinute} ${dateAMOrPM}`
+      );
+    }
 
     const worker = new Worker(
       queueName,

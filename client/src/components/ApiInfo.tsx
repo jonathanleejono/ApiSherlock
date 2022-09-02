@@ -12,7 +12,9 @@ type ApiInfoProps = InferProps<typeof propTypes>;
 const ApiInfo: React.FC<ApiInfoProps> = ({ icon, text }) => (
   <Wrapper>
     <span className="icon">{icon}</span>
-    <span className="text">{text}</span>
+    <span data-testid="ApiInfoText" className="text">
+      {text}
+    </span>
   </Wrapper>
 );
 

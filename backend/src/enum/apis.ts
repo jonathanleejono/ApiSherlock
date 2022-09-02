@@ -27,7 +27,7 @@ export enum ApiStatusOptions {
   PENDING = "pending",
 }
 
-export enum ApiQueryParams {
+export enum ApiQueryParamsEnum {
   STATUS = "status",
   MONITORING = "monitoring",
   SORT = "sort",

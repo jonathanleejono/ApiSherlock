@@ -37,7 +37,6 @@ const startQueue = async (req, res) => {
         const queueName = `${queue_1.queueBaseName}-${user.email}`;
         const jobName = `${queue_1.jobBaseName}-${user.email}`;
         const monitor = await MonitorCollection_1.default.findOne({ createdBy: user._id });
-        console.log(monitor);
         if (!monitor) {
             (0, errors_1.notFoundError)(res, `No monitor found`);
             return;
@@ -48,7 +47,16 @@ const startQueue = async (req, res) => {
         }
         const { scheduleType, intervalSchedule, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM, } = monitor;
         if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
-            const hour = dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.PM ? dateHour + 13 : dateHour;
+            let hour;
+            if (dateHour === 12 && dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.AM) {
+                hour = dateHour - 12;
+            }
+            if (dateHour !== 12 && dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.PM) {
+                hour = dateHour + 12;
+            }
+            if (dateHour === 12 && dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.PM) {
+                hour = dateHour;
+            }
             (0, queue_1.setRepeatOptions)({
                 cron: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
                 limit: 1,
@@ -127,7 +135,12 @@ const startQueue = async (req, res) => {
                 }
             });
         }
-        addJobToQueue(`Ping apis for user`);
+        if (scheduleType === monitor_1.MonitorScheduleTypeOptions.INTERVAL) {
+            addJobToQueue(`Ping apis for user at ${intervalSchedule}`);
+        }
+        if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
+            addJobToQueue(`Ping apis for user at ${dateDayOfWeek} ${dateHour}:${dateMinute} ${dateAMOrPM}`);
+        }
         const worker = new bullmq_1.Worker(queueName, pingAllMonitoredApis, redisConfiguration);
         worker.on("completed", async (job) => {
             console.log(`Job ${job.id} has completed!`);

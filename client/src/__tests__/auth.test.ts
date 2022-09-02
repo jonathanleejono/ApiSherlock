@@ -1,6 +1,6 @@
 import { baseUrl } from "constants/apiUrls";
 import { getToken, setToken } from "constants/token";
-import { newAccessToken } from "test/mocks/handlers";
+import { newAccessToken } from "test/mocks/handlers/userHandlers";
 import { PathParams, rest, RestRequest, server } from "test/mocks/server";
 import customFetch from "utils/axios";
 

@@ -1,7 +1,7 @@
 import {
   ApiHostOptions,
   ApiMonitoringOptions,
-  ApiQueryParams,
+  ApiQueryParamsEnum,
   ApiSortOptions,
   ApiStatusOptions,
 } from "enum/apis";
@@ -17,7 +17,7 @@ export const validCreateApiKeys = Object.keys(mockApi);
 
 export const validUpdateApiKeys = validCreateApiKeys;
 
-export const validApiSearchParams = Object.values(ApiQueryParams);
+export const validApiSearchParams = Object.values(ApiQueryParamsEnum);
 
 export const validApiSortOptions = Object.values(ApiSortOptions);
 

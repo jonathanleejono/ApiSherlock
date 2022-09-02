@@ -4,7 +4,19 @@ import {
   validApiMonitoringOptions,
   validApiStatusOptions,
 } from "constants/options/apis";
+import {
+  validMonitorDateAMorPMOptions,
+  validMonitorDateDayOfWeekOptions,
+  validMonitorDateHourOptions,
+  validMonitorDateMinuteOptions,
+} from "constants/options/monitor";
+import {
+  MonitorIntervalScheduleOptions,
+  MonitorScheduleTypeOptions,
+  MonitorSettingOptions,
+} from "enum/monitor";
 import { ApiDataResponse } from "interfaces/apis";
+import { MonitorDataResponse } from "interfaces/monitor";
 import { RegisterUserData } from "interfaces/users";
 import { constructDateTime } from "utils/datetime";
 
@@ -16,16 +28,17 @@ function randomChoice(options: string[]): any {
   return options[choice];
 }
 
-function buildMockUser(): RegisterUserData {
+function buildMockUser(overrides: Partial<RegisterUserData>): RegisterUserData {
   return {
     name: faker.name.firstName(),
     email: faker.internet.email(),
     password: mockUserPassword,
     timezoneGMT: -4,
+    ...overrides,
   };
 }
 
-function buildMockApi(): ApiDataResponse {
+function buildMockApi(overrides: Partial<ApiDataResponse>): ApiDataResponse {
   return {
     _id: faker.datatype.uuid(),
     url: faker.internet.url(),
@@ -37,7 +50,28 @@ function buildMockApi(): ApiDataResponse {
     createdAt: constructDateTime(),
     updatedAt: constructDateTime(),
     __v: 0,
+    ...overrides,
   };
 }
 
-export { buildMockUser, buildMockApi };
+function buildMockMonitor(
+  overrides: Partial<MonitorDataResponse>
+): MonitorDataResponse {
+  return {
+    _id: faker.datatype.uuid(),
+    monitorSetting: MonitorSettingOptions.ON,
+    scheduleType: MonitorScheduleTypeOptions.DATE,
+    intervalSchedule: MonitorIntervalScheduleOptions.WEEKLY,
+    dateDayOfWeek: validMonitorDateDayOfWeekOptions[0],
+    dateHour: validMonitorDateHourOptions[0],
+    dateMinute: validMonitorDateMinuteOptions[0],
+    dateAMOrPM: validMonitorDateAMorPMOptions[0],
+    createdBy: faker.datatype.uuid(),
+    createdAt: constructDateTime(),
+    updatedAt: constructDateTime(),
+    __v: 0,
+    ...overrides,
+  };
+}
+
+export { buildMockUser, buildMockApi, buildMockMonitor };

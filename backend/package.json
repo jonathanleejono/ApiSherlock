@@ -55,6 +55,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
+    "envalid": "^7.3.1",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
     "express-mongo-sanitize": "^2.1.0",

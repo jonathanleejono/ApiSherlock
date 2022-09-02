@@ -121,13 +121,7 @@ const Monitoring = () => {
           scheduleType,
           intervalSchedule,
           dateDayOfWeek: parseInt(MonitorDateDayOfWeekOptions[dateDayOfWeek]),
-          // parseInt(dateHour) - 1 because the frontend hours are from 1 to 12,
-          // but the backend uses 0 to 11 for cron
-          // the greater than 0 condition is to not go under and have -1
-          dateHour:
-            parseInt(dateHour) > 0
-              ? parseInt(dateHour) - 1
-              : parseInt(dateHour),
+          dateHour: parseInt(dateHour),
           dateMinute: parseInt(dateMinute),
           dateAMOrPM,
         };

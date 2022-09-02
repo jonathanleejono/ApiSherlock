@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectDB from "db/connect";
 import dotenv from "dotenv";
+import { cleanEnv, makeValidator } from "envalid";
 import express from "express";
 import "express-async-errors";
 import mongoSanitize from "express-mongo-sanitize";
@@ -29,6 +30,16 @@ import xss from "xss-clean";
 const app = express();
 
 dotenv.config();
+
+//throws error if env variable (value) is missing
+const nonEmptyStr = makeValidator((x) => {
+  if (!x) throw new Error("Value is empty");
+});
+
+//throws error if env variable (key) is missing
+cleanEnv(process.env, {
+  YAHOO: nonEmptyStr(),
+});
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
@@ -65,14 +76,14 @@ if (process.env.NODE_ENV === "test") {
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-const port = process.env.PORT || 5000;
+const serverPort = process.env.PORT || 5000;
 
 const start = async () => {
   try {
     await connectDB(process.env.MONGO_URL as string);
     if (process.env.NODE_ENV !== "test") {
-      app.listen(port, () => {
-        console.log(`Server is listening on port ${port}...`);
+      app.listen(serverPort, () => {
+        console.log(`Server is listening on port ${serverPort}...`);
       });
     }
   } catch (error) {

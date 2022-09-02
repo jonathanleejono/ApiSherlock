@@ -81,7 +81,7 @@ const createMonitor = async (req: Request, res: Response): Promise<void> => {
     )
       return;
 
-    if (monitorSetting === MonitorSettingOptions.OFF) {
+    if (monitorSetting !== MonitorSettingOptions.ON) {
       badRequestError(res, "Monitor setting must be on to add monitor");
       return;
     }
