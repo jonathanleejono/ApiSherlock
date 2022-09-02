@@ -1,24 +1,31 @@
 import {
+  validMonitorDateAMorPMOptions,
   validMonitorDateDayOfWeekOptions,
   validMonitorDateHourOptions,
   validMonitorDateMinuteOptions,
   validMonitorIntervalScheduleOptions,
 } from "constants/options/monitor";
-import { MonitorIntervalScheduleOptions } from "enum/monitor";
+import {
+  MonitorDateAMOrPMOptions,
+  MonitorDateDayOfWeekOptions,
+  MonitorIntervalScheduleOptions,
+  MonitorScheduleTypeOptions,
+  MonitorSettingOptions,
+} from "enum/monitor";
 import MonitorDocument from "models/MonitorDocument";
 import mongoose, { Model, Schema } from "mongoose";
 
 const MonitorSchema: Schema<MonitorDocument> = new mongoose.Schema(
   {
-    useInterval: {
-      type: Boolean,
-      required: [true, "Please specify if interval is used"],
-      default: false,
+    monitorSetting: {
+      type: String,
+      required: [true, "Please specify if monitor is on or off"],
+      default: MonitorSettingOptions.OFF,
     },
-    useDate: {
-      type: Boolean,
-      required: [true, "Please specify if date is used"],
-      default: false,
+    scheduleType: {
+      type: String,
+      required: [true, "Please specify schedule type"],
+      default: MonitorScheduleTypeOptions.INTERVAL,
     },
     intervalSchedule: {
       type: String,
@@ -28,7 +35,7 @@ const MonitorSchema: Schema<MonitorDocument> = new mongoose.Schema(
     dateDayOfWeek: {
       type: Number,
       enum: validMonitorDateDayOfWeekOptions,
-      default: 0,
+      default: MonitorDateDayOfWeekOptions.Sunday,
     },
     dateHour: {
       type: Number,
@@ -39,6 +46,11 @@ const MonitorSchema: Schema<MonitorDocument> = new mongoose.Schema(
       type: Number,
       enum: validMonitorDateMinuteOptions,
       default: 0,
+    },
+    dateAMOrPM: {
+      type: String,
+      enum: validMonitorDateAMorPMOptions,
+      default: MonitorDateAMOrPMOptions.AM,
     },
     createdBy: {
       type: Schema.Types.ObjectId,

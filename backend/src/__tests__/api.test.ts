@@ -25,7 +25,7 @@ import { ApiMonitoringOptions } from "enum/apis";
 import { mockApi } from "mocks/mockApi";
 import { mockApis } from "mocks/mockApis";
 import { mockApisStats } from "mocks/mockApisStats";
-import { mockUpdatedApis } from "mocks/mockUpdatedApis";
+import { editMockApiUrl, mockUpdatedApis } from "mocks/mockUpdatedApis";
 import { mockUser } from "mocks/mockUser";
 import { Api } from "models/ApiDocument";
 import mongoose, { Schema } from "mongoose";
@@ -43,7 +43,7 @@ const mockUpdatedApi = mockUpdatedApis[0];
 
 const mockQueryParamApi = mockApis[1];
 
-const testApiResponse: Partial<Api> = {
+const testApiResponse: Api = {
   url: expect.any(String),
   host: expect.any(String),
   monitoring: expect.any(String),
@@ -145,7 +145,7 @@ describe("testing api controller", () => {
 
     it("should update an api object", async (): Promise<void> => {
       const updatedData = {
-        url: "https://battery-cellify.herokuapp22.com/ping",
+        url: editMockApiUrl,
       };
       const response = await agent
         .patch(`${baseApiUrl}${editApiUrl}/${apiObjId}`)

@@ -1,5 +1,5 @@
+import { baseUrl } from "constants/apiUrls";
 import { getToken, setToken } from "constants/token";
-import { baseUrl } from "constants/urls";
 import { newAccessToken } from "test/mocks/handlers";
 import { PathParams, rest, RestRequest, server } from "test/mocks/server";
 import customFetch from "utils/axios";
@@ -34,7 +34,7 @@ describe("testing MSW server and auth setup", () => {
   test("refresh token activates when no accessToken is provided", async () => {
     const emptyToken = await getToken();
 
-    expect(emptyToken).toBe(null);
+    expect(emptyToken).toBeNull();
 
     // this mock api response must come before customFetch/axios fetches
     server.use(

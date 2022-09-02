@@ -9,7 +9,7 @@ import { ApiRequestData } from "interfaces/apis";
 
 const mockApi: ApiRequestData = {
   url: "https://www.notarealwebsitehopefully4.com/ping",
-  host: ApiHostOptions.Heroku,
+  host: ApiHostOptions.HEROKU,
   monitoring: ApiMonitoringOptions.ON,
 };
 

@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRepeatOptions = exports.setRepeatOptions = exports.getQueue = exports.setQueue = void 0;
+exports.getRepeatOptions = exports.setRepeatOptions = exports.getQueue = exports.setQueue = exports.jobBaseName = exports.queueBaseName = void 0;
+exports.queueBaseName = "pingApiScheduleQueue";
+exports.jobBaseName = "pingApisJob";
 let myQueue;
 let repeatOptions;
 async function setQueue(queue) {

@@ -4,6 +4,6 @@ exports.pingHealthCheckSuccessMsg = exports.deleteMonitorSuccessMsg = exports.pi
 exports.deleteApiSuccessMsg = { msg: "Success! Api removed" };
 exports.pingAllApisSuccessMsg = { msg: "Pinged APIs!" };
 exports.pingOneApiSuccessMsg = { msg: "Pinged API!" };
-exports.deleteMonitorSuccessMsg = { msg: "Success! Monitor removed" };
+exports.deleteMonitorSuccessMsg = { msg: "Success! Monitor turned off" };
 exports.pingHealthCheckSuccessMsg = `hello world!`;
 //# sourceMappingURL=messages.js.map

@@ -1,14 +1,14 @@
-import { clearFilters, handleChange } from "features/allApis/allApisSlice";
-import { useAppDispatch, useAppSelector } from "state/hooks";
-import { FormRow, FormRowSelect } from ".";
 import Wrapper from "assets/wrappers/SearchContainer";
-import { getAllApis } from "features/allApis/allApisThunk";
 import {
   validApiHostOptions,
   validApiMonitoringOptions,
   validApiSortOptions,
   validApiStatusOptions,
 } from "constants/options/apis";
+import { clearFilters, handleChange } from "features/allApis/allApisSlice";
+import { getAllApis } from "features/allApis/allApisThunk";
+import { useAppDispatch, useAppSelector } from "state/hooks";
+import { FormRow, FormRowSelect } from ".";
 
 const SearchContainer: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -72,7 +72,7 @@ const SearchContainer: React.FC = () => {
           />
           {/* sort */}
           <FormRowSelect
-            labelText="sort"
+            labelText="sort (by URL)"
             name="sort"
             value={sort}
             handleChange={handleSearch}

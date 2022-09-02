@@ -17,7 +17,13 @@ function validKeys(res, arrReqInput, errorMsg, arrValid) {
     return true;
 }
 exports.validKeys = validKeys;
-function validValues(res, reqInput, errorMsg, validOptions) {
+function validValues(res, reqInput, errorMsg, validOptions, labelValidOptions) {
+    if (labelValidOptions) {
+        if (!validOptions.includes(reqInput)) {
+            (0, errors_1.badRequestError)(res, `${errorMsg}` + `${labelValidOptions}`.replace(/,/g, ", "));
+            return false;
+        }
+    }
     if (!validOptions.includes(reqInput)) {
         (0, errors_1.badRequestError)(res, `${errorMsg}` + `${validOptions}`.replace(/,/g, ", "));
         return false;

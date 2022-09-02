@@ -32,7 +32,7 @@ const pingAll = async (req, res) => {
                 const res = await axios_1.default.get(apis[index].url);
                 if (res && res.status === 200) {
                     await ApiCollection_1.default.findOneAndUpdate({ _id: apis[index].id }, {
-                        status: apis_1.ApiStatusOptions.Healthy,
+                        status: apis_1.ApiStatusOptions.HEALTHY,
                         lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
                     }, {
                         new: true,
@@ -42,7 +42,7 @@ const pingAll = async (req, res) => {
             }
             catch (error) {
                 await ApiCollection_1.default.findOneAndUpdate({ _id: apis[index].id }, {
-                    status: apis_1.ApiStatusOptions.Unhealthy,
+                    status: apis_1.ApiStatusOptions.UNHEALTHY,
                     lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
                 }, {
                     new: true,
@@ -76,7 +76,7 @@ const pingOne = async (req, res) => {
             const res = await axios_1.default.get(api.url);
             if (res && res.status === 200) {
                 await ApiCollection_1.default.findOneAndUpdate({ _id: api.id }, {
-                    status: apis_1.ApiStatusOptions.Healthy,
+                    status: apis_1.ApiStatusOptions.HEALTHY,
                     lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
                 }, {
                     new: true,
@@ -86,7 +86,7 @@ const pingOne = async (req, res) => {
         }
         catch (error) {
             await ApiCollection_1.default.findOneAndUpdate({ _id: api.id }, {
-                status: apis_1.ApiStatusOptions.Unhealthy,
+                status: apis_1.ApiStatusOptions.UNHEALTHY,
                 lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
             }, {
                 new: true,

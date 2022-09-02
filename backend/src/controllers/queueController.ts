@@ -10,7 +10,12 @@ import {
 } from "constants/queue";
 import dotenv from "dotenv";
 import { ApiMonitoringOptions, ApiStatusOptions } from "enum/apis";
-import { MonitorIntervalScheduleOptions } from "enum/monitor";
+import {
+  MonitorDateAMOrPMOptions,
+  MonitorIntervalScheduleOptions,
+  MonitorScheduleTypeOptions,
+  MonitorSettingOptions,
+} from "enum/monitor";
 import { badRequestError, notFoundError, unAuthenticatedError } from "errors";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -57,24 +62,32 @@ export const startQueue = async (
       return;
     }
 
+    if (monitor.monitorSetting !== MonitorSettingOptions.ON) {
+      badRequestError(res, `Monitor must be on to start queue`);
+      return;
+    }
+
     const {
-      useInterval,
-      useDate,
+      scheduleType,
       intervalSchedule,
       dateDayOfWeek,
       dateHour,
       dateMinute,
+      dateAMOrPM,
     } = monitor;
 
     // cron-parser: second, minute, hour, day of month, month, day of week
-    if (useDate) {
+    if (scheduleType === MonitorScheduleTypeOptions.DATE) {
+      // make sure this is +13 and not +12 because the frontend if off by 1 hour
+      const hour =
+        dateAMOrPM === MonitorDateAMOrPMOptions.PM ? dateHour + 13 : dateHour;
       setRepeatOptions({
-        cron: `* ${dateMinute} ${dateHour} * * ${dateDayOfWeek}`,
+        cron: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
         limit: 1,
       });
     }
 
-    if (useInterval) {
+    if (scheduleType === MonitorScheduleTypeOptions.INTERVAL) {
       switch (intervalSchedule) {
         case MonitorIntervalScheduleOptions.WEEKLY:
           setRepeatOptions({
@@ -142,7 +155,7 @@ export const startQueue = async (
             await ApiCollection.findOneAndUpdate(
               { _id: apis[index].id },
               {
-                status: ApiStatusOptions.Healthy,
+                status: ApiStatusOptions.HEALTHY,
                 lastPinged: getDateWithUTCOffset(user!.timezoneGMT),
               },
               {
@@ -155,7 +168,7 @@ export const startQueue = async (
           await ApiCollection.findOneAndUpdate(
             { _id: apis[index].id },
             {
-              status: ApiStatusOptions.Unhealthy,
+              status: ApiStatusOptions.UNHEALTHY,
               lastPinged: getDateWithUTCOffset(user!.timezoneGMT),
             },
             {
@@ -183,7 +196,7 @@ export const startQueue = async (
       console.error(`Job ${job.id} has failed with ${err.message}`);
     });
 
-    res.status(StatusCodes.OK).json({ msg: "Started queue!" });
+    res.status(StatusCodes.OK).json({ msg: "Started monitoring in queue!" });
   } catch (error) {
     badRequestError(res, error);
     return;
@@ -215,9 +228,17 @@ export const removeQueue = async (
     // await myQueue.removeRepeatable(jobName, repeatOptions);
 
     const myQueue = await getQueue();
+
+    if (!myQueue) {
+      res.status(StatusCodes.OK).json({ msg: "Monitoring stopped" });
+      return;
+    }
+
     await myQueue.obliterate();
 
-    res.status(StatusCodes.OK).json({ msg: "Stopped and removed queue" });
+    res
+      .status(StatusCodes.OK)
+      .json({ msg: "Stopped monitoring and removed queue" });
   } catch (error) {
     badRequestError(res, error);
     return;

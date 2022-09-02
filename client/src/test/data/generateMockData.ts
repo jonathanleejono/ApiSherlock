@@ -10,6 +10,7 @@ import { constructDateTime } from "utils/datetime";
 
 export const mockUserPassword = "zFtay!5sh?m&&z7190pG";
 
+//eslint-disable-next-line
 function randomChoice(options: string[]): any {
   const choice = Math.floor(Math.random() * options.length);
   return options[choice];

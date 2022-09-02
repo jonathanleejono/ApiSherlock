@@ -44,7 +44,7 @@ let apiObjId;
 let apiToDeleteId;
 const mockUpdatedApi = mockUpdatedApis_1.mockUpdatedApis[0];
 const mockQueryParamApi = mockApis_1.mockApis[1];
-let testApiResponse = {
+const testApiResponse = {
     url: expect.any(String),
     host: expect.any(String),
     monitoring: expect.any(String),
@@ -117,7 +117,7 @@ describe("testing api controller", () => {
         });
         it("should update an api object", async () => {
             const updatedData = {
-                url: "https://battery-cellify.herokuapp22.com/ping",
+                url: mockUpdatedApis_1.editMockApiUrl,
             };
             const response = await agent
                 .patch(`${urls_1.baseApiUrl}${urls_1.editApiUrl}/${apiObjId}`)

@@ -5,10 +5,12 @@ var ApiHostOptions;
 (function (ApiHostOptions) {
     ApiHostOptions["AWS"] = "AWS";
     ApiHostOptions["GCP"] = "GCP";
-    ApiHostOptions["Azure"] = "Azure";
-    ApiHostOptions["Heroku"] = "Heroku";
-    ApiHostOptions["DigitalOcean"] = "DigitalOcean";
-    ApiHostOptions["Other"] = "Other";
+    ApiHostOptions["AZURE"] = "Azure";
+    ApiHostOptions["HEROKU"] = "Heroku";
+    ApiHostOptions["DIGITALOCEAN"] = "DigitalOcean";
+    ApiHostOptions["VERCEL"] = "Vercel";
+    ApiHostOptions["NETLIFY"] = "Netlify";
+    ApiHostOptions["OTHER"] = "Other";
 })(ApiHostOptions = exports.ApiHostOptions || (exports.ApiHostOptions = {}));
 var ApiMonitoringOptions;
 (function (ApiMonitoringOptions) {
@@ -17,16 +19,16 @@ var ApiMonitoringOptions;
 })(ApiMonitoringOptions = exports.ApiMonitoringOptions || (exports.ApiMonitoringOptions = {}));
 var ApiSortOptions;
 (function (ApiSortOptions) {
-    ApiSortOptions["Latest"] = "Latest";
-    ApiSortOptions["Oldest"] = "Oldest";
+    ApiSortOptions["LATEST"] = "Latest";
+    ApiSortOptions["OLDEST"] = "Oldest";
     ApiSortOptions["A_Z"] = "A-Z";
     ApiSortOptions["Z_A"] = "Z-A";
 })(ApiSortOptions = exports.ApiSortOptions || (exports.ApiSortOptions = {}));
 var ApiStatusOptions;
 (function (ApiStatusOptions) {
-    ApiStatusOptions["Healthy"] = "healthy";
-    ApiStatusOptions["Unhealthy"] = "unhealthy";
-    ApiStatusOptions["Pending"] = "pending";
+    ApiStatusOptions["HEALTHY"] = "healthy";
+    ApiStatusOptions["UNHEALTHY"] = "unhealthy";
+    ApiStatusOptions["PENDING"] = "pending";
 })(ApiStatusOptions = exports.ApiStatusOptions || (exports.ApiStatusOptions = {}));
 var ApiQueryParams;
 (function (ApiQueryParams) {
@@ -36,5 +38,6 @@ var ApiQueryParams;
     ApiQueryParams["SEARCH"] = "search";
     ApiQueryParams["PAGE"] = "page";
     ApiQueryParams["LIMIT"] = "limit";
+    ApiQueryParams["HOST"] = "host";
 })(ApiQueryParams = exports.ApiQueryParams || (exports.ApiQueryParams = {}));
 //# sourceMappingURL=apis.js.map

@@ -48,7 +48,7 @@ async function renderApp({
 
 describe("testing main api pages", () => {
   //login as a user first
-  beforeAll(async () => {
+  test("have to login first", async () => {
     // register route is the same as login route
     const { authUser } = await renderApp({ route: registerRoute });
 

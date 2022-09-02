@@ -1,18 +1,5 @@
 import { faker } from "@faker-js/faker";
 import {
-  createApiErrorMsg,
-  deleteApiErrorMsg,
-  deleteApiSuccessMsg,
-  editApiErrorMsg,
-  getAllApisErrorMsg,
-  loginUserErrorMsg,
-  pingAllApisErrorMsg,
-  refreshTokenErrorMsg,
-  registerUserErrorMsg,
-  updateUserErrorMsg,
-} from "constants/messages";
-import { validApiSearchParams } from "constants/options/apis";
-import {
   baseUrl,
   createApiUrl,
   deleteApiUrl,
@@ -25,7 +12,20 @@ import {
   refreshAccessTokenUrl,
   registerUserUrl,
   updateUserUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
+import {
+  createApiErrorMsg,
+  deleteApiErrorMsg,
+  deleteApiSuccessMsg,
+  editApiErrorMsg,
+  getAllApisErrorMsg,
+  loginUserErrorMsg,
+  pingAllApisErrorMsg,
+  refreshTokenErrorMsg,
+  registerUserErrorMsg,
+  updateUserErrorMsg,
+} from "constants/messages";
+import { validApiSearchParams } from "constants/options/apis";
 import { ApiStatusOptions } from "enum/apis";
 import { ApiQueryParams } from "interfaces/apis";
 import { rest } from "msw";
@@ -201,7 +201,7 @@ const handlers = [
         createdBy: userId,
         url: url,
         host: host,
-        status: ApiStatusOptions.Pending,
+        status: ApiStatusOptions.PENDING,
         lastPinged: "Never pinged",
         monitoring: monitoring,
         createdAt: constructDateTime(),

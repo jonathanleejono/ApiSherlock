@@ -5,36 +5,38 @@ import {
 } from "enum/apis";
 import { Api } from "models/ApiDocument";
 
+export const editMockApiUrl = "https://battery-cellify.herokuapp22.com/ping";
+
 export const mockUpdatedApis: Omit<Api, "_id" | "createdBy" | "lastPinged">[] =
   [
     {
-      url: "https://battery-cellify.herokuapp22.com/ping",
-      host: ApiHostOptions.Heroku,
-      status: ApiStatusOptions.Unhealthy,
+      url: editMockApiUrl,
+      host: ApiHostOptions.HEROKU,
+      status: ApiStatusOptions.UNHEALTHY,
       monitoring: ApiMonitoringOptions.ON,
     },
     {
       url: "https://www.hello-herokuapp2.com/ping",
-      host: ApiHostOptions.Heroku,
-      status: ApiStatusOptions.Unhealthy,
+      host: ApiHostOptions.HEROKU,
+      status: ApiStatusOptions.UNHEALTHY,
       monitoring: ApiMonitoringOptions.OFF,
     },
     {
-      url: "https://www.not1arealwebsitehopefully5.com/ping",
-      host: ApiHostOptions.Heroku,
-      status: ApiStatusOptions.Unhealthy,
+      url: "https://www.not1arealwebsitehopefully1.com/ping",
+      host: ApiHostOptions.HEROKU,
+      status: ApiStatusOptions.UNHEALTHY,
       monitoring: ApiMonitoringOptions.ON,
     },
     {
       url: "https://www.not1arealwebsitehopefully2.com/ping",
       host: ApiHostOptions.AWS,
-      status: ApiStatusOptions.Unhealthy,
+      status: ApiStatusOptions.UNHEALTHY,
       monitoring: ApiMonitoringOptions.ON,
     },
     {
       url: "https://www.not1arealwebsitehopefully3.com/ping",
       host: ApiHostOptions.AWS,
-      status: ApiStatusOptions.Unhealthy,
+      status: ApiStatusOptions.UNHEALTHY,
       monitoring: ApiMonitoringOptions.ON,
     },
   ];

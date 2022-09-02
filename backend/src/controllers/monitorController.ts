@@ -2,8 +2,16 @@ import { deleteMonitorSuccessMsg } from "constants/messages";
 import {
   validCreateMonitorKeys,
   validMonitorIntervalScheduleOptions,
+  validMonitorScheduleTypeOptions,
+  validMonitorSettingOptions,
   validUpdateMonitorKeys,
 } from "constants/options/monitor";
+import {
+  MonitorDateAMOrPMOptions,
+  MonitorIntervalScheduleOptions,
+  MonitorScheduleTypeOptions,
+  MonitorSettingOptions,
+} from "enum/monitor";
 import {
   badRequestError,
   notFoundError,
@@ -34,7 +42,10 @@ const createMonitor = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (monitorAlreadyExists) {
-      badRequestError(res, "Error, can only have one monitor");
+      badRequestError(
+        res,
+        "Error, can only have one monitor, please turn off to remove"
+      );
       return;
     }
 
@@ -51,32 +62,42 @@ const createMonitor = async (req: Request, res: Response): Promise<void> => {
     if (emptyValuesExist(res, Object.values(req.body))) return;
 
     const {
-      useInterval,
-      useDate,
+      monitorSetting,
+      scheduleType,
       intervalSchedule,
       dateDayOfWeek,
       dateHour,
       dateMinute,
+      dateAMOrPM,
     } = req.body;
 
-    if (!useInterval && !useDate) {
-      badRequestError(
+    if (
+      !validValues(
         res,
-        "One of interval and date schedule must be used, please pick one"
-      );
+        monitorSetting,
+        `Invalid monitor setting, please select one of: `,
+        validMonitorSettingOptions
+      )
+    )
       return;
-    }
 
-    if (useInterval && useDate) {
-      badRequestError(
-        res,
-        "Interval and date schedule can't both be used, please pick one"
-      );
+    if (monitorSetting === MonitorSettingOptions.OFF) {
+      badRequestError(res, "Monitor setting must be on to add monitor");
       return;
     }
 
     if (
-      useInterval &&
+      !validValues(
+        res,
+        scheduleType,
+        `Invalid schedule type, please select one of: `,
+        validMonitorScheduleTypeOptions
+      )
+    )
+      return;
+
+    if (
+      scheduleType === MonitorScheduleTypeOptions.INTERVAL &&
       !validValues(
         res,
         intervalSchedule,
@@ -86,7 +107,10 @@ const createMonitor = async (req: Request, res: Response): Promise<void> => {
     )
       return;
 
-    if (useDate && !validMonitorDate(res, dateDayOfWeek, dateHour, dateMinute))
+    if (
+      scheduleType === MonitorScheduleTypeOptions.DATE &&
+      !validMonitorDate(res, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM)
+    )
       return;
 
     req.body.createdBy = user._id;
@@ -113,14 +137,23 @@ const getMonitor = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    let monitor;
+
     //there should be only one monitor per user,
     //so no need to use monitor's id
-    const monitor = await MonitorCollection.findOne({ createdBy: user._id });
+    const _monitor = await MonitorCollection.findOne({ createdBy: user._id });
 
-    if (!monitor) {
-      notFoundError(res, `No monitor found`);
-      return;
-    }
+    if (!_monitor) {
+      monitor = {
+        monitorSetting: MonitorSettingOptions.OFF,
+        scheduleType: MonitorScheduleTypeOptions.INTERVAL,
+        intervalSchedule: MonitorIntervalScheduleOptions.WEEKLY,
+        dateDayOfWeek: 0,
+        dateHour: 0,
+        dateMinute: 0,
+        dateAMOrPM: MonitorDateAMOrPMOptions.AM,
+      };
+    } else monitor = _monitor;
 
     res.status(StatusCodes.OK).json(monitor);
   } catch (error) {
@@ -158,32 +191,27 @@ const updateMonitor = async (req: Request, res: Response): Promise<void> => {
     if (emptyValuesExist(res, Object.values(req.body))) return;
 
     const {
-      useInterval,
-      useDate,
+      scheduleType,
       intervalSchedule,
       dateDayOfWeek,
       dateHour,
       dateMinute,
+      dateAMOrPM,
     } = req.body;
 
-    if (useInterval && useDate) {
-      badRequestError(
+    if (
+      scheduleType &&
+      !validValues(
         res,
-        "Interval and date schedule can't both be used, please pick one"
-      );
+        scheduleType,
+        `Invalid schedule type, please select one of: `,
+        validMonitorScheduleTypeOptions
+      )
+    )
       return;
-    }
-
-    if (!useInterval && !useDate) {
-      badRequestError(
-        res,
-        "One of interval and date schedule must be used, please pick one"
-      );
-      return;
-    }
 
     if (
-      useInterval &&
+      scheduleType === MonitorScheduleTypeOptions.INTERVAL &&
       !validValues(
         res,
         intervalSchedule,
@@ -193,7 +221,10 @@ const updateMonitor = async (req: Request, res: Response): Promise<void> => {
     )
       return;
 
-    if (useDate && !validMonitorDate(res, dateDayOfWeek, dateHour, dateMinute))
+    if (
+      scheduleType === MonitorScheduleTypeOptions.DATE &&
+      !validMonitorDate(res, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM)
+    )
       return;
 
     Object.assign(monitor, req.body);
@@ -223,6 +254,11 @@ const deleteMonitor = async (req: Request, res: Response): Promise<void> => {
 
   if (!monitor) {
     notFoundError(res, "Error, no monitor found");
+    return;
+  }
+
+  if (monitor.monitorSetting === MonitorSettingOptions.ON) {
+    badRequestError(res, "Monitor setting must be off to remove monitor");
     return;
   }
 

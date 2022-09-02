@@ -1,12 +1,12 @@
 export enum ApiHostOptions {
   AWS = "AWS",
   GCP = "GCP",
-  Azure = "Azure",
-  Heroku = "Heroku",
-  DigitalOcean = "DigitalOcean",
-  Other = "Other",
-  Vercel = "Vercel",
-  Netlify = "Netlify",
+  AZURE = "Azure",
+  HEROKU = "Heroku",
+  DIGITALOCEAN = "DigitalOcean",
+  VERCEL = "Vercel",
+  NETLIFY = "Netlify",
+  OTHER = "Other",
 }
 
 export enum ApiMonitoringOptions {
@@ -15,16 +15,16 @@ export enum ApiMonitoringOptions {
 }
 
 export enum ApiSortOptions {
-  Latest = "Latest",
-  Oldest = "Oldest",
+  LATEST = "Latest",
+  OLDEST = "Oldest",
   A_Z = "A-Z",
   Z_A = "Z-A",
 }
 
 export enum ApiStatusOptions {
-  Healthy = "healthy",
-  Unhealthy = "unhealthy",
-  Pending = "pending",
+  HEALTHY = "healthy",
+  UNHEALTHY = "unhealthy",
+  PENDING = "pending",
 }
 
 export enum ApiQueryParams {
@@ -34,4 +34,5 @@ export enum ApiQueryParams {
   SEARCH = "search",
   PAGE = "page",
   LIMIT = "limit",
+  HOST = "host",
 }

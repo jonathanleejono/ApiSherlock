@@ -1,29 +1,29 @@
 import { faker } from "@faker-js/faker";
 import axios from "axios";
-import { constructDateTime, getDateWithUTCOffset } from "utils/datetime";
 import { testAllApisKey } from "constants/keys";
 import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
 } from "constants/messages";
-import {
-  BadRequestError,
-  NotFoundError,
-  UnAuthenticatedError,
-} from "test/errors";
+import { ApiSortOptions, ApiStatusOptions } from "enum/apis";
 import {
   AllApisResponse,
   AllApisStatsResponse,
   ApiDataResponse,
   ApiDefaultStats,
+  ApiQueryParams,
   ApiRequestData,
   MonthlyApis,
-  ApiQueryParams,
 } from "interfaces/apis";
 import { PingResponse } from "interfaces/ping";
 import { mockApis } from "test/data/mockApis";
 import { getUser } from "test/data/usersDb";
-import { ApiSortOptions, ApiStatusOptions } from "enum/apis";
+import {
+  BadRequestError,
+  NotFoundError,
+  UnAuthenticatedError,
+} from "test/errors";
+import { constructDateTime, getDateWithUTCOffset } from "utils/datetime";
 
 type ApiOptions = {
   [key: string]: ApiDataResponse;
@@ -95,7 +95,7 @@ async function createApi({
     url,
     host,
     monitoring,
-    status: status ? status : ApiStatusOptions.Pending,
+    status: status ? status : ApiStatusOptions.PENDING,
     lastPinged: lastPinged ? lastPinged : "Never pinged",
     __v: __v ? __v : 0,
     createdAt: createdAt ? createdAt : constructDateTime(),
@@ -201,6 +201,7 @@ async function getAllApis(
   });
 
   function sorting(
+    //eslint-disable-next-line
     arr: any[],
     apiAttr: string,
     queryParam: string,
@@ -230,8 +231,8 @@ async function getAllApis(
     return 0;
   });
 
-  sorting(_allApis, "createdAt", sort, ApiSortOptions.Latest, true);
-  sorting(_allApis, "createdAt", sort, ApiSortOptions.Oldest, false);
+  sorting(_allApis, "createdAt", sort, ApiSortOptions.LATEST, true);
+  sorting(_allApis, "createdAt", sort, ApiSortOptions.OLDEST, false);
   sorting(_allApis, "url", sort, ApiSortOptions.A_Z, true);
   sorting(_allApis, "url", sort, ApiSortOptions.Z_A, false);
 
@@ -280,15 +281,16 @@ async function pingAllApis(userId: string): Promise<PingResponse> {
     (api) => api.createdBy === userId
   );
 
+  //eslint-disable-next-line
   Object.keys(_allApis).forEach(async (_: string, index: number) => {
     try {
       const resp = await axios.get(_allApis[index].url);
 
       if (resp && resp.status === 200) {
-        _allApis[index].status = ApiStatusOptions.Healthy;
+        _allApis[index].status = ApiStatusOptions.HEALTHY;
         _allApis[index].lastPinged = constructDateTime();
       } else if (!resp) {
-        _allApis[index].status = ApiStatusOptions.Unhealthy;
+        _allApis[index].status = ApiStatusOptions.UNHEALTHY;
         _allApis[index].lastPinged = constructDateTime();
       }
     } catch (error) {
@@ -305,10 +307,10 @@ async function pingOneApi(apiId: string): Promise<PingResponse> {
     const resp = await axios.get(api.url);
 
     if (resp && resp.status === 200) {
-      api.status = ApiStatusOptions.Healthy;
+      api.status = ApiStatusOptions.HEALTHY;
       api.lastPinged = constructDateTime();
     } else {
-      api.status = ApiStatusOptions.Unhealthy;
+      api.status = ApiStatusOptions.UNHEALTHY;
       api.lastPinged = constructDateTime();
     }
   } catch (error) {

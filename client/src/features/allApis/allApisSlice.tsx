@@ -1,12 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { allApisSliceName } from "constants/actionTypes";
-import { ApiSortOptions } from "enum/apis";
+import { validApiSortOptions } from "constants/options/apis";
 import { getAllApis, getAllApisStats } from "features/allApis/allApisThunk";
 import {
   ApiDataResponse,
   ApiDefaultStats,
-  MonthlyApis,
   ApiQueryParams,
+  MonthlyApis,
 } from "interfaces/apis";
 
 interface AllApisState extends ApiQueryParams {
@@ -23,7 +23,7 @@ interface AllApisState extends ApiQueryParams {
 const initialFiltersState: ApiQueryParams = {
   search: "",
   status: "",
-  sort: ApiSortOptions.Latest,
+  sort: validApiSortOptions[0],
   monitoring: "",
   page: 1,
   host: "",

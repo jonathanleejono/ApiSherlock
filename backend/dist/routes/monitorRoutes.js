@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const urls_1 = require("constants/urls");
 const monitorController_1 = require("controllers/monitorController");
 const express_1 = __importDefault(require("express"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
@@ -21,8 +22,8 @@ function createRateLimiter(minutes, maxRequests) {
     return _rateLimiter;
 }
 router
-    .route("/")
-    .post(createRateLimiter(15, 3), monitorController_1.createMonitor)
+    .route(`${urls_1.handleMonitorUrl}`)
+    .post(createRateLimiter(15, 10), monitorController_1.createMonitor)
     .get(monitorController_1.getMonitor)
     .patch(monitorController_1.updateMonitor)
     .delete(monitorController_1.deleteMonitor);

@@ -3,11 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const urls_1 = require("constants/urls");
 const apiController_1 = require("controllers/apiController");
 const pingController_1 = require("controllers/pingController");
-const urls_1 = require("constants/urls");
+const express_1 = require("express");
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const router = (0, express_1.Router)();
 function createRateLimiter(minutes, maxRequests) {
     const _rateLimiter = (0, express_rate_limit_1.default)({

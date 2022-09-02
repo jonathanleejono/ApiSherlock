@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importDefault(require("mongoose"));
-const supertest_1 = __importDefault(require("supertest"));
-const mockUser_1 = require("mocks/mockUser");
-const server_1 = __importDefault(require("server"));
-const urls_1 = require("constants/urls");
 const cookies_1 = require("constants/cookies");
+const urls_1 = require("constants/urls");
+const mockUser_1 = require("mocks/mockUser");
+const mongoose_1 = __importDefault(require("mongoose"));
+const server_1 = __importDefault(require("server"));
+const supertest_1 = __importDefault(require("supertest"));
 const user = {
     name: "jane",
     email: "janedoe2@gmail.com",

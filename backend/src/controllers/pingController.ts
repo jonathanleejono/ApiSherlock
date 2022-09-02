@@ -39,7 +39,7 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
           await ApiCollection.findOneAndUpdate(
             { _id: apis[index].id },
             {
-              status: ApiStatusOptions.Healthy,
+              status: ApiStatusOptions.HEALTHY,
               lastPinged: getDateWithUTCOffset(user.timezoneGMT),
             },
             {
@@ -52,7 +52,7 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
         await ApiCollection.findOneAndUpdate(
           { _id: apis[index].id },
           {
-            status: ApiStatusOptions.Unhealthy,
+            status: ApiStatusOptions.UNHEALTHY,
             lastPinged: getDateWithUTCOffset(user.timezoneGMT),
           },
           {
@@ -96,7 +96,7 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
         await ApiCollection.findOneAndUpdate(
           { _id: api.id },
           {
-            status: ApiStatusOptions.Healthy,
+            status: ApiStatusOptions.HEALTHY,
             lastPinged: getDateWithUTCOffset(user.timezoneGMT),
           },
           {
@@ -109,7 +109,7 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
       await ApiCollection.findOneAndUpdate(
         { _id: api.id },
         {
-          status: ApiStatusOptions.Unhealthy,
+          status: ApiStatusOptions.UNHEALTHY,
           lastPinged: getDateWithUTCOffset(user.timezoneGMT),
         },
         {

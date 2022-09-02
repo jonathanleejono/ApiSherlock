@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.stopQueue = exports.startQueue = void 0;
+exports.removeQueue = exports.startQueue = void 0;
 const axios_1 = __importDefault(require("axios"));
 const bullmq_1 = require("bullmq");
 const queue_1 = require("constants/queue");
@@ -27,8 +27,6 @@ const redisConfiguration = {
         password: PROD_ENV ? REDIS_PASSWORD : undefined,
     },
 };
-const queueBaseName = "pingApiScheduleQueue";
-const jobBaseName = "pingApisJob";
 const startQueue = async (req, res) => {
     try {
         const user = await (0, validateUserExists_1.default)(req, res);
@@ -36,21 +34,27 @@ const startQueue = async (req, res) => {
             (0, errors_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        const queueName = `${queueBaseName}-${user.email}`;
-        const jobName = `${jobBaseName}-${user.email}`;
+        const queueName = `${queue_1.queueBaseName}-${user.email}`;
+        const jobName = `${queue_1.jobBaseName}-${user.email}`;
         const monitor = await MonitorCollection_1.default.findOne({ createdBy: user._id });
+        console.log(monitor);
         if (!monitor) {
             (0, errors_1.notFoundError)(res, `No monitor found`);
             return;
         }
-        const { useInterval, useDate, intervalSchedule, dateDayOfWeek, dateHour, dateMinute, } = monitor;
-        if (useDate) {
+        if (monitor.monitorSetting !== monitor_1.MonitorSettingOptions.ON) {
+            (0, errors_1.badRequestError)(res, `Monitor must be on to start queue`);
+            return;
+        }
+        const { scheduleType, intervalSchedule, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM, } = monitor;
+        if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
+            const hour = dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.PM ? dateHour + 13 : dateHour;
             (0, queue_1.setRepeatOptions)({
-                cron: `* ${dateMinute} ${dateHour} * * ${dateDayOfWeek}`,
+                cron: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
                 limit: 1,
             });
         }
-        if (useInterval) {
+        if (scheduleType === monitor_1.MonitorScheduleTypeOptions.INTERVAL) {
             switch (intervalSchedule) {
                 case monitor_1.MonitorIntervalScheduleOptions.WEEKLY:
                     (0, queue_1.setRepeatOptions)({
@@ -104,7 +108,7 @@ const startQueue = async (req, res) => {
                     const res = await axios_1.default.get(apis[index].url);
                     if (res && res.status === 200) {
                         await ApiCollection_1.default.findOneAndUpdate({ _id: apis[index].id }, {
-                            status: apis_1.ApiStatusOptions.Healthy,
+                            status: apis_1.ApiStatusOptions.HEALTHY,
                             lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
                         }, {
                             new: true,
@@ -114,7 +118,7 @@ const startQueue = async (req, res) => {
                 }
                 catch (error) {
                     await ApiCollection_1.default.findOneAndUpdate({ _id: apis[index].id }, {
-                        status: apis_1.ApiStatusOptions.Unhealthy,
+                        status: apis_1.ApiStatusOptions.UNHEALTHY,
                         lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
                     }, {
                         new: true,
@@ -126,12 +130,12 @@ const startQueue = async (req, res) => {
         addJobToQueue(`Ping apis for user`);
         const worker = new bullmq_1.Worker(queueName, pingAllMonitoredApis, redisConfiguration);
         worker.on("completed", async (job) => {
-            console.info(`Job ${job.id} has completed!`);
+            console.log(`Job ${job.id} has completed!`);
         });
         worker.on("failed", (job, err) => {
             console.error(`Job ${job.id} has failed with ${err.message}`);
         });
-        res.status(http_status_codes_1.StatusCodes.OK).json({ msg: "Started queue!" });
+        res.status(http_status_codes_1.StatusCodes.OK).json({ msg: "Started monitoring in queue!" });
     }
     catch (error) {
         (0, errors_1.badRequestError)(res, error);
@@ -139,7 +143,7 @@ const startQueue = async (req, res) => {
     }
 };
 exports.startQueue = startQueue;
-const stopQueue = async (req, res) => {
+const removeQueue = async (req, res) => {
     try {
         const user = await (0, validateUserExists_1.default)(req, res);
         if (!user) {
@@ -152,13 +156,19 @@ const stopQueue = async (req, res) => {
             return;
         }
         const myQueue = await (0, queue_1.getQueue)();
+        if (!myQueue) {
+            res.status(http_status_codes_1.StatusCodes.OK).json({ msg: "Monitoring stopped" });
+            return;
+        }
         await myQueue.obliterate();
-        res.status(http_status_codes_1.StatusCodes.OK).json({ msg: "Stopped queue" });
+        res
+            .status(http_status_codes_1.StatusCodes.OK)
+            .json({ msg: "Stopped monitoring and removed queue" });
     }
     catch (error) {
         (0, errors_1.badRequestError)(res, error);
         return;
     }
 };
-exports.stopQueue = stopQueue;
+exports.removeQueue = removeQueue;
 //# sourceMappingURL=queueController.js.map

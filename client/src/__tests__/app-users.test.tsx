@@ -84,6 +84,7 @@ test("user can register", async () => {
 
   const timezoneSelection = screen.getByRole("option", {
     name: "-4",
+    //eslint-disable-next-line
   }) as any;
 
   await userEvent.selectOptions(timezoneOptions, timezoneSelection);

@@ -1,5 +1,3 @@
-import mongoose, { Model, Schema } from "mongoose";
-import ApiDocument from "models/ApiDocument";
 import {
   validApiHostOptions,
   validApiMonitoringOptions,
@@ -10,6 +8,8 @@ import {
   ApiMonitoringOptions,
   ApiStatusOptions,
 } from "enum/apis";
+import ApiDocument from "models/ApiDocument";
+import mongoose, { Model, Schema } from "mongoose";
 
 const ApiSchema: Schema<ApiDocument> = new mongoose.Schema(
   {
@@ -20,12 +20,12 @@ const ApiSchema: Schema<ApiDocument> = new mongoose.Schema(
     host: {
       type: String,
       enum: validApiHostOptions,
-      default: ApiHostOptions.Other,
+      default: ApiHostOptions.OTHER,
     },
     status: {
       type: String,
       enum: validApiStatusOptions,
-      default: ApiStatusOptions.Pending,
+      default: ApiStatusOptions.PENDING,
     },
     lastPinged: {
       type: String,

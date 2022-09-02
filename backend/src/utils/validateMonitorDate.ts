@@ -1,8 +1,11 @@
 import {
+  stringDaysOptions,
+  validMonitorDateAMorPMOptions,
   validMonitorDateDayOfWeekOptions,
   validMonitorDateHourOptions,
   validMonitorDateMinuteOptions,
 } from "constants/options/monitor";
+import { MonitorDateAMOrPMOptions } from "enum/monitor";
 import { Response } from "express";
 import { validValues } from "utils/validateKeysValues";
 
@@ -10,17 +13,20 @@ export function validMonitorDate(
   res: Response,
   dateDayOfWeek: number,
   dateHour: number,
-  dateMinute: number
+  dateMinute: number,
+  dateAMOrPM: MonitorDateAMOrPMOptions
 ): boolean {
   if (
     !validValues(
       res,
       dateDayOfWeek,
       `Invalid day of week, please select one of: `,
-      validMonitorDateDayOfWeekOptions
+      validMonitorDateDayOfWeekOptions,
+      stringDaysOptions
     )
-  )
+  ) {
     return false;
+  }
 
   if (
     !validValues(
@@ -38,6 +44,16 @@ export function validMonitorDate(
       dateMinute,
       `Invalid minutes, please select one of: `,
       validMonitorDateMinuteOptions
+    )
+  )
+    return false;
+
+  if (
+    !validValues(
+      res,
+      dateAMOrPM,
+      `Invalid, please select one of: `,
+      validMonitorDateAMorPMOptions
     )
   )
     return false;

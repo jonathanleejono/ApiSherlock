@@ -10,6 +10,7 @@ const urls_1 = require("constants/urls");
 const router = express_1.default.Router();
 router.route(`${urls_1.resetMockUsersDbUrl}`).delete(seedDb_1.resetUsersCollection);
 router.route(`${urls_1.resetMockApisDbUrl}`).delete(seedDb_1.resetApiCollection);
+router.route(`${urls_1.resetMockMonitorDbUrl}`).delete(seedDb_1.resetMonitorCollection);
 router.route(`${urls_1.seedMockUsersDbUrl}`).post(seedDb_1.seedUsersCollection);
 router.route(`${urls_1.seedMockApisDbUrl}`).post(authenticateUser_1.default, seedDb_1.seedApiCollection);
 exports.default = router;

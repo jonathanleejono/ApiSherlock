@@ -1,10 +1,10 @@
 import "@testing-library/jest-dom/extend-expect";
 import { testAllApisKey, testUserKey } from "constants/keys";
+import { setToken } from "constants/token";
+import * as ResizeObserverModule from "resize-observer-polyfill";
 import * as apisDB from "test/data/apisDb";
 import * as usersDB from "test/data/usersDb";
 import { server } from "test/mocks/server";
-import * as ResizeObserverModule from "resize-observer-polyfill";
-import { setToken } from "constants/token";
 
 global.ResizeObserver = ResizeObserverModule.default;
 
@@ -12,7 +12,7 @@ jest.setTimeout(10000);
 
 beforeAll(() => {
   // Enable the mocking in tests.
-  // Bypass to ignore pingAll/pingOne axios fetches
+  // Bypass to ignore pingAll/pingOne axios url fetches
   server.listen({ onUnhandledRequest: "bypass" });
   localStorage.removeItem(testUserKey);
   localStorage.removeItem(testAllApisKey);

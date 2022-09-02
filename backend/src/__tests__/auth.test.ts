@@ -1,7 +1,4 @@
-import mongoose from "mongoose";
-import request from "supertest";
-import { mockUser } from "mocks/mockUser";
-import app from "server";
+import { cookieName } from "constants/cookies";
 import {
   baseAuthUrl,
   baseSeedDbUrl,
@@ -11,8 +8,11 @@ import {
   seedMockUsersDbUrl,
   updateUserUrl,
 } from "constants/urls";
-import { cookieName } from "constants/cookies";
+import { mockUser } from "mocks/mockUser";
 import { User } from "models/UserDocument";
+import mongoose from "mongoose";
+import app from "server";
+import request from "supertest";
 
 const user: Partial<User> = {
   name: "jane",

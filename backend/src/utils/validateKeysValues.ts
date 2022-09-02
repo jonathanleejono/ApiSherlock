@@ -29,8 +29,21 @@ export function validValues(
   res: Response,
   reqInput: string | number,
   errorMsg: string,
-  validOptions: any[]
+  validOptions: any[],
+  labelValidOptions?: any[]
 ): boolean {
+  //labelValidOptions is if the database
+  // valid options are non-human centric (eg. int)
+  if (labelValidOptions) {
+    if (!validOptions.includes(reqInput)) {
+      badRequestError(
+        res,
+        `${errorMsg}` + `${labelValidOptions}`.replace(/,/g, ", ")
+      );
+      return false;
+    }
+  }
+
   if (!validOptions.includes(reqInput)) {
     badRequestError(res, `${errorMsg}` + `${validOptions}`.replace(/,/g, ", "));
     return false;

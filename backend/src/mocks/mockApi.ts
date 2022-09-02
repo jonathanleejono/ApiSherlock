@@ -11,6 +11,6 @@ if url, host, or monitoring was missing)
 export const mockApi: Omit<Api, "_id" | "createdBy" | "status" | "lastPinged"> =
   {
     url: "https://www.notarealwebsitehopefully4.com/ping",
-    host: ApiHostOptions.Heroku,
+    host: ApiHostOptions.HEROKU,
     monitoring: ApiMonitoringOptions.ON,
   };

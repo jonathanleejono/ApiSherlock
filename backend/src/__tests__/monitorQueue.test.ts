@@ -14,9 +14,10 @@ import {
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
 } from "constants/urls";
+import { MonitorSettingOptions } from "enum/monitor";
 import { mockMonitor } from "mocks/mockMonitor";
 import { mockUser } from "mocks/mockUser";
-import MonitorDocument from "models/MonitorDocument";
+import { Monitor } from "models/MonitorDocument";
 import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
@@ -26,14 +27,16 @@ const agent = supertest(app);
 
 let currentUserId: Schema.Types.ObjectId;
 
-const testMonitorResponse: Partial<MonitorDocument> = {
-  useInterval: expect.any(Boolean),
-  useDate: expect.any(Boolean),
+const testMonitorResponse: Monitor = {
+  monitorSetting: expect.any(String),
+  scheduleType: expect.any(String),
   intervalSchedule: expect.any(String),
   dateDayOfWeek: expect.any(Number),
   dateHour: expect.any(Number),
   dateMinute: expect.any(Number),
+  dateAMOrPM: expect.any(String),
   _id: expect.any(String),
+  createdBy: expect.any(String),
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
   __v: expect.any(Number),
@@ -73,9 +76,24 @@ describe("testing monitor controller", () => {
   });
 
   describe("testing monitor", () => {
-    it("should create monitor", async (): Promise<void> => {
+    it("should not create monitor with setting off", async (): Promise<void> => {
       // give 3 seconds (3000 milliseconds) for database to update
       await new Promise((res) => setTimeout(res, 3000));
+
+      mockMonitor.monitorSetting = MonitorSettingOptions.OFF;
+
+      const response = await agent
+        .post(`${baseMonitorUrl}${handleMonitorUrl}`)
+        .send(mockMonitor);
+
+      //only assigns/updates with overlapping properties
+      Object.assign(testMonitorResponse, mockMonitor);
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it("should create monitor with setting ON", async (): Promise<void> => {
+      mockMonitor.monitorSetting = MonitorSettingOptions.ON;
 
       const response = await agent
         .post(`${baseMonitorUrl}${handleMonitorUrl}`)
@@ -98,6 +116,30 @@ describe("testing monitor controller", () => {
       expect(response.statusCode).toBe(400);
     });
 
+    it("should not delete a monitor with setting ON", async (): Promise<void> => {
+      const response = await agent.delete(
+        `${baseMonitorUrl}${handleMonitorUrl}`
+      );
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it("should update monitor", async (): Promise<void> => {
+      mockMonitor.monitorSetting = MonitorSettingOptions.OFF;
+
+      const response = await agent
+        .patch(`${baseMonitorUrl}${handleMonitorUrl}`)
+        .send(mockMonitor);
+
+      //only assigns/updates with overlapping properties
+      Object.assign(testMonitorResponse, mockMonitor);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual(
+        expect.objectContaining(testMonitorResponse)
+      );
+    });
+
     it("should delete monitor", async (): Promise<void> => {
       const response = await agent.delete(
         `${baseMonitorUrl}${handleMonitorUrl}`
@@ -109,29 +151,8 @@ describe("testing monitor controller", () => {
       );
     });
 
-    it("should not create monitor with both useInterval and useDate as true or false", async (): Promise<void> => {
-      mockMonitor.useInterval = true;
-      mockMonitor.useDate = true;
-
-      const response = await agent
-        .post(`${baseMonitorUrl}${handleMonitorUrl}`)
-        .send(mockMonitor);
-
-      expect(response.statusCode).toBe(400);
-
-      mockMonitor.useInterval = false;
-      mockMonitor.useDate = false;
-
-      const response2 = await agent
-        .post(`${baseMonitorUrl}${handleMonitorUrl}`)
-        .send(mockMonitor);
-
-      expect(response2.statusCode).toBe(400);
-    });
-
     it("should start queue", async (): Promise<void> => {
-      mockMonitor.useInterval = true;
-      mockMonitor.useDate = false;
+      mockMonitor.monitorSetting = MonitorSettingOptions.ON;
 
       //make sure this is base monitor url
       const createMonitorResp = await agent
@@ -154,9 +175,17 @@ describe("testing monitor controller", () => {
       expect(repeatableJobs[0].name).toContain(
         `${jobBaseName}-${mockUser.email}`
       );
+
+      expect(repeatableJobs[0].cron).toEqual((1000 * 60 * 60).toString());
     });
 
     it("should remove monitor and jobs from queue", async (): Promise<void> => {
+      mockMonitor.monitorSetting = MonitorSettingOptions.OFF;
+
+      await agent
+        .patch(`${baseMonitorUrl}${handleMonitorUrl}`)
+        .send(mockMonitor);
+
       //make sure this is base monitor url
       const deleteMonitorResp = await agent
         .delete(`${baseMonitorUrl}${handleMonitorUrl}`)

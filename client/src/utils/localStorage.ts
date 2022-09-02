@@ -1,4 +1,4 @@
-import { testAllApisKey, appUserKey, testUserKey } from "constants/keys";
+import { appUserKey, testAllApisKey, testUserKey } from "constants/keys";
 import { AuthUser } from "interfaces/users";
 import { decryptData, encryptData } from "utils/encrypt";
 
@@ -32,6 +32,7 @@ const getUserFromLocalStorage = () => {
     return decryptedUser;
   } catch (error) {
     console.error("Invalid user");
+    return error;
   }
 };
 

@@ -1,8 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import apiSlice from "features/api/apiSlice";
-import userSlice from "features/user/userSlice";
 import allApisSlice from "features/allApis/allApisSlice";
+import apiSlice from "features/api/apiSlice";
+import monitorSlice from "features/monitor/monitorSlice";
 import pingSlice from "features/ping/pingSlice";
+import userSlice from "features/user/userSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     api: apiSlice,
     allApis: allApisSlice,
     ping: pingSlice,
+    monitor: monitorSlice,
   },
 });
 

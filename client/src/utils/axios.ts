@@ -1,11 +1,11 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { getToken } from "constants/token";
 import {
   baseUrl,
   loginUserUrl,
   refreshAccessTokenUrl,
   registerUserUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
+import { getToken } from "constants/token";
 
 const customFetch = axios.create({
   baseURL: baseUrl,
@@ -15,13 +15,15 @@ const customFetch = axios.create({
 customFetch.interceptors.request.use(async (config: AxiosRequestConfig) => {
   if (!config || !config.headers || !config.url) {
     console.error("Fetching data error");
-    return;
+    throw Error("Fetching data error");
   }
 
   const accessToken = await getToken();
 
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
+
+    return config;
   } else if (
     !accessToken &&
     config.url !== registerUserUrl &&
@@ -35,6 +37,8 @@ customFetch.interceptors.request.use(async (config: AxiosRequestConfig) => {
     const newAccessToken = response.data.accessToken;
 
     config.headers.Authorization = `Bearer ${newAccessToken}`;
+
+    return config;
   }
 
   /* 

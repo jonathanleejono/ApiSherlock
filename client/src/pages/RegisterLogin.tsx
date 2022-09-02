@@ -69,6 +69,7 @@ const Register = () => {
       toast.error(pleaseFillOutAllValues);
       return;
     }
+
     if (isMember) {
       handleLoginUser();
     } else {

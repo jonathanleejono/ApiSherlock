@@ -27,15 +27,15 @@ const monitor_1 = require("constants/options/monitor");
 const monitor_2 = require("enum/monitor");
 const mongoose_1 = __importStar(require("mongoose"));
 const MonitorSchema = new mongoose_1.default.Schema({
-    useInterval: {
-        type: Boolean,
-        required: [true, "Please specify if interval is used"],
-        default: false,
+    monitorSetting: {
+        type: String,
+        required: [true, "Please specify if monitor is on or off"],
+        default: monitor_2.MonitorSettingOptions.OFF,
     },
-    useDate: {
-        type: Boolean,
-        required: [true, "Please specify if date is used"],
-        default: false,
+    scheduleType: {
+        type: String,
+        required: [true, "Please specify schedule type"],
+        default: monitor_2.MonitorScheduleTypeOptions.INTERVAL,
     },
     intervalSchedule: {
         type: String,
@@ -45,7 +45,7 @@ const MonitorSchema = new mongoose_1.default.Schema({
     dateDayOfWeek: {
         type: Number,
         enum: monitor_1.validMonitorDateDayOfWeekOptions,
-        default: 0,
+        default: monitor_2.MonitorDateDayOfWeekOptions.Sunday,
     },
     dateHour: {
         type: Number,
@@ -56,6 +56,11 @@ const MonitorSchema = new mongoose_1.default.Schema({
         type: Number,
         enum: monitor_1.validMonitorDateMinuteOptions,
         default: 0,
+    },
+    dateAMOrPM: {
+        type: String,
+        enum: monitor_1.validMonitorDateAMorPMOptions,
+        default: monitor_2.MonitorDateAMOrPMOptions.AM,
     },
     createdBy: {
         type: mongoose_1.Schema.Types.ObjectId,

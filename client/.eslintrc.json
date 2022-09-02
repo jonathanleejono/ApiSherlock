@@ -64,8 +64,9 @@
     "react/no-unstable-nested-components": 0,
     "react/function-component-definition": 0,
     "react/jsx-no-constructed-context-values": 0,
+    "@typescript-eslint/no-unused-vars": "error",
     "no-unused-vars": [
-      1,
+      0,
       {
         "ignoreRestSiblings": false
       }

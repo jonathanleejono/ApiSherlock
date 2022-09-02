@@ -1,12 +1,12 @@
+import { deleteApiSuccessMsg } from "constants/messages";
 import {
-  validCreateApiKeys,
-  validApiSearchParams,
-  validUpdateApiKeys,
   validApiHostOptions,
   validApiMonitoringOptions,
+  validApiSearchParams,
   validApiStatusOptions,
+  validCreateApiKeys,
+  validUpdateApiKeys,
 } from "constants/options/apis";
-import { deleteApiSuccessMsg } from "constants/messages";
 import { ApiSortOptions } from "enum/apis";
 import {
   badRequestError,
@@ -18,6 +18,7 @@ import { StatusCodes } from "http-status-codes";
 import { ApiQueryParams } from "interfaces/apiQueryParams";
 import { ApiDefaultStats, MonthlyApis } from "interfaces/apiStats";
 import ApiCollection from "models/ApiCollection";
+import { SortOrder } from "mongoose";
 import checkPermissions from "utils/checkPermissions";
 import { formatCurrentMonthYear } from "utils/datetime";
 import {
@@ -159,20 +160,32 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
     // no await, the search properties may be altered
     let result = ApiCollection.find(queryObject);
 
-    result = result.sort("-_id");
+    let sortOptions:
+      | string
+      | { [key: string]: SortOrder | { $meta: "textScore" } } = { url: -1 };
 
-    if (sort === ApiSortOptions.Latest) {
-      result = result.sort("-createdAt");
+    if (sort === ApiSortOptions.LATEST) {
+      sortOptions = {
+        createdAt: -1,
+      };
     }
-    if (sort === ApiSortOptions.Oldest) {
-      result = result.sort("createdAt");
+    if (sort === ApiSortOptions.OLDEST) {
+      sortOptions = {
+        createdAt: 1,
+      };
     }
     if (sort === ApiSortOptions.A_Z) {
-      result = result.sort("url");
+      sortOptions = {
+        url: 1,
+      };
     }
     if (sort === ApiSortOptions.Z_A) {
-      result = result.sort("-url");
+      sortOptions = {
+        url: -1,
+      };
     }
+
+    result = result.sort(sortOptions);
 
     // setup pagination
     const _page = Number(page) || 1;

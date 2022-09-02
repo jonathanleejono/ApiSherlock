@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.showStats = exports.getApi = exports.updateApi = exports.getAllApis = exports.deleteApi = exports.createApi = void 0;
-const apis_1 = require("constants/options/apis");
 const messages_1 = require("constants/messages");
+const apis_1 = require("constants/options/apis");
 const apis_2 = require("enum/apis");
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");
@@ -77,19 +77,28 @@ const getAllApis = async (req, res) => {
             queryObject.url = { $regex: search, $options: "i" };
         }
         let result = ApiCollection_1.default.find(queryObject);
-        result = result.sort("-_id");
-        if (sort === apis_2.ApiSortOptions.Latest) {
-            result = result.sort("-createdAt");
+        let sortOptions = { url: -1 };
+        if (sort === apis_2.ApiSortOptions.LATEST) {
+            sortOptions = {
+                createdAt: -1,
+            };
         }
-        if (sort === apis_2.ApiSortOptions.Oldest) {
-            result = result.sort("createdAt");
+        if (sort === apis_2.ApiSortOptions.OLDEST) {
+            sortOptions = {
+                createdAt: 1,
+            };
         }
         if (sort === apis_2.ApiSortOptions.A_Z) {
-            result = result.sort("url");
+            sortOptions = {
+                url: 1,
+            };
         }
         if (sort === apis_2.ApiSortOptions.Z_A) {
-            result = result.sort("-url");
+            sortOptions = {
+                url: -1,
+            };
         }
+        result = result.sort(sortOptions);
         const _page = Number(page) || 1;
         const _limit = Number(limit) || 10;
         const skip = (_page - 1) * _limit;
