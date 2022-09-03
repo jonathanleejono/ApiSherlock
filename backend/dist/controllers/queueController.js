@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeQueue = exports.startQueue = void 0;
+exports.removeQueue = exports.startQueue = exports.redisConfiguration = void 0;
 const axios_1 = __importDefault(require("axios"));
 const bullmq_1 = require("bullmq");
 const queue_1 = require("constants/queue");
@@ -12,6 +12,7 @@ const apis_1 = require("enum/apis");
 const monitor_1 = require("enum/monitor");
 const errors_1 = require("errors");
 const http_status_codes_1 = require("http-status-codes");
+const ioredis_1 = __importDefault(require("ioredis"));
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
 const datetime_1 = require("utils/datetime");
@@ -19,13 +20,14 @@ const validateUserExists_1 = __importDefault(require("utils/validateUserExists")
 dotenv_1.default.config();
 const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, NODE_ENV, REDIS_PASSWORD } = process.env;
 const PROD_ENV = NODE_ENV === "production";
-const redisConfiguration = {
-    connection: {
+exports.redisConfiguration = {
+    connection: new ioredis_1.default({
         host: REDIS_HOST,
         port: parseInt(REDIS_PORT),
         username: PROD_ENV ? REDIS_USERNAME : undefined,
         password: PROD_ENV ? REDIS_PASSWORD : undefined,
-    },
+        maxRetriesPerRequest: null,
+    }),
 };
 const startQueue = async (req, res) => {
     try {
@@ -95,10 +97,10 @@ const startQueue = async (req, res) => {
                     });
             }
         }
-        (0, queue_1.setQueue)(new bullmq_1.Queue(queueName, redisConfiguration));
+        (0, queue_1.setQueue)(new bullmq_1.Queue(queueName, exports.redisConfiguration));
         const myQueue = await (0, queue_1.getQueue)();
         const repeatOptions = await (0, queue_1.getRepeatOptions)();
-        new bullmq_1.QueueScheduler(queueName, redisConfiguration);
+        new bullmq_1.QueueScheduler(queueName, exports.redisConfiguration);
         async function addJobToQueue(jobDetails) {
             await myQueue.add(jobName, { jobDetails }, { repeat: repeatOptions });
         }
@@ -141,13 +143,15 @@ const startQueue = async (req, res) => {
         if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
             addJobToQueue(`Ping apis for user at ${dateDayOfWeek} ${dateHour}:${dateMinute} ${dateAMOrPM}`);
         }
-        const worker = new bullmq_1.Worker(queueName, pingAllMonitoredApis, redisConfiguration);
+        const worker = new bullmq_1.Worker(queueName, pingAllMonitoredApis, exports.redisConfiguration);
         worker.on("completed", async (job) => {
             console.log(`Job ${job.id} has completed!`);
         });
         worker.on("failed", (job, err) => {
             console.error(`Job ${job.id} has failed with ${err.message}`);
         });
+        await worker.close();
+        await myQueue.close();
         res.status(http_status_codes_1.StatusCodes.OK).json({ msg: "Started monitoring in queue!" });
     }
     catch (error) {
@@ -174,6 +178,7 @@ const removeQueue = async (req, res) => {
             return;
         }
         await myQueue.obliterate();
+        await myQueue.close();
         res
             .status(http_status_codes_1.StatusCodes.OK)
             .json({ msg: "Stopped monitoring and removed queue" });

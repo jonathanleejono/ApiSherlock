@@ -28,14 +28,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
+const queueController_1 = require("controllers/queueController");
 const apis_1 = require("enum/apis");
 const mockApi_1 = require("mocks/mockApi");
 const mockApis_1 = require("mocks/mockApis");
 const mockApisStats_1 = require("mocks/mockApisStats");
 const mockUpdatedApis_1 = require("mocks/mockUpdatedApis");
 const mockUser_1 = require("mocks/mockUser");
+const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
+const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const server_1 = __importDefault(require("server"));
+const server_1 = __importStar(require("server"));
 const supertest_1 = __importStar(require("supertest"));
 const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
@@ -58,7 +61,10 @@ const testApiResponse = {
 };
 describe("testing api controller", () => {
     beforeAll(async () => {
-        await (0, supertest_1.default)(server_1.default).delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockUsersDbUrl}`);
+        const databaseName = "test-apis";
+        const url = `mongodb://127.0.0.1/${databaseName}`;
+        await mongoose_1.default.connect(url);
+        await UserCollection_1.default.collection.deleteMany({});
         await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)
             .post(`${urls_1.baseAuthUrl}${urls_1.loginUserUrl}`)
@@ -74,16 +80,17 @@ describe("testing api controller", () => {
         }
         const cookie = response.header["set-cookie"];
         await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-        await agent.delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockApisDbUrl}`);
+        await ApiCollection_1.default.collection.deleteMany({});
         await agent.post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockApisDbUrl}`);
     });
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
+        await queueController_1.redisConfiguration.connection.quit();
+        server_1.server.close();
     });
     describe("testing apis", () => {
         it("should get all APIs", async () => {
-            await new Promise((res) => setTimeout(res, 3000));
             const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`);
             const responseAllApis = response.body.allApis.reverse();
             apiObjId = responseAllApis[0]._id;

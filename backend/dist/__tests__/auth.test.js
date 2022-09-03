@@ -1,13 +1,38 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const cookies_1 = require("constants/cookies");
 const urls_1 = require("constants/urls");
+const queueController_1 = require("controllers/queueController");
 const mockUser_1 = require("mocks/mockUser");
+const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const server_1 = __importDefault(require("server"));
+const server_1 = __importStar(require("server"));
 const supertest_1 = __importDefault(require("supertest"));
 const user = {
     name: "jane",
@@ -18,12 +43,17 @@ const user = {
 const { name, email, password, timezoneGMT } = user;
 describe("testing users controller", () => {
     beforeAll(async () => {
-        await (0, supertest_1.default)(server_1.default).delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockUsersDbUrl}`);
+        const databaseName = "test-users";
+        const url = `mongodb://127.0.0.1/${databaseName}`;
+        await mongoose_1.default.connect(url);
+        await UserCollection_1.default.collection.deleteMany({});
         await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
     });
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
+        await queueController_1.redisConfiguration.connection.quit();
+        server_1.server.close();
     });
     describe("given a user's name, email, and password", () => {
         it("should create a user", async () => {

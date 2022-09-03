@@ -19,6 +19,7 @@ import {
 import { badRequestError, notFoundError, unAuthenticatedError } from "errors";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
+import Redis from "ioredis";
 import ApiCollection from "models/ApiCollection";
 import MonitorCollection from "models/MonitorCollection";
 import { getDateWithUTCOffset } from "utils/datetime";
@@ -30,14 +31,16 @@ const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, NODE_ENV, REDIS_PASSWORD } =
   process.env;
 
 const PROD_ENV = NODE_ENV === "production";
+const TEST_ENV = NODE_ENV === "test";
 
-const redisConfiguration = {
-  connection: {
+export const redisConfiguration = {
+  connection: new Redis({
     host: REDIS_HOST as string,
     port: parseInt(REDIS_PORT as string),
     username: PROD_ENV ? REDIS_USERNAME : undefined,
     password: PROD_ENV ? REDIS_PASSWORD : undefined,
-  },
+    maxRetriesPerRequest: null,
+  }),
 };
 
 export const startQueue = async (
@@ -141,7 +144,7 @@ export const startQueue = async (
 
     const repeatOptions = await getRepeatOptions();
 
-    new QueueScheduler(queueName, redisConfiguration);
+    const queueScheduler = new QueueScheduler(queueName, redisConfiguration);
 
     // jobDetails is just a description, but can also hold a value
     // in this case, instead of individually storing each url as a separate job,
@@ -211,12 +214,22 @@ export const startQueue = async (
     );
 
     worker.on("completed", async (job) => {
-      console.log(`Job ${job.id} has completed!`);
+      if (!TEST_ENV) {
+        console.log(`Job ${job.id} has completed!`);
+      }
     });
 
     worker.on("failed", (job, err) => {
-      console.error(`Job ${job.id} has failed with ${err.message}`);
+      if (!TEST_ENV) {
+        console.error(`Job ${job.id} has failed with ${err.message}`);
+      }
     });
+
+    await worker.close();
+
+    await queueScheduler.close();
+
+    await myQueue.close();
 
     res.status(StatusCodes.OK).json({ msg: "Started monitoring in queue!" });
   } catch (error) {
@@ -257,6 +270,8 @@ export const removeQueue = async (
     }
 
     await myQueue.obliterate();
+
+    await myQueue.close();
 
     res
       .status(StatusCodes.OK)

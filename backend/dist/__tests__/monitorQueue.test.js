@@ -29,11 +29,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
 const queue_1 = require("constants/queue");
 const urls_1 = require("constants/urls");
+const queueController_1 = require("controllers/queueController");
 const monitor_1 = require("enum/monitor");
 const mockMonitor_1 = require("mocks/mockMonitor");
 const mockUser_1 = require("mocks/mockUser");
+const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
+const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
+const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const server_1 = __importDefault(require("server"));
+const server_1 = __importStar(require("server"));
 const supertest_1 = __importStar(require("supertest"));
 const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
@@ -54,7 +58,10 @@ const testMonitorResponse = {
 };
 describe("testing monitor controller", () => {
     beforeAll(async () => {
-        await (0, supertest_1.default)(server_1.default).delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockUsersDbUrl}`);
+        const databaseName = "test-monitors";
+        const url = `mongodb://127.0.0.1/${databaseName}`;
+        await mongoose_1.default.connect(url);
+        await UserCollection_1.default.collection.deleteMany({});
         await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)
             .post(`${urls_1.baseAuthUrl}${urls_1.loginUserUrl}`)
@@ -70,17 +77,18 @@ describe("testing monitor controller", () => {
         }
         const cookie = response.header["set-cookie"];
         await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-        await agent.delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockApisDbUrl}`);
+        await ApiCollection_1.default.collection.deleteMany({});
         await agent.post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockApisDbUrl}`);
-        await agent.delete(`${urls_1.baseSeedDbUrl}${urls_1.resetMockMonitorDbUrl}`);
+        await MonitorCollection_1.default.collection.deleteMany({});
     });
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
+        await queueController_1.redisConfiguration.connection.quit();
+        server_1.server.close();
     });
     describe("testing monitor", () => {
         it("should not create monitor with setting off", async () => {
-            await new Promise((res) => setTimeout(res, 3000));
             mockMonitor_1.mockMonitor.monitorSetting = monitor_1.MonitorSettingOptions.OFF;
             const response = await agent
                 .post(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)

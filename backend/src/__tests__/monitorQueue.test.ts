@@ -8,18 +8,19 @@ import {
   handleMonitorUrl,
   handleQueueUrl,
   loginUserUrl,
-  resetMockApisDbUrl,
-  resetMockMonitorDbUrl,
-  resetMockUsersDbUrl,
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
 } from "constants/urls";
+import { redisConfiguration } from "controllers/queueController";
 import { MonitorSettingOptions } from "enum/monitor";
 import { mockMonitor } from "mocks/mockMonitor";
 import { mockUser } from "mocks/mockUser";
+import ApiCollection from "models/ApiCollection";
+import MonitorCollection from "models/MonitorCollection";
 import { Monitor } from "models/MonitorDocument";
+import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
-import app from "server";
+import app, { closeServer } from "server";
 import request, { agent as supertest } from "supertest";
 import getCurrentUserId from "utils/getCurrentUserId";
 
@@ -44,7 +45,11 @@ const testMonitorResponse: Monitor = {
 
 describe("testing monitor controller", () => {
   beforeAll(async () => {
-    await request(app).delete(`${baseSeedDbUrl}${resetMockUsersDbUrl}`);
+    const databaseName = "test-monitors";
+    const url = `mongodb://127.0.0.1/${databaseName}`;
+    await mongoose.connect(url);
+
+    await UserCollection.collection.deleteMany({});
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
@@ -65,21 +70,23 @@ describe("testing monitor controller", () => {
 
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-    await agent.delete(`${baseSeedDbUrl}${resetMockApisDbUrl}`);
+
+    await ApiCollection.collection.deleteMany({});
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
-    await agent.delete(`${baseSeedDbUrl}${resetMockMonitorDbUrl}`);
+
+    await MonitorCollection.collection.deleteMany({});
   });
 
   afterAll(async () => {
+    //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
+    await redisConfiguration.connection.quit();
+    closeServer();
   });
 
   describe("testing monitor", () => {
     it("should not create monitor with setting off", async (): Promise<void> => {
-      // give 3 seconds (3000 milliseconds) for database to update
-      await new Promise((res) => setTimeout(res, 3000));
-
       mockMonitor.monitorSetting = MonitorSettingOptions.OFF;
 
       const response = await agent
@@ -177,6 +184,9 @@ describe("testing monitor controller", () => {
       );
 
       expect(repeatableJobs[0].cron).toEqual((1000 * 60 * 60).toString());
+
+      //place this exactly here to prevent memory leaks
+      await redisConfiguration.connection.quit();
     });
 
     it("should remove monitor and jobs from queue", async (): Promise<void> => {
@@ -193,7 +203,10 @@ describe("testing monitor controller", () => {
 
       expect(deleteMonitorResp.statusCode).toBe(200);
 
-      //and this is base queue url
+      //place this exactly here to create new connection
+      await redisConfiguration.connection.connect();
+
+      //make sure this is base queue url
       const removeQueueResp = await agent.delete(
         `${baseQueueUrl}${handleQueueUrl}`
       );
@@ -205,6 +218,9 @@ describe("testing monitor controller", () => {
       const repeatableJobs = await myQueue.getRepeatableJobs();
 
       expect(repeatableJobs).toEqual([]);
+
+      //at the end of all tests, the redis connection
+      //is closed to prevent memory leaks
     });
   });
 });

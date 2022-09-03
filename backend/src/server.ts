@@ -11,10 +11,11 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectDB from "db/connect";
 import dotenv from "dotenv";
-import { cleanEnv, makeValidator, port } from "envalid";
+import { cleanEnv, makeValidator, port, str } from "envalid";
 import express from "express";
 import "express-async-errors";
 import mongoSanitize from "express-mongo-sanitize";
+import getPort from "get-port";
 import helmet from "helmet";
 import authenticateUser from "middleware/authenticateUser";
 import errorHandlerMiddleware from "middleware/errorHandler";
@@ -31,14 +32,14 @@ const app = express();
 
 dotenv.config();
 
-//throws error if env variable (value) is missing
 const validateStr = makeValidator((x) => {
   if (!x) throw new Error("Value is empty");
+  else return str();
 });
 
-//throws error if env variable (key) is missing
+//throws error if env variable is missing
 cleanEnv(process.env, {
-  SECRET: validateStr(),
+  JWT_SECRET: validateStr(),
   REDIS_PORT: port(),
 });
 
@@ -77,21 +78,40 @@ if (process.env.NODE_ENV === "test") {
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-const serverPort = process.env.PORT || 5000;
+let serverPort: number;
 
-const start = async () => {
+function setServerPort(inputPort: number) {
+  serverPort = inputPort;
+}
+
+(async () => {
+  setServerPort(await getPort({ port: 5000 }));
+})();
+
+function getServerPort(): number {
+  return serverPort;
+}
+
+const server = app.listen(getServerPort(), () => {
+  if (process.env.NODE_ENV !== "test") {
+    console.log(`Server is listening on port ${getServerPort()}...`);
+  }
+});
+
+const initDB = async () => {
   try {
-    await connectDB(process.env.MONGO_URL as string);
     if (process.env.NODE_ENV !== "test") {
-      app.listen(serverPort, () => {
-        console.log(`Server is listening on port ${serverPort}...`);
-      });
+      await connectDB(process.env.MONGO_URL as string);
     }
   } catch (error) {
     console.log(error);
   }
 };
 
-start();
+initDB();
+
+export const closeServer = () => {
+  server.close();
+};
 
 export default app;

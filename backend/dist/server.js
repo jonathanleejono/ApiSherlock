@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.server = void 0;
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
@@ -13,6 +14,7 @@ const envalid_1 = require("envalid");
 const express_1 = __importDefault(require("express"));
 require("express-async-errors");
 const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize"));
+const get_port_1 = __importDefault(require("get-port"));
 const helmet_1 = __importDefault(require("helmet"));
 const authenticateUser_1 = __importDefault(require("middleware/authenticateUser"));
 const errorHandler_1 = __importDefault(require("middleware/errorHandler"));
@@ -26,12 +28,15 @@ const seedDbRoutes_1 = __importDefault(require("routes/seedDbRoutes"));
 const xss_clean_1 = __importDefault(require("xss-clean"));
 const app = (0, express_1.default)();
 dotenv_1.default.config();
-const nonEmptyStr = (0, envalid_1.makeValidator)((x) => {
+const validateStr = (0, envalid_1.makeValidator)((x) => {
     if (!x)
         throw new Error("Value is empty");
+    else
+        return (0, envalid_1.str)();
 });
 (0, envalid_1.cleanEnv)(process.env, {
-    YAHOO: nonEmptyStr(),
+    JWT_SECRET: validateStr(),
+    REDIS_PORT: (0, envalid_1.port)(),
 });
 if (process.env.NODE_ENV !== "production") {
     app.use((0, morgan_1.default)("dev"));
@@ -57,12 +62,12 @@ if (process.env.NODE_ENV === "test") {
 }
 app.use(notFoundRoute_1.default);
 app.use(errorHandler_1.default);
-const serverPort = process.env.PORT || 5000;
 const start = async () => {
     try {
-        await (0, connect_1.default)(process.env.MONGO_URL);
+        const serverPort = process.env.PORT || (await (0, get_port_1.default)({ port: 5000 }));
         if (process.env.NODE_ENV !== "test") {
-            app.listen(serverPort, () => {
+            await (0, connect_1.default)(process.env.MONGO_URL);
+            exports.server = app.listen(serverPort, () => {
                 console.log(`Server is listening on port ${serverPort}...`);
             });
         }

@@ -4,14 +4,15 @@ import {
   baseSeedDbUrl,
   loginUserUrl,
   registerUserUrl,
-  resetMockUsersDbUrl,
   seedMockUsersDbUrl,
   updateUserUrl,
 } from "constants/urls";
+import { redisConfiguration } from "controllers/queueController";
 import { mockUser } from "mocks/mockUser";
+import UserCollection from "models/UserCollection";
 import { User } from "models/UserDocument";
 import mongoose from "mongoose";
-import app from "server";
+import app, { closeServer } from "server";
 import request from "supertest";
 
 const user: Partial<User> = {
@@ -25,13 +26,19 @@ const { name, email, password, timezoneGMT } = user;
 
 describe("testing users controller", () => {
   beforeAll(async () => {
-    await request(app).delete(`${baseSeedDbUrl}${resetMockUsersDbUrl}`);
+    const databaseName = "test-users";
+    const url = `mongodb://127.0.0.1/${databaseName}`;
+    await mongoose.connect(url);
+    await UserCollection.collection.deleteMany({});
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
   });
 
   afterAll(async () => {
+    //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
+    await redisConfiguration.connection.quit();
+    closeServer();
   });
 
   describe("given a user's name, email, and password", () => {

@@ -16,20 +16,21 @@ import {
   loginUserUrl,
   pingAllApisUrl,
   pingOneApiUrl,
-  resetMockApisDbUrl,
-  resetMockUsersDbUrl,
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
 } from "constants/urls";
+import { redisConfiguration } from "controllers/queueController";
 import { ApiMonitoringOptions } from "enum/apis";
 import { mockApi } from "mocks/mockApi";
 import { mockApis } from "mocks/mockApis";
 import { mockApisStats } from "mocks/mockApisStats";
 import { editMockApiUrl, mockUpdatedApis } from "mocks/mockUpdatedApis";
 import { mockUser } from "mocks/mockUser";
+import ApiCollection from "models/ApiCollection";
 import { Api } from "models/ApiDocument";
+import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
-import app from "server";
+import app, { closeServer } from "server";
 import request, { agent as supertest } from "supertest";
 import getCurrentUserId from "utils/getCurrentUserId";
 
@@ -58,7 +59,11 @@ const testApiResponse: Api = {
 
 describe("testing api controller", () => {
   beforeAll(async () => {
-    await request(app).delete(`${baseSeedDbUrl}${resetMockUsersDbUrl}`);
+    const databaseName = "test-apis";
+    const url = `mongodb://127.0.0.1/${databaseName}`;
+    await mongoose.connect(url);
+
+    await UserCollection.collection.deleteMany({});
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
@@ -79,20 +84,20 @@ describe("testing api controller", () => {
 
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-    await agent.delete(`${baseSeedDbUrl}${resetMockApisDbUrl}`);
+    await ApiCollection.collection.deleteMany({});
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });
 
   afterAll(async () => {
+    //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
+    await redisConfiguration.connection.quit();
+    closeServer();
   });
 
   describe("testing apis", () => {
     it("should get all APIs", async (): Promise<void> => {
-      // give 3 seconds (3000 milliseconds) for database to update
-      await new Promise((res) => setTimeout(res, 3000));
-
       const response = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
 
       //reversed because in apiController, the array is sorted
