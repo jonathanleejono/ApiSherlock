@@ -60,7 +60,12 @@ describe("testing monitor controller", () => {
     beforeAll(async () => {
         const databaseName = "test-monitors";
         const url = `mongodb://127.0.0.1/${databaseName}`;
-        await mongoose_1.default.connect(url);
+        try {
+            await mongoose_1.default.connect(url);
+        }
+        catch (error) {
+            console.log("Error connecting to MongoDB/Mongoose: ", error);
+        }
         await UserCollection_1.default.collection.deleteMany({});
         await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)

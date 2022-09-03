@@ -13,7 +13,12 @@ describe("testing if supertest and jest works", () => {
     beforeAll(async () => {
         const databaseName = "test-ping";
         const url = `mongodb://127.0.0.1/${databaseName}`;
-        await mongoose_1.default.connect(url);
+        try {
+            await mongoose_1.default.connect(url);
+        }
+        catch (error) {
+            console.log("Error connecting to MongoDB/Mongoose: ", error);
+        }
     });
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));

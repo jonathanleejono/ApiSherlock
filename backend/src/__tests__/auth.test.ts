@@ -28,7 +28,11 @@ describe("testing users controller", () => {
   beforeAll(async () => {
     const databaseName = "test-users";
     const url = `mongodb://127.0.0.1/${databaseName}`;
-    await mongoose.connect(url);
+    try {
+      await mongoose.connect(url);
+    } catch (error) {
+      console.log("Error connecting to MongoDB/Mongoose: ", error);
+    }
     await UserCollection.collection.deleteMany({});
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
   });
