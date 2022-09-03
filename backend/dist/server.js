@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.closeServer = void 0;
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
@@ -34,10 +33,28 @@ const validateStr = (0, envalid_1.makeValidator)((x) => {
     else
         return (0, envalid_1.str)();
 });
+const validateEnv = (0, envalid_1.makeValidator)((x) => {
+    if (!x)
+        throw new Error("Value is empty");
+    else
+        return (0, envalid_1.str)({ choices: ["development", "test", "production", "staging"] });
+});
 (0, envalid_1.cleanEnv)(process.env, {
+    MONGO_URL: validateStr(),
     JWT_SECRET: validateStr(),
+    JWT_ACCESS_TOKEN_LIFETIME: validateStr(),
+    JWT_REFRESH_TOKEN_LIFETIME: validateStr(),
+    NODE_ENV: validateEnv(),
+    CORS_ORIGIN: validateStr(),
+    REDIS_HOST: validateStr(),
     REDIS_PORT: (0, envalid_1.port)(),
 });
+if (process.env.NODE_ENV === "production") {
+    (0, envalid_1.cleanEnv)(process.env, {
+        REDIS_USERNAME: validateStr(),
+        REDIS_PASSWORD: validateStr(),
+    });
+}
 if (process.env.NODE_ENV !== "production") {
     app.use((0, morgan_1.default)("dev"));
 }
@@ -62,24 +79,13 @@ if (process.env.NODE_ENV === "test") {
 }
 app.use(notFoundRoute_1.default);
 app.use(errorHandler_1.default);
-let serverPort;
-function setServerPort(inputPort) {
-    serverPort = inputPort;
-}
-(async () => {
-    setServerPort(await (0, get_port_1.default)({ port: 5000 }));
-})();
-function getServerPort() {
-    return serverPort;
-}
-const server = app.listen(getServerPort(), () => {
-    if (process.env.NODE_ENV !== "test") {
-        console.log(`Server is listening on port ${getServerPort()}...`);
-    }
-});
-const initDB = async () => {
+const start = async () => {
     try {
+        const serverPort = await (0, get_port_1.default)({ port: 5000 });
         if (process.env.NODE_ENV !== "test") {
+            app.listen(serverPort, async () => {
+                console.log(`Server is listening on port ${serverPort}...`);
+            });
             await (0, connect_1.default)(process.env.MONGO_URL);
         }
     }
@@ -87,10 +93,6 @@ const initDB = async () => {
         console.log(error);
     }
 };
-initDB();
-const closeServer = () => {
-    server.close();
-};
-exports.closeServer = closeServer;
+start();
 exports.default = app;
 //# sourceMappingURL=server.js.map

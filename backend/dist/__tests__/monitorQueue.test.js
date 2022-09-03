@@ -37,7 +37,7 @@ const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
 const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const server_1 = __importStar(require("server"));
+const server_1 = __importDefault(require("server"));
 const supertest_1 = __importStar(require("supertest"));
 const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
@@ -85,7 +85,6 @@ describe("testing monitor controller", () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
         await queueController_1.redisConfiguration.connection.quit();
-        (0, server_1.closeServer)();
     });
     describe("testing monitor", () => {
         it("should not create monitor with setting off", async () => {

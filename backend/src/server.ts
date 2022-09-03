@@ -37,11 +37,30 @@ const validateStr = makeValidator((x) => {
   else return str();
 });
 
+const validateEnv = makeValidator((x) => {
+  if (!x) throw new Error("Value is empty");
+  else
+    return str({ choices: ["development", "test", "production", "staging"] });
+});
+
 //throws error if env variable is missing
 cleanEnv(process.env, {
+  MONGO_URL: validateStr(),
   JWT_SECRET: validateStr(),
+  JWT_ACCESS_TOKEN_LIFETIME: validateStr(),
+  JWT_REFRESH_TOKEN_LIFETIME: validateStr(),
+  NODE_ENV: validateEnv(),
+  CORS_ORIGIN: validateStr(),
+  REDIS_HOST: validateStr(),
   REDIS_PORT: port(),
 });
+
+if (process.env.NODE_ENV === "production") {
+  cleanEnv(process.env, {
+    REDIS_USERNAME: validateStr(),
+    REDIS_PASSWORD: validateStr(),
+  });
+}
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
@@ -78,29 +97,18 @@ if (process.env.NODE_ENV === "test") {
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-let serverPort: number;
-
-function setServerPort(inputPort: number) {
-  serverPort = inputPort;
-}
-
-(async () => {
-  setServerPort(await getPort({ port: 5000 }));
-})();
-
-function getServerPort(): number {
-  return serverPort;
-}
-
-const server = app.listen(getServerPort(), () => {
-  if (process.env.NODE_ENV !== "test") {
-    console.log(`Server is listening on port ${getServerPort()}...`);
-  }
-});
-
-const initDB = async () => {
+const start = async () => {
   try {
+    //getPort chooses a different port if 5000 isn't available,
+    //this prevents collisions during tests
+    const serverPort = await getPort({ port: 5000 });
+
     if (process.env.NODE_ENV !== "test") {
+      app.listen(serverPort, async () => {
+        console.log(`Server is listening on port ${serverPort}...`);
+      });
+      // the tests have their individual db connections,
+      // so the main connection isn't needed
       await connectDB(process.env.MONGO_URL as string);
     }
   } catch (error) {
@@ -108,10 +116,6 @@ const initDB = async () => {
   }
 };
 
-initDB();
-
-export const closeServer = () => {
-  server.close();
-};
+start();
 
 export default app;

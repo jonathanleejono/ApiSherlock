@@ -2,7 +2,7 @@ import { pingHealthCheckSuccessMsg } from "constants/messages";
 import { pingHealthCheckUrl } from "constants/urls";
 import { redisConfiguration } from "controllers/queueController";
 import mongoose from "mongoose";
-import app, { closeServer } from "server";
+import app from "server";
 import request from "supertest";
 
 describe("testing if supertest and jest works", () => {
@@ -16,7 +16,6 @@ describe("testing if supertest and jest works", () => {
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
     await redisConfiguration.connection.quit();
-    closeServer();
   });
   it("should ping server", async () => {
     const res = await request(app).get(pingHealthCheckUrl);

@@ -30,7 +30,7 @@ import ApiCollection from "models/ApiCollection";
 import { Api } from "models/ApiDocument";
 import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
-import app, { closeServer } from "server";
+import app from "server";
 import request, { agent as supertest } from "supertest";
 import getCurrentUserId from "utils/getCurrentUserId";
 
@@ -93,7 +93,6 @@ describe("testing api controller", () => {
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
     await redisConfiguration.connection.quit();
-    closeServer();
   });
 
   describe("testing apis", () => {

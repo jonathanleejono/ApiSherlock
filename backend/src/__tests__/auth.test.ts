@@ -12,7 +12,7 @@ import { mockUser } from "mocks/mockUser";
 import UserCollection from "models/UserCollection";
 import { User } from "models/UserDocument";
 import mongoose from "mongoose";
-import app, { closeServer } from "server";
+import app from "server";
 import request from "supertest";
 
 const user: Partial<User> = {
@@ -38,7 +38,6 @@ describe("testing users controller", () => {
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
     await redisConfiguration.connection.quit();
-    closeServer();
   });
 
   describe("given a user's name, email, and password", () => {
