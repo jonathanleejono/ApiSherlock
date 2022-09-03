@@ -42,7 +42,7 @@ describe("testing if supertest and jest works", () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
         await queueController_1.redisConfiguration.connection.quit();
-        server_1.server.close();
+        (0, server_1.closeServer)();
     });
     it("should ping server", async () => {
         const res = await (0, supertest_1.default)(server_1.default).get(urls_1.pingHealthCheckUrl);

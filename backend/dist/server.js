@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.server = void 0;
+exports.closeServer = void 0;
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
@@ -62,20 +62,35 @@ if (process.env.NODE_ENV === "test") {
 }
 app.use(notFoundRoute_1.default);
 app.use(errorHandler_1.default);
-const start = async () => {
+let serverPort;
+function setServerPort(inputPort) {
+    serverPort = inputPort;
+}
+(async () => {
+    setServerPort(await (0, get_port_1.default)({ port: 5000 }));
+})();
+function getServerPort() {
+    return serverPort;
+}
+const server = app.listen(getServerPort(), () => {
+    if (process.env.NODE_ENV !== "test") {
+        console.log(`Server is listening on port ${getServerPort()}...`);
+    }
+});
+const initDB = async () => {
     try {
-        const serverPort = process.env.PORT || (await (0, get_port_1.default)({ port: 5000 }));
         if (process.env.NODE_ENV !== "test") {
             await (0, connect_1.default)(process.env.MONGO_URL);
-            exports.server = app.listen(serverPort, () => {
-                console.log(`Server is listening on port ${serverPort}...`);
-            });
         }
     }
     catch (error) {
         console.log(error);
     }
 };
-start();
+initDB();
+const closeServer = () => {
+    server.close();
+};
+exports.closeServer = closeServer;
 exports.default = app;
 //# sourceMappingURL=server.js.map

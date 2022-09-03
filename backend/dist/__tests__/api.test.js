@@ -87,7 +87,7 @@ describe("testing api controller", () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
         await queueController_1.redisConfiguration.connection.quit();
-        server_1.server.close();
+        (0, server_1.closeServer)();
     });
     describe("testing apis", () => {
         it("should get all APIs", async () => {

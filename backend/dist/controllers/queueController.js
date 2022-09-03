@@ -20,6 +20,7 @@ const validateUserExists_1 = __importDefault(require("utils/validateUserExists")
 dotenv_1.default.config();
 const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, NODE_ENV, REDIS_PASSWORD } = process.env;
 const PROD_ENV = NODE_ENV === "production";
+const TEST_ENV = NODE_ENV === "test";
 exports.redisConfiguration = {
     connection: new ioredis_1.default({
         host: REDIS_HOST,
@@ -100,7 +101,7 @@ const startQueue = async (req, res) => {
         (0, queue_1.setQueue)(new bullmq_1.Queue(queueName, exports.redisConfiguration));
         const myQueue = await (0, queue_1.getQueue)();
         const repeatOptions = await (0, queue_1.getRepeatOptions)();
-        new bullmq_1.QueueScheduler(queueName, exports.redisConfiguration);
+        const queueScheduler = new bullmq_1.QueueScheduler(queueName, exports.redisConfiguration);
         async function addJobToQueue(jobDetails) {
             await myQueue.add(jobName, { jobDetails }, { repeat: repeatOptions });
         }
@@ -145,12 +146,17 @@ const startQueue = async (req, res) => {
         }
         const worker = new bullmq_1.Worker(queueName, pingAllMonitoredApis, exports.redisConfiguration);
         worker.on("completed", async (job) => {
-            console.log(`Job ${job.id} has completed!`);
+            if (!TEST_ENV) {
+                console.log(`Job ${job.id} has completed!`);
+            }
         });
         worker.on("failed", (job, err) => {
-            console.error(`Job ${job.id} has failed with ${err.message}`);
+            if (!TEST_ENV) {
+                console.error(`Job ${job.id} has failed with ${err.message}`);
+            }
         });
         await worker.close();
+        await queueScheduler.close();
         await myQueue.close();
         res.status(http_status_codes_1.StatusCodes.OK).json({ msg: "Started monitoring in queue!" });
     }

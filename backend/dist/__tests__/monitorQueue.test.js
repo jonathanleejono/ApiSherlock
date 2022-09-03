@@ -85,7 +85,7 @@ describe("testing monitor controller", () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
         await queueController_1.redisConfiguration.connection.quit();
-        server_1.server.close();
+        (0, server_1.closeServer)();
     });
     describe("testing monitor", () => {
         it("should not create monitor with setting off", async () => {
@@ -141,6 +141,7 @@ describe("testing monitor controller", () => {
             const repeatableJobs = await myQueue.getRepeatableJobs();
             expect(repeatableJobs[0].name).toContain(`${queue_1.jobBaseName}-${mockUser_1.mockUser.email}`);
             expect(repeatableJobs[0].cron).toEqual((1000 * 60 * 60).toString());
+            await queueController_1.redisConfiguration.connection.quit();
         });
         it("should remove monitor and jobs from queue", async () => {
             mockMonitor_1.mockMonitor.monitorSetting = monitor_1.MonitorSettingOptions.OFF;
@@ -151,6 +152,7 @@ describe("testing monitor controller", () => {
                 .delete(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             expect(deleteMonitorResp.statusCode).toBe(200);
+            await queueController_1.redisConfiguration.connection.connect();
             const removeQueueResp = await agent.delete(`${urls_1.baseQueueUrl}${urls_1.handleQueueUrl}`);
             expect(removeQueueResp.statusCode).toBe(200);
             const myQueue = await (0, queue_1.getQueue)();

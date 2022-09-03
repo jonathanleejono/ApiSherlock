@@ -53,7 +53,7 @@ describe("testing users controller", () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
         await queueController_1.redisConfiguration.connection.quit();
-        server_1.server.close();
+        (0, server_1.closeServer)();
     });
     describe("given a user's name, email, and password", () => {
         it("should create a user", async () => {
