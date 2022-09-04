@@ -222,6 +222,7 @@ describe("testing main api pages", () => {
 
     const statusHealthyOption = screen.getByRole("option", {
       name: /\bhealthy\b/i,
+      //eslint-disable-next-line
     }) as any;
 
     await userEvent.selectOptions(statusFilterOptions, statusHealthyOption);
@@ -245,6 +246,7 @@ describe("testing main api pages", () => {
 
 let consoleErrorFn: jest.SpyInstance<
   void,
+  //eslint-disable-next-line
   [message?: any, ...optionalParams: any[]]
 >;
 

@@ -15,6 +15,7 @@ import { getUser } from "test/data/usersDb";
 import { BadRequestError, NotFoundError } from "test/errors";
 import { constructDateTime } from "utils/datetime";
 
+//eslint-disable-next-line
 type QueueOptions = {
   [key: string]: any;
 };
@@ -85,7 +86,7 @@ async function startQueue(userId: string): Promise<string> {
     [key: string]: ApiDataResponse;
   };
 
-  let allApisInMemory: ApiOptions = {};
+  const allApisInMemory: ApiOptions = {};
 
   const getAllApisKey = window.localStorage.getItem(testAllApisKey);
   const _allApisKey: string = getAllApisKey !== null ? getAllApisKey : "";

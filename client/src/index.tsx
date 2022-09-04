@@ -18,11 +18,27 @@ const validateStr = makeValidator((x) => {
   else return str();
 });
 
+const validateEnv = makeValidator((x) => {
+  if (!x) throw new Error("Value is empty");
+  else return str({ choices: ["development", "test", "production"] });
+});
+
 //throws error if env variable is missing
 cleanEnv(process.env, {
-  REACT_APP_SECRET_KEY: validateStr(),
+  REACT_APP_BASE_URL: validateStr(),
+  REACT_APP_API_URL: validateStr(),
+  REACT_APP_AUTH_URL: validateStr(),
   REACT_APP_MONITOR_URL: validateStr(),
+  REACT_APP_QUEUE_URL: validateStr(),
+  REACT_APP_SECRET_KEY: validateStr(),
+  NODE_ENV: validateEnv(),
 });
+
+if (NODE_ENV === "development") {
+  cleanEnv(process.env, {
+    REACT_APP__MSW_DEV: validateStr(),
+  });
+}
 
 ReactDOM.render(
   <React.StrictMode>

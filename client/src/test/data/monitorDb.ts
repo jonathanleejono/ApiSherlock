@@ -39,6 +39,7 @@ if (NODE_ENV === "test" || REACT_APP_MSW_DEV === "on") {
   }
 }
 
+//eslint-disable-next-line
 function validateForm(arr: any[]) {
   if (
     arr.every(
