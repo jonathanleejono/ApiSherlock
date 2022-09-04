@@ -13,7 +13,6 @@ jobs:
       MONGO_URL: ${{secrets.MONGO_URL}}
       JWT_SECRET: ${{secrets.JWT_SECRET}}
       JWT_ACCESS_TOKEN_LIFETIME: ${{secrets.JWT_ACCESS_TOKEN_LIFETIME}}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
       JWT_REFRESH_TOKEN_LIFETIME: ${{secrets.JWT_REFRESH_TOKEN_LIFETIME}}
       NODE_ENV: ${{secrets.NODE_ENV}}
       REDIS_URL: ${{secrets.REDIS_URL}}
@@ -38,6 +37,13 @@ jobs:
             --health-retries 5
           ports:
             - 27017:27017
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     runs-on: ubuntu-latest
     steps:
@@ -71,14 +77,27 @@ jobs:
     needs: [build]
 
     steps:
-      - name: pulling git repo
-        uses: actions/checkout@v2
-      - name: deploying to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+      - name: Pulling git repo
+        uses: actions/checkout@v3
+      - name: Building backend webpack
+        run: |
+          cd backend
+          npm run build
+      - name: Deploying backend to Vercel
+        uses: amondnet/vercel-action@v20 
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-          heroku_email: ${{secrets.HEROKU_EMAIL}}
-          appdir: "backend"
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} 
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.ORG_ID_BACKEND}} 
+          vercel-project-id: ${{ secrets.PROJECT_ID_BACKEND}} 
+          working-directory: ./backend
+      - name: Deploying frontend to Vercel
+        uses: amondnet/vercel-action@v20 
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} 
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.ORG_ID_FRONTEND}} 
+          vercel-project-id: ${{ secrets.PROJECT_ID_FRONTEND}} 
+          working-directory: ./client
     
 
