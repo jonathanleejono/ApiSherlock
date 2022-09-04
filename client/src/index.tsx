@@ -26,10 +26,6 @@ const validateEnv = makeValidator((x) => {
 //throws error if env variable is missing
 cleanEnv(process.env, {
   REACT_APP_BASE_URL: validateStr(),
-  REACT_APP_API_URL: validateStr(),
-  REACT_APP_AUTH_URL: validateStr(),
-  REACT_APP_MONITOR_URL: validateStr(),
-  REACT_APP_QUEUE_URL: validateStr(),
   REACT_APP_SECRET_KEY: validateStr(),
   NODE_ENV: validateEnv(),
 });
