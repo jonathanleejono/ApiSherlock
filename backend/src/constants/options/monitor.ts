@@ -21,11 +21,10 @@ export const validMonitorScheduleTypeOptions = Object.values(
   MonitorScheduleTypeOptions
 );
 
-// array goes from 0 to 11
-export const validMonitorDateHourOptions = Array.from(
-  { length: 12 },
-  (_, i) => i
-);
+// array goes from 1 to 12
+// the selected number gets handled before submitted to cron
+// (eg. 12AM gets subtracted by 12 to make it the 0 hour)
+export const validMonitorDateHourOptions = [...Array(13).keys()].slice(1);
 
 // array goes from 0 to 59
 export const validMonitorDateMinuteOptions = Array.from(

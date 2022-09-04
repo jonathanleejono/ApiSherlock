@@ -9,6 +9,7 @@ let myQueue: Queue<any, any, string>;
 
 let repeatOptions: RepeatOptions;
 
+//eslint-disable-next-line
 let queueWorker: Worker<any, void, string>;
 
 let queueScheduler: QueueScheduler;
@@ -31,13 +32,14 @@ export async function getRepeatOptions(): Promise<RepeatOptions> {
   return repeatOptions;
 }
 
-//eslint-disable-next-line
 export async function setQueueWorker(
+  //eslint-disable-next-line
   newQueueWorker: Worker<any, void, string>
 ) {
   queueWorker = newQueueWorker;
 }
 
+//eslint-disable-next-line
 export async function getQueueWorker(): Promise<Worker<any, void, string>> {
   return queueWorker;
 }
