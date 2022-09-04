@@ -34,8 +34,8 @@ export const validMonitorIntervalScheduleOptions = Object.values(
 );
 
 // array goes from 1 to 12
-// this is different from the backend,
-// as the selected number gets subtracted by 1 before submitting
+// the selected number gets handled before submitted to cron
+// (eg. 12AM gets subtracted by 12 to make it the 0 hour)
 export const validMonitorDateHourOptions = [...Array(13).keys()].slice(1);
 
 // array goes from 0 to 59

@@ -58,7 +58,7 @@
     "test-only": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint ./",
-    "prepare": "cd .. && husky install client/.husky"
+    "husky": "cd .. && husky install client/.husky"
   },
   "eslintConfig": {
     "extends": [
