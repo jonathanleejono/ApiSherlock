@@ -1,5 +1,5 @@
 import { Buffer } from "buffer";
-import { timezoneOffsets } from "constants/timezoneOffsets";
+import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import {
   AuthUserResponse,
   LoginUserData,

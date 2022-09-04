@@ -87,8 +87,7 @@ const monitorSlice = createSlice({
         state.scheduleType = scheduleType;
         state.intervalSchedule = intervalSchedule;
         state.dateDayOfWeek = MonitorDateDayOfWeekOptions[dateDayOfWeek];
-        //+1 because the backend has hours 0 to 11, but frontend is 1 to 12
-        state.dateHour = dateHour + 1;
+        state.dateHour = dateHour;
         state.dateMinute = dateMinute;
         state.dateAMOrPM = dateAMOrPM;
       }),

@@ -28,7 +28,9 @@ function randomChoice(options: string[]): any {
   return options[choice];
 }
 
-function buildMockUser(overrides: Partial<RegisterUserData>): RegisterUserData {
+function buildMockUser(
+  overrides?: Partial<RegisterUserData>
+): RegisterUserData {
   return {
     name: faker.name.firstName(),
     email: faker.internet.email(),
@@ -38,7 +40,7 @@ function buildMockUser(overrides: Partial<RegisterUserData>): RegisterUserData {
   };
 }
 
-function buildMockApi(overrides: Partial<ApiDataResponse>): ApiDataResponse {
+function buildMockApi(overrides?: Partial<ApiDataResponse>): ApiDataResponse {
   return {
     _id: faker.datatype.uuid(),
     url: faker.internet.url(),
@@ -55,7 +57,7 @@ function buildMockApi(overrides: Partial<ApiDataResponse>): ApiDataResponse {
 }
 
 function buildMockMonitor(
-  overrides: Partial<MonitorDataResponse>
+  overrides?: Partial<MonitorDataResponse>
 ): MonitorDataResponse {
   return {
     _id: faker.datatype.uuid(),

@@ -20,7 +20,7 @@ const validateStr = makeValidator((x) => {
 
 //throws error if env variable is missing
 cleanEnv(process.env, {
-  REACT_APP_YAHOO: validateStr(),
+  REACT_APP_SECRET_KEY: validateStr(),
   REACT_APP_MONITOR_URL: validateStr(),
 });
 
