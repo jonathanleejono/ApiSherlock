@@ -15,7 +15,7 @@
     "start-mongo": "brew services start mongodb-community@5.0",
     "stop-mongo": "brew services stop mongodb-community@5.0",
     "start-dbs": "npm run start-mongo && redis-server",
-    "close-dbs": "npm run stop-mongo && npm run redis-shutdown",
+    "stop-dbs": "npm run stop-mongo && npm run redis-shutdown",
     "test": "jest",
     "test-handles": "jest --detectOpenHandles",
     "test-watch": "jest --watchAll --detectOpenHandles",
