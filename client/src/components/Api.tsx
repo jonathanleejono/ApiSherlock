@@ -101,6 +101,7 @@ const Api: React.FC<ApiProps> = ({
             icon={<FaLayerGroup />}
             text="Status:"
             apiStatus={status}
+            data-testid="ApiComponentStatus"
           />
         </div>
         <footer>

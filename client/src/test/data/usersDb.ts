@@ -1,8 +1,5 @@
-import {
-  BadRequestError,
-  NotFoundError,
-  UnAuthenticatedError,
-} from "test/errors";
+import { Buffer } from "buffer";
+import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import {
   AuthUserResponse,
   LoginUserData,
@@ -10,10 +7,13 @@ import {
   UpdateUserData,
   UserDataResponse,
 } from "interfaces/users";
-import { testUserKey } from "constants/keys";
-import { Buffer } from "buffer";
-import { RestRequest, DefaultBodyType, PathParams } from "msw";
-import { timezoneOffsets } from "constants/timezoneOffsets";
+import { DefaultBodyType, PathParams, RestRequest } from "msw";
+import { testUserKey } from "test/data/testKeys";
+import {
+  BadRequestError,
+  NotFoundError,
+  UnAuthenticatedError,
+} from "test/errors";
 
 // the password is needed to be retrieved and compared
 let userInMemory: RegisterUserData = {

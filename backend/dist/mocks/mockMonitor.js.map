@@ -1,0 +1,1 @@
+{"version":3,"file":"mockMonitor.js","sourceRoot":"","sources":["../../src/mocks/mockMonitor.ts"],"names":[],"mappings":";;;AAAA,0CAMsB;AAGT,QAAA,WAAW,GAAuC;IAC7D,cAAc,EAAE,+BAAqB,CAAC,GAAG;IACzC,YAAY,EAAE,oCAA0B,CAAC,QAAQ;IACjD,gBAAgB,EAAE,wCAA8B,CAAC,MAAM;IACvD,aAAa,EAAE,qCAA2B,CAAC,MAAM;IACjD,QAAQ,EAAE,CAAC;IACX,UAAU,EAAE,CAAC;IACb,UAAU,EAAE,kCAAwB,CAAC,EAAE;CACxC,CAAC"}

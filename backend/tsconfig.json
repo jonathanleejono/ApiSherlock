@@ -22,8 +22,9 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "typeRoots": ["src/types", "src/@types", "./node_modules/@types"],
-    "baseUrl": "./src",
+    "baseUrl": "src",
     "paths": {
+      "*": ["*"],
       "constants": ["constants/*"],
       "controllers": ["controllers/*"],
       "db": ["db/*"],
@@ -40,5 +41,5 @@
     }
   },
   "exclude": ["node_modules"],
-  "include": ["src/**/*.ts", "xss-clean.d.ts"]
+  "include": ["src/**/*.ts", "w.ts"]
 }

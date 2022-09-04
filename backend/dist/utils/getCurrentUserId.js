@@ -5,14 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const getCurrentUserId = async (accessToken) => {
-    try {
-        const payload = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
-        const currentUserId = payload.userId;
-        return currentUserId;
-    }
-    catch (err) {
-        return { error: err };
-    }
+    const payload = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
+    const currentUserId = payload.userId;
+    return currentUserId;
 };
 exports.default = getCurrentUserId;
 //# sourceMappingURL=getCurrentUserId.js.map

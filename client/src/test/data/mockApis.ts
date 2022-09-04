@@ -9,8 +9,8 @@ import { constructDateTime } from "utils/datetime";
 export const mockApis: ApiDataResponse[] = [
   {
     url: "https://battery-cellify.herokuapp.com/ping",
-    host: ApiHostOptions.Heroku,
-    status: ApiStatusOptions.Pending,
+    host: ApiHostOptions.HEROKU,
+    status: ApiStatusOptions.PENDING,
     lastPinged: "Never pinged",
     monitoring: ApiMonitoringOptions.ON,
     __v: 0,
@@ -21,8 +21,8 @@ export const mockApis: ApiDataResponse[] = [
   },
   {
     url: "https://www.hello-herokuapp2.com/ping",
-    host: ApiHostOptions.Heroku,
-    status: ApiStatusOptions.Pending,
+    host: ApiHostOptions.HEROKU,
+    status: ApiStatusOptions.PENDING,
     lastPinged: "Never pinged",
     monitoring: ApiMonitoringOptions.ON,
     __v: 0,
@@ -33,8 +33,8 @@ export const mockApis: ApiDataResponse[] = [
   },
   {
     url: "https://www.not1arealwebsiteh1opefully5.com/ping",
-    host: ApiHostOptions.Heroku,
-    status: ApiStatusOptions.Pending,
+    host: ApiHostOptions.HEROKU,
+    status: ApiStatusOptions.PENDING,
     lastPinged: "Never pinged",
     monitoring: ApiMonitoringOptions.ON,
     __v: 0,

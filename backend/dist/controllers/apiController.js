@@ -4,17 +4,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.showStats = exports.getApi = exports.updateApi = exports.getAllApis = exports.deleteApi = exports.createApi = void 0;
-const datetime_1 = require("utils/datetime");
-const keys_1 = require("constants/keys");
 const messages_1 = require("constants/messages");
+const apis_1 = require("constants/options/apis");
+const apis_2 = require("enum/apis");
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");
-const checkPermissions_1 = __importDefault(require("utils/checkPermissions"));
-const validateKeys_1 = require("utils/validateKeys");
-const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
-const mongoose_1 = __importDefault(require("mongoose"));
-const apis_1 = require("enum/apis");
+const checkPermissions_1 = __importDefault(require("utils/checkPermissions"));
+const datetime_1 = require("utils/datetime");
+const validateKeysValues_1 = require("utils/validateKeysValues");
+const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const createApi = async (req, res) => {
     try {
         const user = await (0, validateUserExists_1.default)(req, res);
@@ -22,18 +21,22 @@ const createApi = async (req, res) => {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid API creation, can only input: `, keys_1.validCreateApiKeys);
-        const { url, host, monitoring } = req.body;
-        if (!url || !host || !monitoring) {
-            (0, index_1.badRequestError)(res, "Please provide all values");
+        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid API creation, can only input: `, apis_1.validCreateApiKeys))
             return;
-        }
+        if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
+            return;
+        const { host, monitoring } = req.body;
+        if (!(0, validateKeysValues_1.validValues)(res, host, `Invalid host, please select one of: `, apis_1.validApiHostOptions))
+            return;
+        if (!(0, validateKeysValues_1.validValues)(res, monitoring, `Invalid monitoring, please select one of: `, apis_1.validApiMonitoringOptions))
+            return;
         req.body.createdBy = user._id;
-        const api = await ApiCollection_1.default.create(req.body);
+        const api = new ApiCollection_1.default(req.body);
+        await api.validate();
+        await ApiCollection_1.default.create(api);
         res.status(http_status_codes_1.StatusCodes.CREATED).json(api);
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -46,45 +49,66 @@ const getAllApis = async (req, res) => {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid search params, can only use: `, keys_1.validGetAllApisKeys, "query");
-        const { status, monitoring, sort, search } = req.query;
+        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.query), `Invalid search params, can only use: `, apis_1.validApiSearchParams))
+            return;
+        const { host, status, monitoring, sort, search, page, limit } = req.query;
         const queryObject = {
             createdBy: user._id,
         };
-        if (status && status !== "All") {
+        if (host &&
+            !(0, validateKeysValues_1.validValues)(res, host, `Invalid host search, please select one of: `, [...apis_1.validApiHostOptions, "All"]))
+            return;
+        else if (host && host !== "All") {
+            queryObject.host = host;
+        }
+        if (status &&
+            !(0, validateKeysValues_1.validValues)(res, status, `Invalid status search, please select one of: `, [...apis_1.validApiStatusOptions, "All"]))
+            return;
+        else if (status && status !== "All") {
             queryObject.status = status;
         }
-        if (monitoring && monitoring !== "All") {
+        if (monitoring &&
+            !(0, validateKeysValues_1.validValues)(res, monitoring, `Invalid monitoring search, please select one of: `, [...apis_1.validApiMonitoringOptions, "All"]))
+            return;
+        else if (monitoring && monitoring !== "All") {
             queryObject.monitoring = monitoring;
         }
         if (search) {
             queryObject.url = { $regex: search, $options: "i" };
         }
         let result = ApiCollection_1.default.find(queryObject);
-        result = result.sort("-_id");
-        if (sort === apis_1.ApiSortOptions.Latest) {
-            result = result.sort("-createdAt");
+        let sortOptions = { url: -1 };
+        if (sort === apis_2.ApiSortOptions.LATEST) {
+            sortOptions = {
+                createdAt: -1,
+            };
         }
-        if (sort === apis_1.ApiSortOptions.Oldest) {
-            result = result.sort("createdAt");
+        if (sort === apis_2.ApiSortOptions.OLDEST) {
+            sortOptions = {
+                createdAt: 1,
+            };
         }
-        if (sort === apis_1.ApiSortOptions.A_Z) {
-            result = result.sort("url");
+        if (sort === apis_2.ApiSortOptions.A_Z) {
+            sortOptions = {
+                url: 1,
+            };
         }
-        if (sort === apis_1.ApiSortOptions.Z_A) {
-            result = result.sort("-url");
+        if (sort === apis_2.ApiSortOptions.Z_A) {
+            sortOptions = {
+                url: -1,
+            };
         }
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        result = result.skip(skip).limit(limit);
+        result = result.sort(sortOptions);
+        const _page = Number(page) || 1;
+        const _limit = Number(limit) || 10;
+        const skip = (_page - 1) * _limit;
+        result = result.skip(skip).limit(_limit);
         const allApis = await result;
-        const totalApis = await ApiCollection_1.default.countDocuments(queryObject);
-        const numOfPages = Math.ceil(totalApis / limit);
+        const totalApis = allApis.length;
+        const numOfPages = Math.ceil(totalApis / _limit);
         res.status(http_status_codes_1.StatusCodes.OK).json({ allApis, totalApis, numOfPages });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -98,21 +122,33 @@ const updateApi = async (req, res) => {
             return;
         }
         const { id: apiId } = req.params;
+        if (!apiId) {
+            (0, index_1.badRequestError)(res, "Please provide API id");
+            return;
+        }
+        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Error updating API, can only use: `, apis_1.validUpdateApiKeys))
+            return;
+        if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
+            return;
+        const { host, monitoring } = req.body;
+        if (host &&
+            !(0, validateKeysValues_1.validValues)(res, host, `Invalid host, please select one of: `, apis_1.validApiHostOptions))
+            return;
+        if (monitoring &&
+            !(0, validateKeysValues_1.validValues)(res, monitoring, `Invalid monitoring, please select one of: `, apis_1.validApiMonitoringOptions))
+            return;
         const api = await ApiCollection_1.default.findOne({ _id: apiId });
         if (!api) {
-            (0, index_1.notFoundError)(res, `No API with id :${apiId}`);
+            (0, index_1.notFoundError)(res, `No API with id: ${apiId}`);
             return;
         }
         (0, checkPermissions_1.default)(res, user._id, api.createdBy);
-        (0, validateKeys_1.validateInputKeys)(req, res, `Error updating API, can only use: `, keys_1.validUpdateApiKeys);
-        const updatedApi = await ApiCollection_1.default.findOneAndUpdate({ _id: apiId }, req.body, {
-            new: true,
-            runValidators: true,
-        });
-        res.status(http_status_codes_1.StatusCodes.OK).json(updatedApi);
+        Object.assign(api, req.body);
+        await api.validate();
+        await api.save();
+        res.status(http_status_codes_1.StatusCodes.OK).json(api);
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -126,9 +162,13 @@ const deleteApi = async (req, res) => {
             return;
         }
         const { id: apiId } = req.params;
+        if (!apiId) {
+            (0, index_1.badRequestError)(res, "Please provide API id");
+            return;
+        }
         const api = await ApiCollection_1.default.findOne({ _id: apiId });
         if (!api) {
-            (0, index_1.notFoundError)(res, `No API with id :${apiId}`);
+            (0, index_1.notFoundError)(res, `No API with id: ${apiId}`);
             return;
         }
         (0, checkPermissions_1.default)(res, user._id, api.createdBy);
@@ -136,7 +176,6 @@ const deleteApi = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.deleteApiSuccessMsg);
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -150,16 +189,19 @@ const getApi = async (req, res) => {
             return;
         }
         const { id: apiId } = req.params;
+        if (!apiId) {
+            (0, index_1.badRequestError)(res, "Please provide API id");
+            return;
+        }
         const api = await ApiCollection_1.default.findOne({ _id: apiId });
         if (!api) {
-            (0, index_1.notFoundError)(res, `No API with id :${apiId}`);
+            (0, index_1.notFoundError)(res, `No API with id: ${apiId}`);
             return;
         }
         (0, checkPermissions_1.default)(res, user._id, api.createdBy);
         res.status(http_status_codes_1.StatusCodes.OK).json(api);
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -169,11 +211,11 @@ let monthlyApis = [{ date: "", count: 0 }];
 const showStats = async (req, res) => {
     try {
         const user = await (0, validateUserExists_1.default)(req, res);
-        if (!user || !user._id) {
+        if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        const userId = new mongoose_1.default.Types.ObjectId(user._id);
+        const userId = user._id;
         const statsStatus = await ApiCollection_1.default.aggregate([
             { $match: { createdBy: userId } },
             { $group: { _id: "$status", count: { $sum: 1 } } },
@@ -214,7 +256,6 @@ const showStats = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json({ defaultStats, monthlyApis });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }

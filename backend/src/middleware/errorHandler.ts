@@ -23,6 +23,7 @@ const errorHandlerMiddleware = (
   if (err.name === "ValidationError") {
     defaultError.statusCode = StatusCodes.BAD_REQUEST;
     defaultError.msg = Object.values(err.errors)
+      //eslint-disable-next-line
       .map((item: any) => item.message)
       .join(",");
   }

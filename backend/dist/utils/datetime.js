@@ -14,7 +14,7 @@ function getDateWithUTCOffset(offset, showTime = true) {
     }
     catch (error) {
         console.error("Error getting date: ", error);
-        return;
+        return "Error getting date";
     }
 }
 exports.getDateWithUTCOffset = getDateWithUTCOffset;

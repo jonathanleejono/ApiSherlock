@@ -4,7 +4,7 @@ import {
   getAllApisActionType,
   getAllApisStatsActionType,
 } from "constants/actionTypes";
-import { getAllApisStatsUrl, getAllApisUrl } from "constants/urls";
+import { getAllApisStatsUrl, getAllApisUrl } from "constants/apiUrls";
 import { AllApisResponse, AllApisStatsResponse } from "interfaces/apis";
 import { ValidationErrors } from "interfaces/errors";
 import { RootState } from "state/store";
@@ -20,7 +20,7 @@ const getAllApis = createAsyncThunk<
   }
 >(`${allApisSliceName}${getAllApisActionType}`, async (_, thunkAPI) => {
   try {
-    const { page, search, sort, status, monitoring } =
+    const { page, search, sort, status, monitoring, host } =
       thunkAPI.getState().allApis;
 
     const resp = await customFetch.get(getAllApisUrl, {
@@ -28,6 +28,7 @@ const getAllApis = createAsyncThunk<
         sort,
         status,
         monitoring,
+        host,
         page,
         search,
       },

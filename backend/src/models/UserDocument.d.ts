@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { UnifiedModel } from "UnifiedModel";
+import { UnifiedModel } from "models/UnifiedModel";
 
 export type ComparePasswordFunction = (
   inputPassword: string,

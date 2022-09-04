@@ -5,40 +5,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refreshAccessToken = exports.updateUser = exports.login = exports.register = void 0;
 const cookies_1 = require("constants/cookies");
-const keys_1 = require("constants/keys");
-const timezoneOffsets_1 = require("constants/timezoneOffsets");
+const timezoneOffsets_1 = require("constants/options/timezoneOffsets");
+const user_1 = require("constants/options/user");
 const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const validateKeys_1 = require("utils/validateKeys");
-const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const UserCollection_1 = __importDefault(require("models/UserCollection"));
+const validateKeysValues_1 = require("utils/validateKeysValues");
+const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 dotenv_1.default.config();
 const { JWT_ACCESS_TOKEN_LIFETIME, JWT_REFRESH_TOKEN_LIFETIME } = process.env;
 const register = async (req, res) => {
     try {
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid register, can only use: `, keys_1.validRegisterKeys);
-        const { name, email, password, timezoneGMT } = req.body;
-        if (!name || !email || !password) {
-            (0, index_1.badRequestError)(res, "Please provide all values");
+        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid register, can only use: `, user_1.validRegisterKeys))
             return;
-        }
-        if (!timezoneOffsets_1.timezoneOffsets.includes(timezoneGMT)) {
-            (0, index_1.badRequestError)(res, `Invalid timezone, please select one of: ${timezoneOffsets_1.timezoneOffsets}`);
+        if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
             return;
-        }
+        const { email, timezoneGMT } = req.body;
+        if (!(0, validateKeysValues_1.validValues)(res, timezoneGMT, `Invalid timezone, please select one of: `, timezoneOffsets_1.timezoneOffsets))
+            return;
         const emailAlreadyExists = await UserCollection_1.default.findOne({ email });
         if (emailAlreadyExists) {
             (0, index_1.badRequestError)(res, "Please use a different email");
             return;
         }
-        const user = await UserCollection_1.default.create({
-            name,
-            email,
-            password,
-            timezoneGMT,
-        });
+        const user = new UserCollection_1.default(req.body);
+        await user.validate();
+        await UserCollection_1.default.create(user);
         const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME);
         const refreshToken = user.createJWT(JWT_REFRESH_TOKEN_LIFETIME);
         res
@@ -59,7 +53,6 @@ const register = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -67,20 +60,19 @@ const register = async (req, res) => {
 exports.register = register;
 const login = async (req, res) => {
     try {
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid login, can only use: `, keys_1.validLoginKeys);
-        const { email, password } = req.body;
-        if (!email || !password) {
-            (0, index_1.badRequestError)(res, "Please provide all values");
+        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid login, can only use: `, user_1.validLoginKeys))
             return;
-        }
+        if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
+            return;
+        const { email, password } = req.body;
         const user = await UserCollection_1.default.findOne({ email }).select("+password");
-        if (!user || !user.password) {
+        if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
         const isPasswordCorrect = await user.comparePassword(password, user.password);
         if (!isPasswordCorrect) {
-            (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
+            (0, index_1.unAuthenticatedError)(res, "Incorrect Credentials");
             return;
         }
         const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME);
@@ -104,7 +96,6 @@ const login = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -117,26 +108,23 @@ const updateUser = async (req, res) => {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        (0, validateKeys_1.validateInputKeys)(req, res, `Invalid update, can only update: `, keys_1.validUpdateKeys);
-        const { email, name, timezoneGMT } = req.body;
-        if (!email || !name || !timezoneGMT) {
-            (0, index_1.badRequestError)(res, "Please provide all values");
+        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid update, can only update: `, user_1.validUpdateUserKeys))
             return;
-        }
-        if (!timezoneOffsets_1.timezoneOffsets.includes(timezoneGMT)) {
-            (0, index_1.badRequestError)(res, `Invalid timezone, please select one of: ${timezoneOffsets_1.timezoneOffsets}`);
+        if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
             return;
-        }
-        if (user.email !== email) {
+        const { email, timezoneGMT } = req.body;
+        if (timezoneGMT &&
+            !(0, validateKeysValues_1.validValues)(res, timezoneGMT, `Invalid timezone, please select one of: `, timezoneOffsets_1.timezoneOffsets))
+            return;
+        if (email && user.email !== email) {
             const emailAlreadyExists = await UserCollection_1.default.findOne({ email });
             if (emailAlreadyExists) {
                 (0, index_1.badRequestError)(res, "Please use a different email");
                 return;
             }
         }
-        user.email = email;
-        user.name = name;
-        user.timezoneGMT = timezoneGMT;
+        Object.assign(user, req.body);
+        await user.validate();
         await user.save();
         const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME);
         const refreshToken = user.createJWT(JWT_REFRESH_TOKEN_LIFETIME);
@@ -158,7 +146,6 @@ const updateUser = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }
@@ -192,7 +179,6 @@ const refreshAccessToken = async (req, res) => {
         res.status(http_status_codes_1.StatusCodes.OK).json({ accessToken: newAccessToken });
     }
     catch (error) {
-        console.log(error);
         (0, index_1.badRequestError)(res, error);
         return;
     }

@@ -1,9 +1,9 @@
-import mongoose, { Model, Schema } from "mongoose";
-import validator from "validator";
 import bcrypt from "bcryptjs";
+import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import jwt from "jsonwebtoken";
 import UserDocument from "models/UserDocument";
-import { timezoneOffsets } from "constants/timezoneOffsets";
+import mongoose, { Model, Schema } from "mongoose";
+import validator from "validator";
 
 const UserSchema: Schema<UserDocument> = new mongoose.Schema({
   name: {

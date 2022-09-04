@@ -1,5 +1,7 @@
 const baseAuthUrl = `/api/auth`;
 const baseApiUrl = `/api/api`;
+const baseMonitorUrl = `/api/monitor`;
+const baseQueueUrl = `/api/queue`;
 const baseSeedDbUrl = `/api/mockDb`;
 
 const registerUserUrl = `/register`;
@@ -16,11 +18,15 @@ const getApiUrl = ``;
 const pingAllApisUrl = `/pingAll`;
 const pingOneApiUrl = `/pingOne`;
 
+const handleMonitorUrl = ``;
+const handleQueueUrl = ``;
+
 const resetDb = "/resetDb";
 const seedDb = "/seedDb";
 
 const resetMockUsersDbUrl = `${resetDb}/users`;
 const resetMockApisDbUrl = `${resetDb}/api`;
+const resetMockMonitorDbUrl = `${resetDb}/monitor`;
 const seedMockUsersDbUrl = `${seedDb}/users`;
 const seedMockApisDbUrl = `${seedDb}/api`;
 
@@ -29,11 +35,14 @@ const pingHealthCheckUrl = `/api/ping`;
 export {
   baseAuthUrl,
   baseApiUrl,
+  baseMonitorUrl,
+  baseQueueUrl,
   baseSeedDbUrl,
   resetMockUsersDbUrl,
   seedMockUsersDbUrl,
   resetMockApisDbUrl,
   seedMockApisDbUrl,
+  resetMockMonitorDbUrl,
   registerUserUrl,
   loginUserUrl,
   updateUserUrl,
@@ -45,6 +54,8 @@ export {
   getApiUrl,
   pingAllApisUrl,
   pingOneApiUrl,
+  handleMonitorUrl,
   pingHealthCheckUrl,
   refreshAccessTokenUrl,
+  handleQueueUrl,
 };

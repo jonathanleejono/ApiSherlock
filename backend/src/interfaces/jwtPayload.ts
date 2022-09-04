@@ -1,3 +1,5 @@
+import { Schema } from "mongoose";
+
 export interface JwtPayload {
-  userId: string;
+  userId: Schema.Types.ObjectId;
 }

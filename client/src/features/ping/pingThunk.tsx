@@ -4,7 +4,7 @@ import {
   pingOneActionType,
   pingSliceName,
 } from "constants/actionTypes";
-import { pingAllApisUrl, pingOneApiUrl } from "constants/urls";
+import { pingAllApisUrl, pingOneApiUrl } from "constants/apiUrls";
 import { getAllApis } from "features/allApis/allApisThunk";
 import { ValidationErrors } from "interfaces/errors";
 import { PingResponse } from "interfaces/ping";

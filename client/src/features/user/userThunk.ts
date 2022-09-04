@@ -6,8 +6,12 @@ import {
   updateUserActionType,
   userSliceName,
 } from "constants/actionTypes";
+import {
+  loginUserUrl,
+  registerUserUrl,
+  updateUserUrl,
+} from "constants/apiUrls";
 import { setToken } from "constants/token";
-import { loginUserUrl, registerUserUrl, updateUserUrl } from "constants/urls";
 import { clearAllApisState } from "features/allApis/allApisSlice";
 import { resetApiState } from "features/api/apiSlice";
 import { resetUserState } from "features/user/userSlice";
@@ -72,6 +76,7 @@ const updateUser = createAsyncThunk<
 });
 
 const clearStore = createAsyncThunk<
+  //eslint-disable-next-line
   Promise<any>,
   void,
   {

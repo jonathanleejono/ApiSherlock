@@ -1,21 +1,23 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Register, Landing, Error, ProtectedRoute } from "pages";
-import {
-  AllApis,
-  Profile,
-  SharedLayout,
-  Stats,
-  AddApi,
-  EditApi,
-} from "pages/dashboard";
 import {
   addApiRoute,
   allApisRoute,
   editApiRoute,
   landingRoute,
+  monitoringRoute,
   profileRoute,
   registerRoute,
 } from "constants/routes";
+import { Error, Landing, ProtectedRoute, Register } from "pages";
+import {
+  AddApi,
+  AllApis,
+  EditApi,
+  Monitoring,
+  Profile,
+  SharedLayout,
+  Stats,
+} from "pages/dashboard";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 function App() {
   return (
@@ -33,6 +35,7 @@ function App() {
           <Route path={allApisRoute} element={<AllApis />} />
           <Route path={addApiRoute} element={<AddApi />} />
           <Route path={editApiRoute} element={<EditApi />} />
+          <Route path={monitoringRoute} element={<Monitoring />} />
           <Route path={profileRoute} element={<Profile />} />
         </Route>
         <Route path={registerRoute} element={<Register />} />

@@ -7,7 +7,7 @@ import {
   pleaseFillOutAllValues,
   registerUserErrorMsg,
 } from "constants/messages";
-import { timezoneOffsets } from "constants/timezoneOffsets";
+import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import { setToken } from "constants/token";
 import { loginUser, registerUser } from "features/user/userThunk";
 import { handleToast } from "notifications/toast";
@@ -69,6 +69,7 @@ const Register = () => {
       toast.error(pleaseFillOutAllValues);
       return;
     }
+
     if (isMember) {
       handleLoginUser();
     } else {

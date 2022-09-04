@@ -1,11 +1,11 @@
 import { unAuthenticatedError } from "errors/index";
-import { Types } from "mongoose";
 import { Response } from "express";
+import { Schema } from "mongoose";
 
 const checkPermissions = (
   res: Response,
-  requestUserId: Types.ObjectId,
-  resourceUserId: Types.ObjectId
+  requestUserId: Schema.Types.ObjectId,
+  resourceUserId: Schema.Types.ObjectId
 ) => {
   if (requestUserId.toString() !== resourceUserId.toString()) {
     unAuthenticatedError(res, "Not authorized to access");

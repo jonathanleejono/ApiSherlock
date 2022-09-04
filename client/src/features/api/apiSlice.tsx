@@ -1,6 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { apiSliceName } from "constants/actionTypes";
-import { ApiHostOptions, ApiMonitoringOptions } from "enum/apis";
+import {
+  validApiHostOptions,
+  validApiMonitoringOptions,
+} from "constants/options/apis";
 import { createApi, deleteApi, editApi } from "features/api/apiThunk";
 
 interface ApiState {
@@ -15,8 +18,8 @@ const initialState: ApiState = {
   isLoading: false,
   apiId: "",
   url: "",
-  host: ApiHostOptions.AWS, // AWS is default because it's the first option
-  monitoring: ApiMonitoringOptions.ON,
+  host: validApiHostOptions[0],
+  monitoring: validApiMonitoringOptions[0],
 };
 
 type ApiOptions = {

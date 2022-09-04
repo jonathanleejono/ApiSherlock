@@ -16,39 +16,41 @@ import {
   loginUserUrl,
   pingAllApisUrl,
   pingOneApiUrl,
-  resetMockApisDbUrl,
-  resetMockUsersDbUrl,
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
 } from "constants/urls";
-import getCurrentUserId from "utils/getCurrentUserId";
+import { redisConfiguration } from "controllers/queueController";
+import { ApiMonitoringOptions } from "enum/apis";
 import { mockApi } from "mocks/mockApi";
 import { mockApis } from "mocks/mockApis";
 import { mockApisStats } from "mocks/mockApisStats";
-import { mockUpdatedApis } from "mocks/mockUpdatedApis";
+import { editMockApiUrl, mockUpdatedApis } from "mocks/mockUpdatedApis";
 import { mockUser } from "mocks/mockUser";
-import mongoose from "mongoose";
+import ApiCollection from "models/ApiCollection";
+import { Api } from "models/ApiDocument";
+import UserCollection from "models/UserCollection";
+import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
-import { ApiMonitoringOptions } from "enum/apis";
+import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
 
-let currentUserId: string | { error: any } = "";
-let apiObjId: string; // using this apiObjId for patch and ping one
-let apiToDeleteId: string;
+let currentUserId: Schema.Types.ObjectId;
+let apiObjId: Schema.Types.ObjectId; // using this apiObjId for patch and ping one
+let apiToDeleteId: Schema.Types.ObjectId;
 
 const mockUpdatedApi = mockUpdatedApis[0];
 
 const mockQueryParamApi = mockApis[1];
 
-let testApiResponse = {
-  url: "",
-  host: "",
-  monitoring: "",
+const testApiResponse: Api = {
+  url: expect.any(String),
+  host: expect.any(String),
+  monitoring: expect.any(String),
   status: expect.any(String),
   lastPinged: expect.any(String),
-  createdBy: "",
+  createdBy: expect.any(String),
   _id: expect.any(String),
   createdAt: expect.any(String),
   updatedAt: expect.any(String),
@@ -57,7 +59,14 @@ let testApiResponse = {
 
 describe("testing api controller", () => {
   beforeAll(async () => {
-    await request(app).delete(`${baseSeedDbUrl}${resetMockUsersDbUrl}`);
+    const databaseName = "test-apis";
+    const url = `mongodb://127.0.0.1/${databaseName}`;
+    try {
+      await mongoose.connect(url);
+    } catch (error) {
+      console.log("Error connecting to MongoDB/Mongoose: ", error);
+    }
+    await UserCollection.collection.deleteMany({});
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
@@ -71,22 +80,26 @@ describe("testing api controller", () => {
     // which is why a getCurrentUserId function is used
     currentUserId = await getCurrentUserId(accessToken);
 
+    if (!currentUserId) {
+      console.error("Couldn't get current user id");
+      return;
+    }
+
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-    await agent.delete(`${baseSeedDbUrl}${resetMockApisDbUrl}`);
+    await ApiCollection.collection.deleteMany({});
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });
 
   afterAll(async () => {
+    //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
+    await redisConfiguration.connection.quit();
   });
 
   describe("testing apis", () => {
     it("should get all APIs", async (): Promise<void> => {
-      // give 3 seconds (3000 milliseconds) for database to update
-      await new Promise((res) => setTimeout(res, 3000));
-
       const response = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
 
       //reversed because in apiController, the array is sorted
@@ -113,7 +126,7 @@ describe("testing api controller", () => {
       testApiResponse.url = mockQueryParamApi.url;
       testApiResponse.host = mockQueryParamApi.host;
       testApiResponse.monitoring = mockQueryParamApi.monitoring;
-      testApiResponse.createdBy = currentUserId as string;
+      testApiResponse.createdBy = currentUserId;
 
       expect(response.statusCode).toBe(200);
       // testApiResponse needs to be an array
@@ -139,7 +152,7 @@ describe("testing api controller", () => {
 
     it("should update an api object", async (): Promise<void> => {
       const updatedData = {
-        url: "https://battery-cellify.herokuapp22.com/ping",
+        url: editMockApiUrl,
       };
       const response = await agent
         .patch(`${baseApiUrl}${editApiUrl}/${apiObjId}`)
@@ -147,7 +160,7 @@ describe("testing api controller", () => {
           url: updatedData.url,
         });
 
-      testApiResponse._id = `${apiObjId}`;
+      testApiResponse._id = apiObjId;
       testApiResponse.url = updatedData.url;
       testApiResponse.host = mockApi.host;
       testApiResponse.monitoring = mockApi.monitoring;
@@ -191,7 +204,7 @@ describe("testing api controller", () => {
         testApiResponse.url = mockUpdatedApi.url;
         testApiResponse.status = mockUpdatedApi.status;
         testApiResponse.monitoring = mockUpdatedApi.monitoring;
-        testApiResponse.createdBy = `${currentUserId}`;
+        testApiResponse.createdBy = currentUserId;
 
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual(expect.objectContaining(testApiResponse));

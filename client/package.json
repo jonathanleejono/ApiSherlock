@@ -13,8 +13,10 @@
     "case": "^1.6.3",
     "change-case": "^4.1.2",
     "crypto-js": "^4.1.1",
+    "envalid": "^7.3.1",
     "history": "^5.1.0",
     "http-status-codes": "^2.2.0",
+    "husky": "^8.0.1",
     "msw": "^0.44.2",
     "normalize.css": "^8.0.1",
     "prop-types": "^15.8.1",
@@ -53,9 +55,10 @@
     "start": "react-scripts start",
     "build": "CI= react-scripts build",
     "test": "react-scripts test",
-    "test2": "react-scripts test --watchAll=false",
+    "test-only": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
-    "lint": "eslint ./"
+    "lint": "eslint ./",
+    "prepare": "cd .. && husky install client/.husky"
   },
   "eslintConfig": {
     "extends": [

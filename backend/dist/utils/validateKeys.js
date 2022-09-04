@@ -1,20 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateInputKeys = void 0;
+exports.validKeys = void 0;
 const errors_1 = require("errors");
-let inputKeys;
-function validateInputKeys(req, res, errorMsg, validKeys, keyType) {
-    if (keyType === "query") {
-        inputKeys = req.query;
-    }
-    else
-        inputKeys = req.body;
-    Object.keys(inputKeys).forEach((key) => {
-        if (!validKeys.includes(key)) {
-            (0, errors_1.badRequestError)(res, `${errorMsg}` + `${validKeys}`.replace(/,/g, ", "));
-        }
-    });
-    return;
+function checkIfDuplicateExists(arr) {
+    return new Set(arr).size !== arr.length;
 }
-exports.validateInputKeys = validateInputKeys;
+function validKeys(res, arrReqInput, errorMsg, arrValid) {
+    if (!arrReqInput.every((elem) => arrValid.includes(elem))) {
+        (0, errors_1.badRequestError)(res, `${errorMsg}` + `${arrValid}`.replace(/,/g, ", "));
+        return false;
+    }
+    else if (checkIfDuplicateExists(arrReqInput)) {
+        (0, errors_1.badRequestError)(res, `Duplicate info, please only provide one of each field`);
+        return false;
+    }
+    return true;
+}
+exports.validKeys = validKeys;
 //# sourceMappingURL=validateKeys.js.map

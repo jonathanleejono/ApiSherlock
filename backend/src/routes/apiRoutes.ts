@@ -1,15 +1,3 @@
-import { Response, Router } from "express";
-import rateLimiter from "express-rate-limit";
-
-import {
-  createApi,
-  deleteApi,
-  getAllApis,
-  updateApi,
-  getApi,
-  showStats,
-} from "controllers/apiController";
-import { pingAll, pingOne } from "controllers/pingController";
 import {
   createApiUrl,
   deleteApiUrl,
@@ -20,6 +8,17 @@ import {
   pingAllApisUrl,
   pingOneApiUrl,
 } from "constants/urls";
+import {
+  createApi,
+  deleteApi,
+  getAllApis,
+  getApi,
+  showStats,
+  updateApi,
+} from "controllers/apiController";
+import { pingAll, pingOne } from "controllers/pingController";
+import { Response, Router } from "express";
+import rateLimiter from "express-rate-limit";
 
 const router = Router();
 
@@ -29,8 +28,7 @@ function createRateLimiter(minutes: number, maxRequests: number) {
     max: maxRequests,
     handler: (_, res: Response) => {
       res.status(429).json({
-        msg: `Too many requests from this IP, 
-        please try again after ${minutes} minutes`,
+        msg: `Too many requests from this IP, please try again after ${minutes} minutes`,
       });
     },
   });

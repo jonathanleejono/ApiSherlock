@@ -2,3 +2,8 @@
 .env
 package-lock.json
 src/types/express/index.d.ts
+webpack.config.js
+output/
+dist/
+src/controllers/queueController.ts
+src/utils/validateKeysValues.ts

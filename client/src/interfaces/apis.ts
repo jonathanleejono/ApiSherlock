@@ -1,6 +1,7 @@
 import {
   ApiHostOptions,
   ApiMonitoringOptions,
+  ApiSortOptions,
   ApiStatusOptions,
 } from "enum/apis";
 
@@ -13,7 +14,7 @@ interface ApiRequestData {
 interface ApiDataResponse extends ApiRequestData {
   _id: string;
   status: ApiStatusOptions;
-  lastPinged: string | "Never pinged";
+  lastPinged: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -42,11 +43,12 @@ interface AllApisStatsResponse {
   monthlyApis: MonthlyApis[];
 }
 
-interface QueryParams {
-  sort: string;
-  page: number;
-  monitoring: ApiMonitoringOptions | "" | "All";
+interface ApiQueryParams {
+  sort: ApiSortOptions | "";
   status: ApiStatusOptions | "" | "All";
+  monitoring: ApiMonitoringOptions | "" | "All";
+  host: ApiHostOptions | "" | "All";
+  page: number;
   search: string;
 }
 
@@ -58,5 +60,5 @@ export {
   AllApisStatsResponse,
   ApiDefaultStats,
   MonthlyApis,
-  QueryParams,
+  ApiQueryParams,
 };

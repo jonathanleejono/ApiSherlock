@@ -47,8 +47,9 @@ async function renderApp({
 }
 
 describe("testing main api pages", () => {
-  //login as a user first
-  beforeAll(async () => {
+  //errors may occur if app is rendered in a beforeAll to login,
+  //so a login test is used instead
+  test("login as a user first", async () => {
     // register route is the same as login route
     const { authUser } = await renderApp({ route: registerRoute });
 
@@ -221,6 +222,7 @@ describe("testing main api pages", () => {
 
     const statusHealthyOption = screen.getByRole("option", {
       name: /\bhealthy\b/i,
+      //eslint-disable-next-line
     }) as any;
 
     await userEvent.selectOptions(statusFilterOptions, statusHealthyOption);
@@ -244,6 +246,7 @@ describe("testing main api pages", () => {
 
 let consoleErrorFn: jest.SpyInstance<
   void,
+  //eslint-disable-next-line
   [message?: any, ...optionalParams: any[]]
 >;
 

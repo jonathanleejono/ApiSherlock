@@ -2,14 +2,16 @@ import express from "express";
 import authenticateUser from "middleware/authenticateUser";
 
 import {
-  resetUsersCollection,
   resetApiCollection,
-  seedUsersCollection,
+  resetMonitorCollection,
+  resetUsersCollection,
   seedApiCollection,
+  seedUsersCollection,
 } from "db/seedDb";
 
 import {
   resetMockApisDbUrl,
+  resetMockMonitorDbUrl,
   resetMockUsersDbUrl,
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
@@ -19,6 +21,7 @@ const router = express.Router();
 
 router.route(`${resetMockUsersDbUrl}`).delete(resetUsersCollection);
 router.route(`${resetMockApisDbUrl}`).delete(resetApiCollection);
+router.route(`${resetMockMonitorDbUrl}`).delete(resetMonitorCollection);
 router.route(`${seedMockUsersDbUrl}`).post(seedUsersCollection);
 
 // the authenticateUser is needed to grab current user id, which

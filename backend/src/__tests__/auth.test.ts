@@ -1,20 +1,21 @@
-import mongoose from "mongoose";
-import request from "supertest";
-import { mockUser } from "mocks/mockUser";
-import app from "server";
+import { cookieName } from "constants/cookies";
 import {
   baseAuthUrl,
   baseSeedDbUrl,
   loginUserUrl,
   registerUserUrl,
-  resetMockUsersDbUrl,
   seedMockUsersDbUrl,
   updateUserUrl,
 } from "constants/urls";
-import { cookieName } from "constants/cookies";
+import { redisConfiguration } from "controllers/queueController";
+import { mockUser } from "mocks/mockUser";
+import UserCollection from "models/UserCollection";
 import { User } from "models/UserDocument";
+import mongoose from "mongoose";
+import app from "server";
+import request from "supertest";
 
-const user: User = {
+const user: Partial<User> = {
   name: "jane",
   email: "janedoe2@gmail.com",
   password: "password",
@@ -25,13 +26,22 @@ const { name, email, password, timezoneGMT } = user;
 
 describe("testing users controller", () => {
   beforeAll(async () => {
-    await request(app).delete(`${baseSeedDbUrl}${resetMockUsersDbUrl}`);
+    const databaseName = "test-users";
+    const url = `mongodb://127.0.0.1/${databaseName}`;
+    try {
+      await mongoose.connect(url);
+    } catch (error) {
+      console.log("Error connecting to MongoDB/Mongoose: ", error);
+    }
+    await UserCollection.collection.deleteMany({});
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
   });
 
   afterAll(async () => {
+    //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
+    await redisConfiguration.connection.quit();
   });
 
   describe("given a user's name, email, and password", () => {

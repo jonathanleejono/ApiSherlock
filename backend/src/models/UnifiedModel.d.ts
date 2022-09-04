@@ -1,7 +1,8 @@
-import { ObjectId } from "mongoose";
+import { Schema } from "mongoose";
 
 export interface UnifiedModel {
-  readonly _id: ObjectId; // make sure this is Schema.Types.ObjectId
+  _id: Schema.Types.ObjectId;
   readonly createdAt?: string;
   readonly updatedAt?: string;
+  readonly __v?: number;
 }

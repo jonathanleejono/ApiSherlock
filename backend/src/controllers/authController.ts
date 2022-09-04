@@ -5,21 +5,25 @@ import {
   cookieSameSiteSetting,
   cookieSecureSetting,
 } from "constants/cookies";
+import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import {
   validLoginKeys,
   validRegisterKeys,
-  validUpdateKeys,
-} from "constants/keys";
-import { timezoneOffsets } from "constants/timezoneOffsets";
+  validUpdateUserKeys,
+} from "constants/options/user";
 import dotenv from "dotenv";
 import { badRequestError, unAuthenticatedError } from "errors/index";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { JwtPayload } from "interfaces/jwtPayload";
 import jwt from "jsonwebtoken";
-import { validateInputKeys } from "utils/validateKeys";
-import validateUserExists from "utils/validateUserExists";
 import UserCollection from "models/UserCollection";
+import {
+  emptyValuesExist,
+  validKeys,
+  validValues,
+} from "utils/validateKeysValues";
+import validateUserExists from "utils/validateUserExists";
 
 dotenv.config();
 
@@ -27,27 +31,29 @@ const { JWT_ACCESS_TOKEN_LIFETIME, JWT_REFRESH_TOKEN_LIFETIME } = process.env;
 
 const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    validateInputKeys(
-      req,
-      res,
-      `Invalid register, can only use: `,
-      validRegisterKeys
-    );
-
-    const { name, email, password, timezoneGMT } = req.body;
-
-    if (!name || !email || !password) {
-      badRequestError(res, "Please provide all values");
-      return;
-    }
-
-    if (!timezoneOffsets.includes(timezoneGMT)) {
-      badRequestError(
+    if (
+      !validKeys(
         res,
-        `Invalid timezone, please select one of: ${timezoneOffsets}`
-      );
+        Object.keys(req.body),
+        `Invalid register, can only use: `,
+        validRegisterKeys
+      )
+    )
       return;
-    }
+
+    if (emptyValuesExist(res, Object.values(req.body))) return;
+
+    const { email, timezoneGMT } = req.body;
+
+    if (
+      !validValues(
+        res,
+        timezoneGMT,
+        `Invalid timezone, please select one of: `,
+        timezoneOffsets
+      )
+    )
+      return;
 
     const emailAlreadyExists = await UserCollection.findOne({ email });
 
@@ -55,13 +61,11 @@ const register = async (req: Request, res: Response): Promise<void> => {
       badRequestError(res, "Please use a different email");
       return;
     }
+    const user = new UserCollection(req.body);
 
-    const user = await UserCollection.create({
-      name,
-      email,
-      password,
-      timezoneGMT,
-    });
+    await user.validate();
+
+    await UserCollection.create(user);
 
     const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME as string);
 
@@ -85,7 +89,6 @@ const register = async (req: Request, res: Response): Promise<void> => {
         accessToken,
       });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -93,23 +96,23 @@ const register = async (req: Request, res: Response): Promise<void> => {
 
 const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    validateInputKeys(
-      req,
-      res,
-      `Invalid login, can only use: `,
-      validLoginKeys
-    );
+    if (
+      !validKeys(
+        res,
+        Object.keys(req.body),
+        `Invalid login, can only use: `,
+        validLoginKeys
+      )
+    )
+      return;
+
+    if (emptyValuesExist(res, Object.values(req.body))) return;
 
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      badRequestError(res, "Please provide all values");
-      return;
-    }
-
     const user = await UserCollection.findOne({ email }).select("+password");
 
-    if (!user || !user.password) {
+    if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
       return;
     }
@@ -120,7 +123,7 @@ const login = async (req: Request, res: Response): Promise<void> => {
     );
 
     if (!isPasswordCorrect) {
-      unAuthenticatedError(res, "Invalid Credentials");
+      unAuthenticatedError(res, "Incorrect Credentials");
       return;
     }
 
@@ -149,7 +152,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
         accessToken,
       });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -164,29 +166,35 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    validateInputKeys(
-      req,
-      res,
-      `Invalid update, can only update: `,
-      validUpdateKeys
-    );
-
-    const { email, name, timezoneGMT } = req.body;
-
-    if (!email || !name || !timezoneGMT) {
-      badRequestError(res, "Please provide all values");
-      return;
-    }
-
-    if (!timezoneOffsets.includes(timezoneGMT)) {
-      badRequestError(
+    if (
+      !validKeys(
         res,
-        `Invalid timezone, please select one of: ${timezoneOffsets}`
-      );
+        Object.keys(req.body),
+        `Invalid update, can only update: `,
+        validUpdateUserKeys
+      )
+    )
       return;
-    }
 
-    if (user.email !== email) {
+    // not all validUpdateUserKeys need to be present,
+    // but if a key is present but the value is empty,
+    // an error is returned
+    if (emptyValuesExist(res, Object.values(req.body))) return;
+
+    const { email, timezoneGMT } = req.body;
+
+    if (
+      timezoneGMT &&
+      !validValues(
+        res,
+        timezoneGMT,
+        `Invalid timezone, please select one of: `,
+        timezoneOffsets
+      )
+    )
+      return;
+
+    if (email && user.email !== email) {
       const emailAlreadyExists = await UserCollection.findOne({ email });
       if (emailAlreadyExists) {
         badRequestError(res, "Please use a different email");
@@ -194,9 +202,9 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    user.email = email;
-    user.name = name;
-    user.timezoneGMT = timezoneGMT;
+    Object.assign(user, req.body);
+
+    await user.validate();
 
     await user.save();
 
@@ -222,7 +230,6 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
         accessToken,
       });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }
@@ -268,7 +275,6 @@ const refreshAccessToken = async (
 
     res.status(StatusCodes.OK).json({ accessToken: newAccessToken });
   } catch (error) {
-    console.log(error);
     badRequestError(res, error);
     return;
   }

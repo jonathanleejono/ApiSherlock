@@ -3,46 +3,42 @@ import {
   ApiMonitoringOptions,
   ApiStatusOptions,
 } from "enum/apis";
+import { Api } from "models/ApiDocument";
 
-export const mockApis = [
+export const mockApis: Omit<Api, "_id" | "createdBy">[] = [
   {
     url: "https://battery-cellify.herokuapp.com/ping",
-    host: ApiHostOptions.Heroku,
-    status: ApiStatusOptions.Pending,
+    host: ApiHostOptions.HEROKU,
+    status: ApiStatusOptions.PENDING,
     lastPinged: "Never pinged",
     monitoring: ApiMonitoringOptions.ON,
-    __v: 0,
   },
   {
     url: "https://www.hello-herokuapp2.com/ping",
-    host: ApiHostOptions.Heroku,
-    status: ApiStatusOptions.Pending,
+    host: ApiHostOptions.HEROKU,
+    status: ApiStatusOptions.PENDING,
     lastPinged: "Never pinged",
     monitoring: ApiMonitoringOptions.OFF,
-    __v: 0,
   },
   {
-    url: "https://www.not1arealwebsitehopefully5.com/ping",
-    host: ApiHostOptions.Heroku,
-    status: ApiStatusOptions.Pending,
+    url: "https://www.not1arealwebsitehopefully1.com/ping",
+    host: ApiHostOptions.HEROKU,
+    status: ApiStatusOptions.PENDING,
     lastPinged: "Never pinged",
     monitoring: ApiMonitoringOptions.ON,
-    __v: 0,
   },
   {
     url: "https://www.not1arealwebsitehopefully2.com/ping",
     host: ApiHostOptions.AWS,
-    status: ApiStatusOptions.Pending,
+    status: ApiStatusOptions.PENDING,
     lastPinged: "Never pinged",
     monitoring: ApiMonitoringOptions.ON,
-    __v: 0,
   },
   {
     url: "https://www.not1arealwebsitehopefully3.com/ping",
     host: ApiHostOptions.AWS,
-    status: ApiStatusOptions.Pending,
+    status: ApiStatusOptions.PENDING,
     lastPinged: "Never pinged",
     monitoring: ApiMonitoringOptions.ON,
-    __v: 0,
   },
 ];

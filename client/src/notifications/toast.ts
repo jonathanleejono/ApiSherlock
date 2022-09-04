@@ -92,7 +92,9 @@ const handleToastErrors = (
         toast.error(`${defaultErrorMsg}`);
       }
     }
+    return { data: "error" };
   }
+  return { data: "success", payload: resultAction.payload };
 };
 
 export { showToast, handleToast, handleToastErrors };

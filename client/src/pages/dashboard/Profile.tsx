@@ -5,7 +5,7 @@ import {
   updateUserErrorMsg,
   updateUserSuccessMsg,
 } from "constants/messages";
-import { timezoneOffsets } from "constants/timezoneOffsets";
+import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import { setToken } from "constants/token";
 import { clearStore, updateUser } from "features/user/userThunk";
 import { handleToast } from "notifications/toast";

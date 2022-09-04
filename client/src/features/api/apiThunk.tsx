@@ -3,9 +3,9 @@ import {
   apiSliceName,
   createApiActionType,
   deleteApiActionType,
-  editApiActionType,
+  updateApiActionType,
 } from "constants/actionTypes";
-import { createApiUrl, deleteApiUrl, editApiUrl } from "constants/urls";
+import { createApiUrl, deleteApiUrl, editApiUrl } from "constants/apiUrls";
 import { hideLoading } from "features/allApis/allApisSlice";
 import { getAllApis } from "features/allApis/allApisThunk";
 import { resetApiState } from "features/api/apiSlice";
@@ -61,7 +61,7 @@ const editApi = createAsyncThunk<
   {
     rejectValue: Partial<ValidationErrors>;
   }
->(`${apiSliceName}${editApiActionType}`, async ({ _id, api }, thunkAPI) => {
+>(`${apiSliceName}${updateApiActionType}`, async ({ _id, api }, thunkAPI) => {
   try {
     const resp = await customFetch.patch(`${editApiUrl}/${_id}`, api);
     thunkAPI.dispatch(resetApiState());

@@ -1,13 +1,15 @@
-import mongoose from "mongoose";
-import { UnifiedModel } from "UnifiedModel";
+import mongoose, { Schema } from "mongoose";
+import { UnifiedModel } from "models/UnifiedModel";
+import { ApiStatusOptions } from "enum";
+import { ApiHostOptions } from "enum/apis";
 
 export interface Api extends UnifiedModel {
   url: string;
-  host: string;
-  status: string;
+  host: ApiHostOptions;
+  monitoring: ApiMonitoringOptions;
+  status: ApiStatusOptions;
   lastPinged: string;
-  monitoring: string;
-  createdBy: mongoose.Types.ObjectId;
+  createdBy: Schema.Types.ObjectId;
 }
 
 export default interface ApiDocument extends Api, mongoose.Document {}

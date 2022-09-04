@@ -34,6 +34,23 @@ const pingAllApisErrorMsg = `Error pinging API, ${pleaseTryAgainLaterMsg}`;
 
 const pleaseFillOutAllValues = `Please provide all values`;
 
+const createMonitorSuccessMsg = `Added monitor!`;
+const createMonitorErrorMsg = `Error adding monitor, ${pleaseTryAgainLaterMsg}`;
+
+const getMonitorErrorMsg = `Error getting monitoring settings, ${pleaseTryAgainLaterMsg}`;
+
+const editMonitorSuccessMsg = `Updated monitor!`;
+const editMonitorErrorMsg = `Error updating monitor, ${pleaseTryAgainLaterMsg}`;
+
+const deleteMonitorSuccessMsg = `Turned off monitoring!`;
+const deleteMonitorErrorMsg = `Error turning off monitor, ${pleaseTryAgainLaterMsg}`;
+
+const startQueueSuccessMsg = `Started monitoring!`;
+const startQueueErrorMsg = `Error starting monitoring, ${pleaseTryAgainLaterMsg}`;
+
+const removeQueueSuccessMsg = `Monitoring stopped`;
+const removeQueueErrorMsg = `Error stopping monitoring, ${pleaseTryAgainLaterMsg}`;
+
 export {
   unauthorizedMsg,
   authUserSuccessMsg,
@@ -54,4 +71,15 @@ export {
   pingAllApisErrorMsg,
   pleaseFillOutAllValues,
   refreshTokenErrorMsg,
+  createMonitorSuccessMsg,
+  createMonitorErrorMsg,
+  getMonitorErrorMsg,
+  editMonitorSuccessMsg,
+  editMonitorErrorMsg,
+  deleteMonitorSuccessMsg,
+  deleteMonitorErrorMsg,
+  startQueueSuccessMsg,
+  startQueueErrorMsg,
+  removeQueueSuccessMsg,
+  removeQueueErrorMsg,
 };

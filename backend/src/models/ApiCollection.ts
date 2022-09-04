@@ -1,5 +1,15 @@
-import mongoose, { Model, Schema } from "mongoose";
+import {
+  validApiHostOptions,
+  validApiMonitoringOptions,
+  validApiStatusOptions,
+} from "constants/options/apis";
+import {
+  ApiHostOptions,
+  ApiMonitoringOptions,
+  ApiStatusOptions,
+} from "enum/apis";
 import ApiDocument from "models/ApiDocument";
+import mongoose, { Model, Schema } from "mongoose";
 
 const ApiSchema: Schema<ApiDocument> = new mongoose.Schema(
   {
@@ -9,13 +19,13 @@ const ApiSchema: Schema<ApiDocument> = new mongoose.Schema(
     },
     host: {
       type: String,
-      enum: ["AWS", "GCP", "Azure", "Heroku", "DigitalOcean", "Other"],
-      default: "Other",
+      enum: validApiHostOptions,
+      default: ApiHostOptions.OTHER,
     },
     status: {
       type: String,
-      enum: ["healthy", "unhealthy", "pending"],
-      default: "pending",
+      enum: validApiStatusOptions,
+      default: ApiStatusOptions.PENDING,
     },
     lastPinged: {
       type: String,
@@ -24,8 +34,8 @@ const ApiSchema: Schema<ApiDocument> = new mongoose.Schema(
     },
     monitoring: {
       type: String,
-      enum: ["on", "off"],
-      default: "off",
+      enum: validApiMonitoringOptions,
+      default: ApiMonitoringOptions.OFF,
     },
     createdBy: {
       type: Schema.Types.ObjectId,

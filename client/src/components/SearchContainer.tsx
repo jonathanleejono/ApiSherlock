@@ -1,18 +1,19 @@
+import Wrapper from "assets/wrappers/SearchContainer";
+import {
+  validApiHostOptions,
+  validApiMonitoringOptions,
+  validApiSortOptions,
+  validApiStatusOptions,
+} from "constants/options/apis";
 import { clearFilters, handleChange } from "features/allApis/allApisSlice";
+import { getAllApis } from "features/allApis/allApisThunk";
 import { useAppDispatch, useAppSelector } from "state/hooks";
 import { FormRow, FormRowSelect } from ".";
-import Wrapper from "assets/wrappers/SearchContainer";
-import { getAllApis } from "features/allApis/allApisThunk";
-import {
-  apiMonitoringOptions,
-  apiSortOptions,
-  apiStatusOptions,
-} from "constants/options";
 
 const SearchContainer: React.FC = () => {
   const dispatch = useAppDispatch();
 
-  const { isLoading, search, status, sort, monitoring } = useAppSelector(
+  const { isLoading, search, status, sort, monitoring, host } = useAppSelector(
     (store) => store.allApis
   );
 
@@ -51,7 +52,7 @@ const SearchContainer: React.FC = () => {
             name="status"
             value={status}
             handleChange={handleSearch}
-            list={["All", ...apiStatusOptions]}
+            list={["All", ...validApiStatusOptions]}
           />
           {/* search by monitoring */}
           <FormRowSelect
@@ -59,15 +60,23 @@ const SearchContainer: React.FC = () => {
             name="monitoring"
             value={monitoring}
             handleChange={handleSearch}
-            list={["All", ...apiMonitoringOptions]}
+            list={["All", ...validApiMonitoringOptions]}
+          />
+          {/* search by host */}
+          <FormRowSelect
+            labelText="host"
+            name="host"
+            value={host}
+            handleChange={handleSearch}
+            list={["All", ...validApiHostOptions]}
           />
           {/* sort */}
           <FormRowSelect
-            labelText="sort"
+            labelText="sort (by URL)"
             name="sort"
             value={sort}
             handleChange={handleSearch}
-            list={apiSortOptions}
+            list={validApiSortOptions}
           />
           <button
             type="reset"
