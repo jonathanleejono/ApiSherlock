@@ -16,8 +16,7 @@ function createRateLimiter(minutes, maxRequests) {
         max: maxRequests,
         handler: (_, res) => {
             res.status(429).json({
-                msg: `Too many requests from this IP, 
-        please try again after ${minutes} minutes`,
+                msg: `Too many requests from this IP, please try again after ${minutes} minutes`,
             });
         },
     });

@@ -102,6 +102,7 @@ const startQueue = async (req, res) => {
         const myQueue = await (0, queue_1.getQueue)();
         const repeatOptions = await (0, queue_1.getRepeatOptions)();
         const queueScheduler = new bullmq_1.QueueScheduler(queueName, exports.redisConfiguration);
+        console.log(queueScheduler);
         async function addJobToQueue(jobDetails) {
             await myQueue.add(jobName, { jobDetails }, { repeat: repeatOptions });
         }
@@ -150,14 +151,12 @@ const startQueue = async (req, res) => {
                 console.log(`Job ${job.id} has completed!`);
             }
         });
-        worker.on("failed", (job, err) => {
+        worker.on("failed", async (job, err) => {
             if (!TEST_ENV) {
                 console.error(`Job ${job.id} has failed with ${err.message}`);
             }
         });
-        await worker.close();
-        await queueScheduler.close();
-        await myQueue.close();
+        console.log("3: ", exports.redisConfiguration.connection.status);
         res.status(http_status_codes_1.StatusCodes.OK).json({ msg: "Started monitoring in queue!" });
     }
     catch (error) {

@@ -27,10 +27,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
-const queue_1 = require("constants/queue");
+const monitor_1 = require("constants/options/monitor");
 const urls_1 = require("constants/urls");
 const queueController_1 = require("controllers/queueController");
-const monitor_1 = require("enum/monitor");
+const monitor_2 = require("enum/monitor");
 const mockMonitor_1 = require("mocks/mockMonitor");
 const mockUser_1 = require("mocks/mockUser");
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
@@ -89,11 +89,12 @@ describe("testing monitor controller", () => {
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
-        await queueController_1.redisConfiguration.connection.quit();
+        queueController_1.redisConfiguration.connection.disconnect();
+        console.log("4: ", queueController_1.redisConfiguration.connection.status);
     });
     describe("testing monitor", () => {
         it("should not create monitor with setting off", async () => {
-            mockMonitor_1.mockMonitor.monitorSetting = monitor_1.MonitorSettingOptions.OFF;
+            mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.OFF;
             const response = await agent
                 .post(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
@@ -101,7 +102,7 @@ describe("testing monitor controller", () => {
             expect(response.statusCode).toBe(400);
         });
         it("should create monitor with setting ON", async () => {
-            mockMonitor_1.mockMonitor.monitorSetting = monitor_1.MonitorSettingOptions.ON;
+            mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.ON;
             const response = await agent
                 .post(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
@@ -120,7 +121,7 @@ describe("testing monitor controller", () => {
             expect(response.statusCode).toBe(400);
         });
         it("should update monitor", async () => {
-            mockMonitor_1.mockMonitor.monitorSetting = monitor_1.MonitorSettingOptions.OFF;
+            mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.OFF;
             const response = await agent
                 .patch(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
@@ -133,35 +134,34 @@ describe("testing monitor controller", () => {
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining(messages_1.deleteMonitorSuccessMsg));
         });
-        it("should start queue", async () => {
-            mockMonitor_1.mockMonitor.monitorSetting = monitor_1.MonitorSettingOptions.ON;
+        it("should ping monitored apis in queue", async () => {
+            mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.ON;
+            mockMonitor_1.mockMonitor.scheduleType = monitor_2.MonitorScheduleTypeOptions.DATE;
+            mockMonitor_1.mockMonitor.dateDayOfWeek =
+                monitor_1.validMonitorDateDayOfWeekOptions[new Date().getDay()];
+            if (new Date().getHours() > 12) {
+                mockMonitor_1.mockMonitor.dateHour = new Date().getHours() - 12;
+                mockMonitor_1.mockMonitor.dateAMOrPM = monitor_2.MonitorDateAMOrPMOptions.PM;
+            }
+            else {
+                mockMonitor_1.mockMonitor.dateHour = new Date().getHours();
+                mockMonitor_1.mockMonitor.dateAMOrPM = monitor_2.MonitorDateAMOrPMOptions.AM;
+            }
+            mockMonitor_1.mockMonitor.dateMinute = new Date().getMinutes();
             const createMonitorResp = await agent
                 .post(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             expect(createMonitorResp.statusCode).toBe(201);
             const startQueueResp = await agent.post(`${urls_1.baseQueueUrl}${urls_1.handleQueueUrl}`);
             expect(startQueueResp.statusCode).toBe(200);
-            const myQueue = await (0, queue_1.getQueue)();
-            const repeatableJobs = await myQueue.getRepeatableJobs();
-            expect(repeatableJobs[0].name).toContain(`${queue_1.jobBaseName}-${mockUser_1.mockUser.email}`);
-            expect(repeatableJobs[0].cron).toEqual((1000 * 60 * 60).toString());
-            await queueController_1.redisConfiguration.connection.quit();
-        });
-        it("should remove monitor and jobs from queue", async () => {
-            mockMonitor_1.mockMonitor.monitorSetting = monitor_1.MonitorSettingOptions.OFF;
-            await agent
-                .patch(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
-                .send(mockMonitor_1.mockMonitor);
-            const deleteMonitorResp = await agent
-                .delete(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
-                .send(mockMonitor_1.mockMonitor);
-            expect(deleteMonitorResp.statusCode).toBe(200);
-            await queueController_1.redisConfiguration.connection.connect();
-            const removeQueueResp = await agent.delete(`${urls_1.baseQueueUrl}${urls_1.handleQueueUrl}`);
-            expect(removeQueueResp.statusCode).toBe(200);
-            const myQueue = await (0, queue_1.getQueue)();
-            const repeatableJobs = await myQueue.getRepeatableJobs();
-            expect(repeatableJobs).toEqual([]);
+            await new Promise((res) => setTimeout(res, 3000));
+            const getAllApisResp = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`);
+            const currentDateTime = new Date();
+            const formattedDateTime = new Intl.DateTimeFormat("en-US", {
+                dateStyle: "medium",
+            }).format(currentDateTime);
+            expect(getAllApisResp.body.allApis[0].lastPinged).toContain(`${formattedDateTime},`);
+            expect(getAllApisResp.body.allApis[0].lastPinged).toContain(`(GMT ${mockUser_1.mockUser.timezoneGMT})`);
         });
     });
 });

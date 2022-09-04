@@ -1,10 +1,18 @@
 import { deleteMonitorSuccessMsg } from "constants/messages";
-import { getQueue, jobBaseName } from "constants/queue";
+import { validMonitorDateDayOfWeekOptions } from "constants/options/monitor";
 import {
+  getQueue,
+  getQueueScheduler,
+  getQueueWorker,
+  jobBaseName,
+} from "constants/queue";
+import {
+  baseApiUrl,
   baseAuthUrl,
   baseMonitorUrl,
   baseQueueUrl,
   baseSeedDbUrl,
+  getAllApisUrl,
   handleMonitorUrl,
   handleQueueUrl,
   loginUserUrl,
@@ -12,7 +20,11 @@ import {
   seedMockUsersDbUrl,
 } from "constants/urls";
 import { redisConfiguration } from "controllers/queueController";
-import { MonitorSettingOptions } from "enum/monitor";
+import {
+  MonitorDateAMOrPMOptions,
+  MonitorScheduleTypeOptions,
+  MonitorSettingOptions,
+} from "enum/monitor";
 import { mockMonitor } from "mocks/mockMonitor";
 import { mockUser } from "mocks/mockUser";
 import ApiCollection from "models/ApiCollection";
@@ -84,7 +96,21 @@ describe("testing monitor controller", () => {
     //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
-    await redisConfiguration.connection.quit();
+
+    //this all has to be here in this exact order
+    //this is to close connections to prevent memory leaks
+    const queueScheduler = await getQueueScheduler();
+    await queueScheduler.close();
+    const myQueue = await getQueue();
+    await myQueue.obliterate();
+    await myQueue.close();
+    const worker = await getQueueWorker();
+    await worker.close();
+    await worker.disconnect();
+
+    //this needs to be here to wait for redis connection to properly close
+    await new Promise((res) => setTimeout(res, 3000));
+    console.log("Redis connection: ", redisConfiguration.connection.status);
   });
 
   describe("testing monitor", () => {
@@ -187,13 +213,88 @@ describe("testing monitor controller", () => {
 
       expect(repeatableJobs[0].cron).toEqual((1000 * 60 * 60).toString());
 
+      //this all has to be here in this exact order
+      const queueScheduler = await getQueueScheduler();
+      await queueScheduler.close();
+      await myQueue.obliterate();
+      await myQueue.close();
+      const worker = await getQueueWorker();
+      await worker.close();
+      await worker.disconnect();
+
+      console.log(
+        "Start Queue Redis connection: ",
+        redisConfiguration.connection.status
+      );
+    });
+
+    it("should ping monitored apis in queue", async (): Promise<void> => {
+      const currentHour = new Date().getHours();
+
+      // first, update monitor to current time (with new settings above)
+      const updateMonitorResp = await agent
+        .patch(`${baseMonitorUrl}${handleMonitorUrl}`)
+        .send({
+          scheduleType: MonitorScheduleTypeOptions.DATE,
+          dateDayOfWeek: validMonitorDateDayOfWeekOptions[new Date().getDay()],
+          dateHour: currentHour > 12 ? currentHour - 12 : currentHour,
+          dateAMOrPM:
+            currentHour > 12
+              ? MonitorDateAMOrPMOptions.PM
+              : MonitorDateAMOrPMOptions.AM,
+          dateMinute: new Date().getMinutes(),
+        });
+
+      expect(updateMonitorResp.statusCode).toBe(200);
+
       //place this exactly here to prevent memory leaks
-      await redisConfiguration.connection.quit();
+      await redisConfiguration.connection.connect();
+
+      const startQueueResp = await agent.post(
+        `${baseQueueUrl}${handleQueueUrl}`
+      );
+
+      expect(startQueueResp.statusCode).toBe(200);
+
+      // give 3 seconds (3000 milliseconds) for database to update
+      await new Promise((res) => setTimeout(res, 3000));
+
+      const getAllApisResp = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
+
+      const currentDateTime = new Date();
+
+      const formattedDateTime = new Intl.DateTimeFormat("en-US", {
+        dateStyle: "medium",
+      }).format(currentDateTime);
+
+      expect(getAllApisResp.body.allApis[0].lastPinged).toContain(
+        `${formattedDateTime},`
+      );
+
+      expect(getAllApisResp.body.allApis[0].lastPinged).toContain(
+        `(GMT ${mockUser.timezoneGMT})`
+      );
+
+      //this all has to be here in this exact order
+      const queueScheduler = await getQueueScheduler();
+      await queueScheduler.close();
+      const myQueue = await getQueue();
+      await myQueue.obliterate();
+      await myQueue.close();
+      const worker = await getQueueWorker();
+      await worker.close();
+      await worker.disconnect();
+
+      console.log(
+        "Ping Queue Test Redis connection: ",
+        redisConfiguration.connection.status
+      );
     });
 
     it("should remove monitor and jobs from queue", async (): Promise<void> => {
       mockMonitor.monitorSetting = MonitorSettingOptions.OFF;
 
+      //have to turn off monitor first
       await agent
         .patch(`${baseMonitorUrl}${handleMonitorUrl}`)
         .send(mockMonitor);
@@ -223,6 +324,13 @@ describe("testing monitor controller", () => {
 
       //at the end of all tests, the redis connection
       //is closed to prevent memory leaks
+      console.log(
+        "Remove Queue Redis connection: ",
+        redisConfiguration.connection.status
+        //this status is going to say "ready",
+        //but gets closed in the "afterAll" code
+        //optionally you can close the connection here
+      );
     });
   });
 });

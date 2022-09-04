@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refreshAccessToken = exports.updateUser = exports.login = exports.register = void 0;
 const cookies_1 = require("constants/cookies");
+const timezoneOffsets_1 = require("constants/options/timezoneOffsets");
 const user_1 = require("constants/options/user");
-const timezoneOffsets_1 = require("constants/timezoneOffsets");
 const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");

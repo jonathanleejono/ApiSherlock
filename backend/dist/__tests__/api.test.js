@@ -28,7 +28,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
-const queueController_1 = require("controllers/queueController");
 const apis_1 = require("enum/apis");
 const mockApi_1 = require("mocks/mockApi");
 const mockApis_1 = require("mocks/mockApis");
@@ -91,7 +90,6 @@ describe("testing api controller", () => {
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
-        await queueController_1.redisConfiguration.connection.quit();
     });
     describe("testing apis", () => {
         it("should get all APIs", async () => {

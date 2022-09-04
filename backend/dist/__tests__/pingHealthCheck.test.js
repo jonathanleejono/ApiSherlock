@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
-const queueController_1 = require("controllers/queueController");
 const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
 const supertest_1 = __importDefault(require("supertest"));
@@ -23,7 +22,6 @@ describe("testing if supertest and jest works", () => {
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
-        await queueController_1.redisConfiguration.connection.quit();
     });
     it("should ping server", async () => {
         const res = await (0, supertest_1.default)(server_1.default).get(urls_1.pingHealthCheckUrl);

@@ -2,10 +2,13 @@ import axios from "axios";
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import {
   getQueue,
+  getQueueWorker,
   getRepeatOptions,
   jobBaseName,
   queueBaseName,
   setQueue,
+  setQueueScheduler,
+  setQueueWorker,
   setRepeatOptions,
 } from "constants/queue";
 import dotenv from "dotenv";
@@ -41,6 +44,7 @@ export const redisConfiguration = {
     password: PROD_ENV ? REDIS_PASSWORD : undefined,
     maxRetriesPerRequest: null,
   }),
+  sharedConnection: true,
 };
 
 export const startQueue = async (
@@ -144,7 +148,7 @@ export const startQueue = async (
 
     const repeatOptions = await getRepeatOptions();
 
-    const queueScheduler = new QueueScheduler(queueName, redisConfiguration);
+    setQueueScheduler(new QueueScheduler(queueName, redisConfiguration));
 
     // jobDetails is just a description, but can also hold a value
     // in this case, instead of individually storing each url as a separate job,
@@ -207,11 +211,11 @@ export const startQueue = async (
       );
     }
 
-    const worker = new Worker(
-      queueName,
-      pingAllMonitoredApis,
-      redisConfiguration
+    setQueueWorker(
+      new Worker(queueName, pingAllMonitoredApis, redisConfiguration)
     );
+
+    const worker = await getQueueWorker();
 
     worker.on("completed", async (job) => {
       if (!TEST_ENV) {
@@ -219,17 +223,11 @@ export const startQueue = async (
       }
     });
 
-    worker.on("failed", (job, err) => {
+    worker.on("failed", async (job, err) => {
       if (!TEST_ENV) {
         console.error(`Job ${job.id} has failed with ${err.message}`);
       }
     });
-
-    await worker.close();
-
-    await queueScheduler.close();
-
-    await myQueue.close();
 
     res.status(StatusCodes.OK).json({ msg: "Started monitoring in queue!" });
   } catch (error) {

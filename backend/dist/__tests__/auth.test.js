@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const cookies_1 = require("constants/cookies");
 const urls_1 = require("constants/urls");
-const queueController_1 = require("controllers/queueController");
 const mockUser_1 = require("mocks/mockUser");
 const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const mongoose_1 = __importDefault(require("mongoose"));
@@ -34,7 +33,6 @@ describe("testing users controller", () => {
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
-        await queueController_1.redisConfiguration.connection.quit();
     });
     describe("given a user's name, email, and password", () => {
         it("should create a user", async () => {

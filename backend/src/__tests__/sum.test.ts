@@ -3,7 +3,7 @@ import sum from "test/sum";
 
 describe("adding numbers, and testing if importing functions/modules work", () => {
   afterAll(async () => {
-    //use this is to prevent memory leaks
+    //use this to prevent memory leaks
     await redisConfiguration.connection.quit();
   });
   it("should equal to result", () => {

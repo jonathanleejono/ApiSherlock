@@ -13,7 +13,7 @@ and “getTime” would tell the time at the time the variable gets set,
 whereas Date.now() is called right when the variable is used
 */
 
-export function getDateWithUTCOffset(offset: number, showTime = true) {
+export function getDateWithUTCOffset(offset: number, showTime = true): string {
   try {
     const currentDateTime =
       Date.now() +
@@ -28,11 +28,11 @@ export function getDateWithUTCOffset(offset: number, showTime = true) {
     return `${formattedDateTime} (GMT ${offset})`;
   } catch (error) {
     console.error("Error getting date: ", error);
-    return;
+    return "Error getting date";
   }
 }
 
-export function formatCurrentMonthYear(year: number, month: number) {
+export function formatCurrentMonthYear(year: number, month: number): string {
   const newDate = new Date(Date.UTC(year, month));
 
   const date = new Intl.DateTimeFormat("en-US", {

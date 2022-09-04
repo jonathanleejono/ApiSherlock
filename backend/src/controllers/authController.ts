@@ -5,12 +5,12 @@ import {
   cookieSameSiteSetting,
   cookieSecureSetting,
 } from "constants/cookies";
+import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import {
   validLoginKeys,
   validRegisterKeys,
   validUpdateUserKeys,
 } from "constants/options/user";
-import { timezoneOffsets } from "constants/timezoneOffsets";
 import dotenv from "dotenv";
 import { badRequestError, unAuthenticatedError } from "errors/index";
 import { Request, Response } from "express";
