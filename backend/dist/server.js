@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = require("constants/messages");
 const urls_1 = require("constants/urls");
-const queueController_1 = require("controllers/queueController");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cors_1 = __importDefault(require("cors"));
 const connect_1 = __importDefault(require("db/connect"));
@@ -95,10 +94,5 @@ const start = async () => {
     }
 };
 start();
-process.on("SIGINT", () => {
-    console.log("yahoo");
-    queueController_1.redisConfiguration.connection.disconnect();
-    console.log("5: ", queueController_1.redisConfiguration.connection.status);
-});
 exports.default = app;
 //# sourceMappingURL=server.js.map

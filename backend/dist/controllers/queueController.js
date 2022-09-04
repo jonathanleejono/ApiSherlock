@@ -29,6 +29,7 @@ exports.redisConfiguration = {
         password: PROD_ENV ? REDIS_PASSWORD : undefined,
         maxRetriesPerRequest: null,
     }),
+    sharedConnection: true,
 };
 const startQueue = async (req, res) => {
     try {
@@ -101,8 +102,7 @@ const startQueue = async (req, res) => {
         (0, queue_1.setQueue)(new bullmq_1.Queue(queueName, exports.redisConfiguration));
         const myQueue = await (0, queue_1.getQueue)();
         const repeatOptions = await (0, queue_1.getRepeatOptions)();
-        const queueScheduler = new bullmq_1.QueueScheduler(queueName, exports.redisConfiguration);
-        console.log(queueScheduler);
+        (0, queue_1.setQueueScheduler)(new bullmq_1.QueueScheduler(queueName, exports.redisConfiguration));
         async function addJobToQueue(jobDetails) {
             await myQueue.add(jobName, { jobDetails }, { repeat: repeatOptions });
         }
@@ -145,7 +145,8 @@ const startQueue = async (req, res) => {
         if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
             addJobToQueue(`Ping apis for user at ${dateDayOfWeek} ${dateHour}:${dateMinute} ${dateAMOrPM}`);
         }
-        const worker = new bullmq_1.Worker(queueName, pingAllMonitoredApis, exports.redisConfiguration);
+        (0, queue_1.setQueueWorker)(new bullmq_1.Worker(queueName, pingAllMonitoredApis, exports.redisConfiguration));
+        const worker = await (0, queue_1.getQueueWorker)();
         worker.on("completed", async (job) => {
             if (!TEST_ENV) {
                 console.log(`Job ${job.id} has completed!`);
@@ -156,7 +157,6 @@ const startQueue = async (req, res) => {
                 console.error(`Job ${job.id} has failed with ${err.message}`);
             }
         });
-        console.log("3: ", exports.redisConfiguration.connection.status);
         res.status(http_status_codes_1.StatusCodes.OK).json({ msg: "Started monitoring in queue!" });
     }
     catch (error) {

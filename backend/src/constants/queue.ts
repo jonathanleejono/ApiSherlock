@@ -18,6 +18,7 @@ export async function setQueue(queue: Queue<any, any, string>) {
   myQueue = queue;
 }
 
+//eslint-disable-next-line
 export async function getQueue(): Promise<Queue<any, any, string>> {
   return myQueue;
 }
