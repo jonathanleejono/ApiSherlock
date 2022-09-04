@@ -4,3 +4,8 @@
 cd backend
 npm run lint
 npm run test
+cd ..
+cd client
+npm run lint
+npm run test-only
+

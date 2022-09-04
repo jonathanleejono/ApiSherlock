@@ -16,7 +16,6 @@
     "envalid": "^7.3.1",
     "history": "^5.1.0",
     "http-status-codes": "^2.2.0",
-    "husky": "^8.0.1",
     "msw": "^0.44.2",
     "normalize.css": "^8.0.1",
     "prop-types": "^15.8.1",
@@ -47,6 +46,7 @@
     "eslint-plugin-jest": "^26.6.0",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-testing-library": "^5.5.1",
+    "husky": "^8.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "ts-jest": "^28.0.7",
     "typescript": "^4.7.4"
