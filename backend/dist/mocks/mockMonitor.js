@@ -7,7 +7,7 @@ exports.mockMonitor = {
     scheduleType: monitor_1.MonitorScheduleTypeOptions.INTERVAL,
     intervalSchedule: monitor_1.MonitorIntervalScheduleOptions.HOURLY,
     dateDayOfWeek: monitor_1.MonitorDateDayOfWeekOptions.Sunday,
-    dateHour: 0,
+    dateHour: 1,
     dateMinute: 0,
     dateAMOrPM: monitor_1.MonitorDateAMOrPMOptions.AM,
 };

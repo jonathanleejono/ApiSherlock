@@ -28,7 +28,7 @@ describe("testing users controller", () => {
         catch (error) {
             console.log("Error connecting to MongoDB/Mongoose: ", error);
         }
-        await UserCollection_1.default.collection.deleteMany({});
+        await UserCollection_1.default.collection.drop();
         await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
     });
     afterAll(async () => {

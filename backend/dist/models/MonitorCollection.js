@@ -50,7 +50,7 @@ const MonitorSchema = new mongoose_1.default.Schema({
     dateHour: {
         type: Number,
         enum: monitor_1.validMonitorDateHourOptions,
-        default: 0,
+        default: 12,
     },
     dateMinute: {
         type: Number,

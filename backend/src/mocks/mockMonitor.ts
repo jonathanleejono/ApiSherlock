@@ -12,7 +12,7 @@ export const mockMonitor: Omit<Monitor, "_id" | "createdBy"> = {
   scheduleType: MonitorScheduleTypeOptions.INTERVAL,
   intervalSchedule: MonitorIntervalScheduleOptions.HOURLY,
   dateDayOfWeek: MonitorDateDayOfWeekOptions.Sunday,
-  dateHour: 0,
+  dateHour: 1,
   dateMinute: 0,
   dateAMOrPM: MonitorDateAMOrPMOptions.AM,
 };

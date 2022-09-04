@@ -67,7 +67,7 @@ describe("testing monitor controller", () => {
         catch (error) {
             console.log("Error connecting to MongoDB/Mongoose: ", error);
         }
-        await UserCollection_1.default.collection.deleteMany({});
+        await UserCollection_1.default.collection.drop();
         await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)
             .post(`${urls_1.baseAuthUrl}${urls_1.loginUserUrl}`)
@@ -83,9 +83,9 @@ describe("testing monitor controller", () => {
         }
         const cookie = response.header["set-cookie"];
         await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-        await ApiCollection_1.default.collection.deleteMany({});
+        await ApiCollection_1.default.collection.drop();
         await agent.post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockApisDbUrl}`);
-        await MonitorCollection_1.default.collection.deleteMany({});
+        await MonitorCollection_1.default.collection.drop();
     });
     afterAll(async () => {
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
@@ -166,12 +166,13 @@ describe("testing monitor controller", () => {
         });
         it("should ping monitored apis in queue", async () => {
             const currentHour = new Date().getHours();
+            const hour = currentHour > 12 ? currentHour - 12 : currentHour;
             const updateMonitorResp = await agent
                 .patch(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
                 .send({
                 scheduleType: monitor_2.MonitorScheduleTypeOptions.DATE,
                 dateDayOfWeek: monitor_1.validMonitorDateDayOfWeekOptions[new Date().getDay()],
-                dateHour: currentHour > 12 ? currentHour - 12 : currentHour,
+                dateHour: hour,
                 dateAMOrPM: currentHour > 12
                     ? monitor_2.MonitorDateAMOrPMOptions.PM
                     : monitor_2.MonitorDateAMOrPMOptions.AM,

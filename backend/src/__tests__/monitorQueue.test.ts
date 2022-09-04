@@ -64,7 +64,7 @@ describe("testing monitor controller", () => {
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
     }
-    await UserCollection.collection.deleteMany({});
+    await UserCollection.collection.drop();
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
@@ -86,10 +86,10 @@ describe("testing monitor controller", () => {
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
 
-    await ApiCollection.collection.deleteMany({});
+    await ApiCollection.collection.drop();
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
 
-    await MonitorCollection.collection.deleteMany({});
+    await MonitorCollection.collection.drop();
   });
 
   afterAll(async () => {
@@ -231,19 +231,24 @@ describe("testing monitor controller", () => {
     it("should ping monitored apis in queue", async (): Promise<void> => {
       const currentHour = new Date().getHours();
 
+      const hour = currentHour > 12 ? currentHour - 12 : currentHour;
+
+      const updates = {
+        scheduleType: MonitorScheduleTypeOptions.DATE,
+        dateDayOfWeek: validMonitorDateDayOfWeekOptions[new Date().getDay()],
+        dateHour: hour,
+        dateAMOrPM:
+          //the current hour could be 12PM
+          currentHour > 12 || currentHour === 12
+            ? MonitorDateAMOrPMOptions.PM
+            : MonitorDateAMOrPMOptions.AM,
+        dateMinute: new Date().getMinutes(),
+      };
+
       // first, update monitor to current time (with new settings above)
       const updateMonitorResp = await agent
         .patch(`${baseMonitorUrl}${handleMonitorUrl}`)
-        .send({
-          scheduleType: MonitorScheduleTypeOptions.DATE,
-          dateDayOfWeek: validMonitorDateDayOfWeekOptions[new Date().getDay()],
-          dateHour: currentHour > 12 ? currentHour - 12 : currentHour,
-          dateAMOrPM:
-            currentHour > 12
-              ? MonitorDateAMOrPMOptions.PM
-              : MonitorDateAMOrPMOptions.AM,
-          dateMinute: new Date().getMinutes(),
-        });
+        .send(updates);
 
       expect(updateMonitorResp.statusCode).toBe(200);
 

@@ -8,7 +8,7 @@ exports.validUpdateMonitorKeys = exports.validCreateMonitorKeys;
 exports.validMonitorSettingOptions = Object.values(monitor_1.MonitorSettingOptions);
 exports.validMonitorIntervalScheduleOptions = Object.values(monitor_1.MonitorIntervalScheduleOptions);
 exports.validMonitorScheduleTypeOptions = Object.values(monitor_1.MonitorScheduleTypeOptions);
-exports.validMonitorDateHourOptions = Array.from({ length: 12 }, (_, i) => i);
+exports.validMonitorDateHourOptions = [...Array(13).keys()].slice(1);
 exports.validMonitorDateMinuteOptions = Array.from({ length: 60 }, (_, i) => i);
 exports.validMonitorDateAMorPMOptions = Object.values(monitor_1.MonitorDateAMOrPMOptions);
 exports.validMonitorDateDayOfWeekOptions = Array.from({ length: 7 }, (_, i) => i);

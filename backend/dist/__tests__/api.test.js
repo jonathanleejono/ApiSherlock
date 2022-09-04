@@ -69,7 +69,7 @@ describe("testing api controller", () => {
         catch (error) {
             console.log("Error connecting to MongoDB/Mongoose: ", error);
         }
-        await UserCollection_1.default.collection.deleteMany({});
+        await UserCollection_1.default.collection.drop();
         await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)
             .post(`${urls_1.baseAuthUrl}${urls_1.loginUserUrl}`)
@@ -85,7 +85,7 @@ describe("testing api controller", () => {
         }
         const cookie = response.header["set-cookie"];
         await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-        await ApiCollection_1.default.collection.deleteMany({});
+        await ApiCollection_1.default.collection.drop();
         await agent.post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockApisDbUrl}`);
     });
     afterAll(async () => {

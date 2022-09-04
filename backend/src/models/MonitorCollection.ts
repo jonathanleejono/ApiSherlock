@@ -40,7 +40,7 @@ const MonitorSchema: Schema<MonitorDocument> = new mongoose.Schema(
     dateHour: {
       type: Number,
       enum: validMonitorDateHourOptions,
-      default: 0,
+      default: 12,
     },
     dateMinute: {
       type: Number,

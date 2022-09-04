@@ -33,7 +33,7 @@ describe("testing users controller", () => {
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
     }
-    await UserCollection.collection.deleteMany({});
+    await UserCollection.collection.drop();
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
   });
 
