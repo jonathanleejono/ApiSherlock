@@ -25,7 +25,8 @@
     "test-redis-system": "concurrently --kill-others-on-fail \" redis-server\" \" jest && npm run redis-shutdown\"",
     "test-all": "concurrently --kill-others-on-fail \" redis-server\" \" npm run start-mongo\" \" jest && npm run stop-mongo && npm run redis-shutdown \"",
     "lint": "eslint ./",
-    "prepare": "cd .. && husky install backend/.husky"
+    "prepare": "cd .. && husky install backend/.husky",
+    "posthusky": "sh script/submodule-husky-hook-path.sh"
   },
   "keywords": [],
   "author": "",
