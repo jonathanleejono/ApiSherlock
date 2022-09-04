@@ -115,6 +115,7 @@ describe("testing monitoring page", () => {
 
     const monitorSettingOnOption = screen.getByRole("option", {
       name: MonitorSettingOptions.ON, // "monday" gets caught by regex /ON/i
+      //eslint-disable-next-line
     }) as any;
 
     expect(monitorSettingOnOption.selected).toBe(true);
@@ -145,8 +146,10 @@ describe("testing monitoring page", () => {
       expect(
         await screen.findByText(editMonitorSuccessMsg)
       ).toBeInTheDocument();
-      expect(await screen.findByText(startQueueSuccessMsg)).toBeInTheDocument();
     });
+
+    //eslint error occurs if multiple assertions are placed in waitFor
+    expect(await screen.findByText(startQueueSuccessMsg)).toBeInTheDocument();
   });
 
   test("can delete a monitor", async () => {
@@ -161,6 +164,7 @@ describe("testing monitoring page", () => {
 
     const monitorSettingOffOption = screen.getByRole("option", {
       name: MonitorSettingOptions.OFF,
+      //eslint-disable-next-line
     }) as any;
 
     await userEvent.selectOptions(
@@ -174,10 +178,10 @@ describe("testing monitoring page", () => {
       expect(
         await screen.findByText(deleteMonitorSuccessMsg)
       ).toBeInTheDocument();
-      expect(
-        await screen.findByText(removeQueueSuccessMsg)
-      ).toBeInTheDocument();
     });
+
+    //eslint error occurs if multiple assertions are placed in waitFor
+    expect(await screen.findByText(removeQueueSuccessMsg)).toBeInTheDocument();
   });
 
   test("can create a monitor", async () => {

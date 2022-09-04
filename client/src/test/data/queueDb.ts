@@ -15,8 +15,8 @@ import { getUser } from "test/data/usersDb";
 import { BadRequestError, NotFoundError } from "test/errors";
 import { constructDateTime } from "utils/datetime";
 
-//eslint-disable-next-line
 type QueueOptions = {
+  //eslint-disable-next-line
   [key: string]: any;
 };
 
