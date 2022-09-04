@@ -21,6 +21,64 @@ jobs:
       REDIS_PORT: ${{secrets.REDIS_PORT}}
       CORS_ORIGIN: ${{secrets.CORS_ORIGIN}}
       REACT_APP_BASE_URL: ${{secrets.REACT_APP_BASE_URL}
+      REACT_APP_MSW_DEV: ${{secrets.REACT_APP_MSW_DEV}
+      REACT_APP_SECRET_KEY: ${{secrets.REACT_APP_SECRET_KEY}
 
+    services:
+      mongodb:
+          image: mongo
+          env:
+            MONGO_INITDB_ROOT_USERNAME: ${{secrets.MONGO_USERNAME}}
+            MONGO_INITDB_ROOT_PASSWORD: ${{secrets.MONGO_PASSWORD}}
+            MONGO_INITDB_DATABASE: ${{secrets.MONGO_DB}}
+          options: >-
+            --health-cmd mongo
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+          ports:
+            - 27017:27017
 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pulling git repo
+        uses: actions/checkout@3
+      - name: Install node version 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+      - name: Install all backend dependencies
+        run: |
+          cd backend
+          npm install && npm audit fix
+      - name: Test backend
+        run: |
+          cd backend
+          npm run test
+      - name: Install all frontend dependencies
+        run: |
+          cd client
+          npm install && npm audit fix
+      - name: Test frontend
+        run: |
+          cd client
+          npm run test-only
+      
+  deploy:
+    runs-on: ubuntu-latest
+  # jobs run in parallel, but using need creates a sequential dependent order
+    needs: [build]
+
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v2
+      - name: deploying to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          appdir: "backend"
+    
 
