@@ -126,6 +126,7 @@ describe("testing monitoring page", () => {
 
     const monitorScheduleTypeDateOption = screen.getByRole("option", {
       name: /interval/i,
+      //eslint-disable-next-line
     }) as any;
 
     await userEvent.selectOptions(
@@ -196,6 +197,7 @@ describe("testing monitoring page", () => {
 
     const monitorSettingOnOption = screen.getByRole("option", {
       name: MonitorSettingOptions.ON,
+      //eslint-disable-next-line
     }) as any;
 
     await userEvent.selectOptions(
