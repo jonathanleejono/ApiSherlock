@@ -88,16 +88,16 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }} 
           vercel-args: '--prod'
-          vercel-org-id: ${{ secrets.ORG_ID_BACKEND}} 
-          vercel-project-id: ${{ secrets.PROJECT_ID_BACKEND}} 
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID_BACKEND}} 
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_BACKEND}} 
           working-directory: ./backend
       - name: Deploying frontend to Vercel
         uses: amondnet/vercel-action@v20 
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }} 
           vercel-args: '--prod'
-          vercel-org-id: ${{ secrets.ORG_ID_FRONTEND}} 
-          vercel-project-id: ${{ secrets.PROJECT_ID_FRONTEND}} 
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID_FRONTEND}} 
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_FRONTEND}} 
           working-directory: ./client
     
 
