@@ -15,6 +15,7 @@ import dotenv from "dotenv";
 import { ApiMonitoringOptions, ApiStatusOptions } from "enum/apis";
 import {
   MonitorDateAMOrPMOptions,
+  MonitorDateDayOfWeekOptions,
   MonitorIntervalScheduleOptions,
   MonitorScheduleTypeOptions,
   MonitorSettingOptions,
@@ -85,7 +86,7 @@ export const startQueue = async (
 
     // cron-parser: second, minute, hour, day of month, month, day of week
     if (scheduleType === MonitorScheduleTypeOptions.DATE) {
-      let hour;
+      let hour = dateHour; // put default value of dateHour
 
       //if it's 12AM, the hour should be 0:00AM to match cron
       if (dateHour === 12 && dateAMOrPM === MonitorDateAMOrPMOptions.AM) {
@@ -154,6 +155,7 @@ export const startQueue = async (
     // in this case, instead of individually storing each url as a separate job,
     // one job to ping all of the monitored apis is completed
     async function addJobToQueue(jobDetails: any) {
+      console.log(jobDetails);
       await myQueue.add(jobName, { jobDetails }, { repeat: repeatOptions });
     }
 
@@ -206,8 +208,9 @@ export const startQueue = async (
     }
 
     if (scheduleType === MonitorScheduleTypeOptions.DATE) {
+      const minute = dateMinute < 10 ? `0${dateMinute}` : dateMinute;
       addJobToQueue(
-        `Ping apis for user at ${dateDayOfWeek} ${dateHour}:${dateMinute} ${dateAMOrPM}`
+        `Ping apis for user at ${MonitorDateDayOfWeekOptions[dateDayOfWeek]} ${dateHour}:${minute} ${dateAMOrPM}`
       );
     }
 

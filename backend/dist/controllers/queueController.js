@@ -51,7 +51,7 @@ const startQueue = async (req, res) => {
         }
         const { scheduleType, intervalSchedule, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM, } = monitor;
         if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
-            let hour;
+            let hour = dateHour;
             if (dateHour === 12 && dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.AM) {
                 hour = dateHour - 12;
             }
@@ -102,8 +102,10 @@ const startQueue = async (req, res) => {
         (0, queue_1.setQueue)(new bullmq_1.Queue(queueName, exports.redisConfiguration));
         const myQueue = await (0, queue_1.getQueue)();
         const repeatOptions = await (0, queue_1.getRepeatOptions)();
+        console.log(repeatOptions);
         (0, queue_1.setQueueScheduler)(new bullmq_1.QueueScheduler(queueName, exports.redisConfiguration));
         async function addJobToQueue(jobDetails) {
+            console.log(jobDetails);
             await myQueue.add(jobName, { jobDetails }, { repeat: repeatOptions });
         }
         const apis = await ApiCollection_1.default.find({
@@ -143,7 +145,8 @@ const startQueue = async (req, res) => {
             addJobToQueue(`Ping apis for user at ${intervalSchedule}`);
         }
         if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
-            addJobToQueue(`Ping apis for user at ${dateDayOfWeek} ${dateHour}:${dateMinute} ${dateAMOrPM}`);
+            const minute = dateMinute < 10 ? `0${dateMinute}` : dateMinute;
+            addJobToQueue(`Ping apis for user at ${monitor_1.MonitorDateDayOfWeekOptions[dateDayOfWeek]} ${dateHour}-${minute} ${dateAMOrPM}`);
         }
         (0, queue_1.setQueueWorker)(new bullmq_1.Worker(queueName, pingAllMonitoredApis, exports.redisConfiguration));
         const worker = await (0, queue_1.getQueueWorker)();
