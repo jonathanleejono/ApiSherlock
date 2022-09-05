@@ -14,6 +14,8 @@ import {
 import * as usersDB from "test/data/usersDb";
 import { server } from "test/mocks/server";
 
+//keep this file in main folder directory
+
 global.ResizeObserver = ResizeObserverModule.default;
 
 jest.setTimeout(10000);
