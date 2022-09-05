@@ -35,6 +35,7 @@ jobs:
         mongodb-version: ['4.2', '4.4', '5.0', '6.0']
         mongodb-username: ['ci']
         mongodb-password: ['ci']
+        mongodb-db: ['ci']
         mongodb-port: [23456]
 
     steps:
@@ -48,6 +49,7 @@ jobs:
           mongodb-username: ${{ matrix.mongodb-username }}
           mongodb-password: ${{ matrix.mongodb-password }}
           mongodb-port: ${{ matrix.mongodb-port }}
+          mongodb-db: ${{ matrix.mongodb-db }}
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -68,6 +70,7 @@ jobs:
           MONGODB_USERNAME: ${{ matrix.mongodb-username }}
           MONGODB_PASSWORD: ${{ matrix.mongodb-password }}
           MONGODB_PORT: ${{ matrix.mongodb-port }}
+          MONGODB_DB: ${{ matrix.mongodb-db }}
 
       - name: Install all frontend dependencies
         run: |

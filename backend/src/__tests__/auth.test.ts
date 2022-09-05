@@ -24,7 +24,8 @@ const user: Partial<User> = {
 
 const { name, email, password, timezoneGMT } = user;
 
-const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
+const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_DB } =
+  process.env;
 
 describe("testing users controller", () => {
   beforeAll(async () => {
@@ -33,8 +34,7 @@ describe("testing users controller", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url =
-        url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${databaseName}?authMechanism=DEFAULT&authSource=admin`;
+      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${MONGODB_DB}?authMechanism=DEFAULT&authSource=admin`;
     }
 
     try {

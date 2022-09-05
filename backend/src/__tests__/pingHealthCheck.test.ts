@@ -5,7 +5,8 @@ import mongoose from "mongoose";
 import app from "server";
 import request from "supertest";
 
-const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
+const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_DB } =
+  process.env;
 
 describe("testing if supertest and jest works", () => {
   beforeAll(async () => {
@@ -14,7 +15,7 @@ describe("testing if supertest and jest works", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${databaseName}?authMechanism=DEFAULT&authSource=admin`;
+      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${MONGODB_DB}?authMechanism=DEFAULT&authSource=admin`;
     }
 
     try {

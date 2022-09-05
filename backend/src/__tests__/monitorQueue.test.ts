@@ -55,7 +55,8 @@ const testMonitorResponse: Monitor = {
   __v: expect.any(Number),
 };
 
-const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
+const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_DB } =
+  process.env;
 
 describe("testing monitor controller", () => {
   beforeAll(async () => {
@@ -64,7 +65,7 @@ describe("testing monitor controller", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${databaseName}?authMechanism=DEFAULT&authSource=admin`;
+      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${MONGODB_DB}?authMechanism=DEFAULT&authSource=admin`;
     }
 
     try {

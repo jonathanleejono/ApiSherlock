@@ -57,7 +57,8 @@ const testApiResponse: Api = {
   __v: expect.any(Number),
 };
 
-const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
+const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_DB } =
+  process.env;
 
 describe("testing api controller", () => {
   beforeAll(async () => {
@@ -66,7 +67,7 @@ describe("testing api controller", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${databaseName}?authMechanism=DEFAULT&authSource=admin`;
+      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${MONGODB_DB}?authMechanism=DEFAULT&authSource=admin`;
     }
 
     try {
@@ -223,8 +224,8 @@ describe("testing api controller", () => {
       it("should ping all apis", async (): Promise<void> => {
         const pingResponse = await agent.post(`${baseApiUrl}${pingAllApisUrl}`);
 
-        // give 3 seconds (3000 milliseconds) for database to update
-        await new Promise((res) => setTimeout(res, 3000));
+        // give 4 seconds for database to update
+        await new Promise((res) => setTimeout(res, 4000));
 
         const response = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
 
