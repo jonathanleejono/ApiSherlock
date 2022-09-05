@@ -18,7 +18,7 @@ jobs:
       REACT_APP_BASE_URL: ${{secrets.REACT_APP_BASE_URL}}
       REACT_APP_MSW_DEV: ${{secrets.REACT_APP_MSW_DEV}}
       REACT_APP_SECRET_KEY: ${{secrets.REACT_APP_SECRET_KEY}}
-      USING_CI: yes
+      USING_CI: ${{secrets.USING_CI}}
 
     services:
       redis:
@@ -64,7 +64,7 @@ jobs:
           cd backend
           npm run test
         env:
-          USING_CI: yes
+          USING_CI: ${{secrets.USING_CI}}
           MONGODB_USERNAME: ${{ matrix.mongodb-username }}
           MONGODB_PASSWORD: ${{ matrix.mongodb-password }}
           MONGODB_PORT: ${{ matrix.mongodb-port }}
