@@ -1,9 +1,6 @@
 name: Build and Deploy
 
-on: 
-  push:
-    branches:
-      - "mongodb-actions"
+on: [push, pull_request]
 
 jobs:
   build:
@@ -71,3 +68,46 @@ jobs:
           MONGODB_USERNAME: ${{ matrix.mongodb-username }}
           MONGODB_PASSWORD: ${{ matrix.mongodb-password }}
           MONGODB_PORT: ${{ matrix.mongodb-port }}
+
+      - name: Install all frontend dependencies
+        run: |
+          cd client
+          npm install && npm audit fix
+
+      - name: Test frontend
+        run: |
+          cd client
+          npm run test-only
+      
+  deploy:
+    runs-on: ubuntu-latest
+
+  # jobs run in parallel, but using need creates a sequential dependent order
+    needs: [build]
+
+    steps:
+      - name: Pulling git repo
+        uses: actions/checkout@v3
+
+      - name: Building backend webpack
+        run: |
+          cd backend
+          npm run build
+
+      - name: Deploying backend to Vercel
+        uses: amondnet/vercel-action@v20 
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} 
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID_BACKEND }} 
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_BACKEND }} 
+          working-directory: ./backend
+
+      - name: Deploying frontend to Vercel
+        uses: amondnet/vercel-action@v20 
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} 
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID_FRONTEND }} 
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_FRONTEND }} 
+          working-directory: ./client
