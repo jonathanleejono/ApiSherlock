@@ -110,6 +110,7 @@
     "clearMocks": true,
     "setupFiles": [
       "./src/test/setEnvVars.ts"
-    ]
+    ],
+    "bail": true
   }
 }
