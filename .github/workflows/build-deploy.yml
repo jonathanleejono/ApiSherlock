@@ -1,0 +1,69 @@
+name: Build and Deploy
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      MONGO_URL: ${{secrets.MONGO_URL}}
+      JWT_SECRET: ${{secrets.JWT_SECRET}}
+      JWT_ACCESS_TOKEN_LIFETIME: ${{secrets.JWT_ACCESS_TOKEN_LIFETIME}}
+      JWT_REFRESH_TOKEN_LIFETIME: ${{secrets.JWT_REFRESH_TOKEN_LIFETIME}}
+      NODE_ENV: ${{secrets.NODE_ENV}}
+      REDIS_HOST: ${{secrets.REDIS_HOST}}
+      REDIS_PORT: ${{secrets.REDIS_PORT}}
+      CORS_ORIGIN: ${{secrets.CORS_ORIGIN}}
+      REACT_APP_BASE_URL: ${{secrets.REACT_APP_BASE_URL}}
+      REACT_APP_MSW_DEV: ${{secrets.REACT_APP_MSW_DEV}}
+      REACT_APP_SECRET_KEY: ${{secrets.REACT_APP_SECRET_KEY}}
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+        mongodb-version: ['4.2', '4.4', '5.0', '6.0']
+        mongodb-username: ['ci']
+        mongodb-password: ['ci']
+        mongodb-port: [23456]
+
+    steps:
+      - name: Pulling Git repo
+        uses: actions/checkout@v3
+
+      - name: Start MongoDB Server v${{ matrix.mongodb-version }}
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+          mongodb-username: ${{ matrix.mongodb-username }}
+          mongodb-password: ${{ matrix.mongodb-password }}
+          mongodb-port: ${{ matrix.mongodb-port }}
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install && npm audit fix
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm run test
+        env:
+          USING_CI: yes
+          MONGODB_USERNAME: ${{ matrix.mongodb-username }}
+          MONGODB_PASSWORD: ${{ matrix.mongodb-password }}
+          MONGODB_PORT: ${{ matrix.mongodb-port }}
