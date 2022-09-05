@@ -1,13 +1,11 @@
 import { pingHealthCheckUrl } from "constants/apiUrls";
 import { pingHealthCheckSuccessMsg } from "constants/messages";
 import { redisConfiguration } from "controllers/queueController";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import app from "server";
 import request from "supertest";
-import { createDbUrl } from "test/dbUrl";
 
-dotenv.config();
+const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
 
 describe("testing if supertest and jest works", () => {
   beforeAll(async () => {
@@ -16,7 +14,7 @@ describe("testing if supertest and jest works", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = createDbUrl(databaseName);
+      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${databaseName}?authMechanism=DEFAULT&authSource=admin`;
     }
 
     try {

@@ -8,16 +8,12 @@ import {
 } from "constants/apiUrls";
 import { cookieName } from "constants/cookies";
 import { redisConfiguration } from "controllers/queueController";
-import dotenv from "dotenv";
 import { mockUser } from "mocks/mockUser";
 import UserCollection from "models/UserCollection";
 import { User } from "models/UserDocument";
 import mongoose from "mongoose";
 import app from "server";
 import request from "supertest";
-import { createDbUrl } from "test/dbUrl";
-
-dotenv.config();
 
 const user: Partial<User> = {
   name: "jane",
@@ -28,6 +24,8 @@ const user: Partial<User> = {
 
 const { name, email, password, timezoneGMT } = user;
 
+const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
+
 describe("testing users controller", () => {
   beforeAll(async () => {
     const databaseName = "test-users";
@@ -35,7 +33,8 @@ describe("testing users controller", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = createDbUrl(databaseName);
+      url =
+        url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${databaseName}?authMechanism=DEFAULT&authSource=admin`;
     }
 
     try {

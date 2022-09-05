@@ -20,7 +20,6 @@ import {
   jobBaseName,
 } from "constants/queue";
 import { redisConfiguration } from "controllers/queueController";
-import dotenv from "dotenv";
 import {
   MonitorDateAMOrPMOptions,
   MonitorScheduleTypeOptions,
@@ -35,10 +34,7 @@ import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
-import { createDbUrl } from "test/dbUrl";
 import getCurrentUserId from "utils/getCurrentUserId";
-
-dotenv.config();
 
 const agent = supertest(app);
 
@@ -59,6 +55,8 @@ const testMonitorResponse: Monitor = {
   __v: expect.any(Number),
 };
 
+const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
+
 describe("testing monitor controller", () => {
   beforeAll(async () => {
     const databaseName = "test-monitors";
@@ -66,7 +64,7 @@ describe("testing monitor controller", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = createDbUrl(databaseName);
+      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${databaseName}?authMechanism=DEFAULT&authSource=admin`;
     }
 
     try {
