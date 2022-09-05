@@ -72,10 +72,11 @@ jobs:
           MONGODB_PORT: ${{ matrix.mongodb-port }}
           MONGODB_DB: ${{ matrix.mongodb-db }}
 
+      # this install script suppresses warnings
       - name: Install all frontend dependencies
         run: |
           cd client
-          npm install && npm audit fix
+          npm run install-testing
 
       - name: Test frontend
         run: |
