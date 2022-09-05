@@ -57,8 +57,7 @@ const testApiResponse: Api = {
   __v: expect.any(Number),
 };
 
-const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_DB } =
-  process.env;
+const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
 
 describe("testing api controller", () => {
   beforeAll(async () => {
@@ -67,10 +66,11 @@ describe("testing api controller", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${MONGODB_DB}?authMechanism=DEFAULT&authSource=admin`;
+      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/?authMechanism=DEFAULT&authSource=admin`;
     }
 
     try {
+      console.log("Connecting to MongoDB with url --------> ", url);
       await mongoose.connect(url);
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
@@ -232,6 +232,7 @@ describe("testing api controller", () => {
         expect(pingResponse.statusCode).toBe(200);
         expect(pingResponse.body).toEqual(pingAllApisSuccessMsg);
         expect(response.statusCode).toBe(200);
+
         //don't forget to reverse allApis
         expect(response.body.allApis.reverse()).toMatchObject(mockUpdatedApis);
       }, 30000);

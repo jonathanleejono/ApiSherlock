@@ -64,7 +64,7 @@ jobs:
       - name: Run backend tests
         run: |
           cd backend
-          npm run test
+          npm run test -- api.test.ts
         env:
           USING_CI: ${{secrets.USING_CI}}
           MONGODB_USERNAME: ${{ matrix.mongodb-username }}
