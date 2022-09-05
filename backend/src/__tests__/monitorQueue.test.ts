@@ -20,6 +20,7 @@ import {
   jobBaseName,
 } from "constants/queue";
 import { redisConfiguration } from "controllers/queueController";
+import dotenv from "dotenv";
 import {
   MonitorDateAMOrPMOptions,
   MonitorScheduleTypeOptions,
@@ -36,6 +37,8 @@ import app from "server";
 import request, { agent as supertest } from "supertest";
 import { createDbUrl } from "test/dbUrl";
 import getCurrentUserId from "utils/getCurrentUserId";
+
+dotenv.config();
 
 const agent = supertest(app);
 

@@ -1,10 +1,13 @@
 import { pingHealthCheckUrl } from "constants/apiUrls";
 import { pingHealthCheckSuccessMsg } from "constants/messages";
 import { redisConfiguration } from "controllers/queueController";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
 import app from "server";
 import request from "supertest";
 import { createDbUrl } from "test/dbUrl";
+
+dotenv.config();
 
 describe("testing if supertest and jest works", () => {
   beforeAll(async () => {

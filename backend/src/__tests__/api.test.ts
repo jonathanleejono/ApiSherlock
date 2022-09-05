@@ -20,6 +20,7 @@ import {
   pingOneApiSuccessMsg,
 } from "constants/messages";
 import { redisConfiguration } from "controllers/queueController";
+import dotenv from "dotenv";
 import { ApiMonitoringOptions } from "enum/apis";
 import { mockApi } from "mocks/mockApi";
 import { mockApis } from "mocks/mockApis";
@@ -34,6 +35,8 @@ import app from "server";
 import request, { agent as supertest } from "supertest";
 import { createDbUrl } from "test/dbUrl";
 import getCurrentUserId from "utils/getCurrentUserId";
+
+dotenv.config();
 
 const agent = supertest(app);
 

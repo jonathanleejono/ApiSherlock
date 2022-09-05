@@ -8,6 +8,7 @@ import {
 } from "constants/apiUrls";
 import { cookieName } from "constants/cookies";
 import { redisConfiguration } from "controllers/queueController";
+import dotenv from "dotenv";
 import { mockUser } from "mocks/mockUser";
 import UserCollection from "models/UserCollection";
 import { User } from "models/UserDocument";
@@ -15,6 +16,8 @@ import mongoose from "mongoose";
 import app from "server";
 import request from "supertest";
 import { createDbUrl } from "test/dbUrl";
+
+dotenv.config();
 
 const user: Partial<User> = {
   name: "jane",
