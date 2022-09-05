@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom";
 import "@testing-library/jest-dom/extend-expect";
 import { setToken } from "constants/token";
 import * as ResizeObserverModule from "resize-observer-polyfill";
