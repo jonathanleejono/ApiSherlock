@@ -26,12 +26,11 @@ import { mockApis } from "mocks/mockApis";
 import { mockApisStats } from "mocks/mockApisStats";
 import { editMockApiUrl, mockUpdatedApis } from "mocks/mockUpdatedApis";
 import { mockUser } from "mocks/mockUser";
-import ApiCollection from "models/ApiCollection";
 import { Api } from "models/ApiDocument";
-import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
+import { createDbUrl } from "test/dbUrl";
 import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
@@ -57,8 +56,6 @@ const testApiResponse: Api = {
   __v: expect.any(Number),
 };
 
-const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT } = process.env;
-
 describe("testing api controller", () => {
   beforeAll(async () => {
     const databaseName = "test-apis";
@@ -66,7 +63,7 @@ describe("testing api controller", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/?authMechanism=DEFAULT&authSource=admin`;
+      url = createDbUrl(databaseName);
     }
 
     try {
@@ -101,14 +98,18 @@ describe("testing api controller", () => {
   });
 
   afterAll(async () => {
-    await UserCollection.collection.drop();
-    await ApiCollection.collection.drop();
+    //collections don't exist at the start,
+    //so drop them in afterAll and not beforeAll
+    await mongoose.connection.db.dropDatabase();
 
     //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
     await redisConfiguration.connection.quit();
-  });
+
+    //set timeout for connections to close properly to prevent memory leaks
+    await new Promise((res) => setTimeout(res, 4000));
+  }, 10000);
 
   describe("testing apis", () => {
     it("should get all APIs", async (): Promise<void> => {
@@ -236,7 +237,7 @@ describe("testing api controller", () => {
 
         //don't forget to reverse allApis
         expect(response.body.allApis.reverse()).toMatchObject(mockUpdatedApis);
-      }, 30000);
+      }, 10000);
     });
 
     describe("testing auth for api routes", () => {
