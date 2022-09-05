@@ -18,6 +18,7 @@ jobs:
       REACT_APP_BASE_URL: ${{secrets.REACT_APP_BASE_URL}}
       REACT_APP_MSW_DEV: ${{secrets.REACT_APP_MSW_DEV}}
       REACT_APP_SECRET_KEY: ${{secrets.REACT_APP_SECRET_KEY}}
+      USING_CI: yes
 
     services:
       redis:
