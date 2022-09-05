@@ -7,7 +7,7 @@ import {
   getApiUrl,
   pingAllApisUrl,
   pingOneApiUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
 import {
   createApi,
   deleteApi,

@@ -1,4 +1,4 @@
-import { registerUserUrl, updateUserUrl } from "constants/urls";
+import { registerUserUrl, updateUserUrl } from "constants/apiUrls";
 import { NextFunction, Request, Response } from "express";
 import { check, validationResult } from "express-validator";
 

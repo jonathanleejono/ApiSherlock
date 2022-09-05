@@ -1,9 +1,4 @@
 import {
-  deleteApiSuccessMsg,
-  pingAllApisSuccessMsg,
-  pingOneApiSuccessMsg,
-} from "constants/messages";
-import {
   baseApiUrl,
   baseAuthUrl,
   baseSeedDbUrl,
@@ -18,7 +13,12 @@ import {
   pingOneApiUrl,
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
+import {
+  deleteApiSuccessMsg,
+  pingAllApisSuccessMsg,
+  pingOneApiSuccessMsg,
+} from "constants/messages";
 import { redisConfiguration } from "controllers/queueController";
 import { ApiMonitoringOptions } from "enum/apis";
 import { mockApi } from "mocks/mockApi";
@@ -32,6 +32,7 @@ import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
+import { createDbUrl } from "test/dbUrl";
 import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
@@ -60,12 +61,20 @@ const testApiResponse: Api = {
 describe("testing api controller", () => {
   beforeAll(async () => {
     const databaseName = "test-apis";
-    const url = `mongodb://127.0.0.1/${databaseName}`;
+
+    let url = `mongodb://127.0.0.1/${databaseName}`;
+
+    if (process.env.USING_CI === "yes") {
+      url = createDbUrl(databaseName);
+    }
+
     try {
       await mongoose.connect(url);
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
+      return error;
     }
+
     await UserCollection.collection.drop();
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
