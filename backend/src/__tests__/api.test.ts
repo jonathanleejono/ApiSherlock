@@ -77,7 +77,6 @@ describe("testing api controller", () => {
       return error;
     }
 
-    await UserCollection.collection.drop();
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
@@ -98,11 +97,13 @@ describe("testing api controller", () => {
 
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-    await ApiCollection.collection.drop();
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });
 
   afterAll(async () => {
+    await UserCollection.collection.drop();
+    await ApiCollection.collection.drop();
+
     //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
