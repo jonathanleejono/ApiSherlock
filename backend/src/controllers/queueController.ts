@@ -103,7 +103,7 @@ export const startQueue = async (
       }
 
       setRepeatOptions({
-        cron: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
+        pattern: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
         limit: 2,
       });
     }

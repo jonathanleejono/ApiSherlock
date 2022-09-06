@@ -61,7 +61,7 @@ const startQueue = async (req, res) => {
                 hour = dateHour;
             }
             (0, queue_1.setRepeatOptions)({
-                cron: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
+                pattern: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
                 limit: 2,
             });
         }
