@@ -38,6 +38,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
 const supertest_1 = __importStar(require("supertest"));
 const dbUrl_1 = require("test/dbUrl");
+const closeRedisConnection_1 = require("utils/closeRedisConnection");
 const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
 let currentUserId;
@@ -91,15 +92,7 @@ describe("testing monitor controller", () => {
         await mongoose_1.default.connection.db.dropDatabase();
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
-        const queueScheduler = await (0, queue_1.getQueueScheduler)();
-        await queueScheduler.close();
-        const myQueue = await (0, queue_1.getQueue)();
-        await myQueue.obliterate();
-        await myQueue.close();
-        const worker = await (0, queue_1.getQueueWorker)();
-        await worker.close();
-        await worker.disconnect();
-        await new Promise((res) => setTimeout(res, 4500));
+        await (0, closeRedisConnection_1.closeRedisConnection)();
         console.log("Redis connection: ", queueController_1.redisConfiguration.connection.status);
     }, 10000);
     describe("testing monitor", () => {
@@ -156,14 +149,7 @@ describe("testing monitor controller", () => {
             const repeatableJobs = await myQueue.getRepeatableJobs();
             expect(repeatableJobs[0].name).toContain(`${queue_1.jobBaseName}-${mockUser_1.mockUser.email}`);
             expect(repeatableJobs[0].cron).toEqual((1000 * 60 * 60).toString());
-            const queueScheduler = await (0, queue_1.getQueueScheduler)();
-            await queueScheduler.close();
-            await myQueue.obliterate();
-            await myQueue.close();
-            const worker = await (0, queue_1.getQueueWorker)();
-            await worker.close();
-            await worker.disconnect();
-            await new Promise((res) => setTimeout(res, 2000));
+            await (0, closeRedisConnection_1.closeRedisConnection)();
             console.log("Start Queue Redis connection: ", queueController_1.redisConfiguration.connection.status);
         });
         it("should ping monitored apis in queue", async () => {
@@ -196,15 +182,7 @@ describe("testing monitor controller", () => {
             }).format(currentDateTime);
             expect(getAllApisResp.body.allApis[0].lastPinged).toContain(`${formattedDateTime},`);
             expect(getAllApisResp.body.allApis[0].lastPinged).toContain(`(GMT ${mockUser_1.mockUser.timezoneGMT})`);
-            const queueScheduler = await (0, queue_1.getQueueScheduler)();
-            await queueScheduler.close();
-            const myQueue = await (0, queue_1.getQueue)();
-            await myQueue.obliterate();
-            await myQueue.close();
-            const worker = await (0, queue_1.getQueueWorker)();
-            await worker.close();
-            await worker.disconnect();
-            await new Promise((res) => setTimeout(res, 2000));
+            await (0, closeRedisConnection_1.closeRedisConnection)();
             console.log("Ping Queue Test Redis connection: ", queueController_1.redisConfiguration.connection.status);
         }, 10000);
         it("should remove monitor and jobs from queue", async () => {
