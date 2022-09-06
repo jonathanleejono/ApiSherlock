@@ -45,7 +45,6 @@ export const redisConfiguration = {
     password: PROD_ENV ? REDIS_PASSWORD : undefined,
     maxRetriesPerRequest: null,
   }),
-  sharedConnection: true,
 };
 
 export const startQueue = async (
