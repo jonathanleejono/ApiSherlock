@@ -86,9 +86,12 @@ if (process.env.NODE_ENV === "test") {
 }
 app.use(notFoundRoute_1.default);
 app.use(errorHandler_1.default);
+let serverPort = parseInt(process.env.PORT) || 5000;
 const start = async () => {
     try {
-        const serverPort = await (0, get_port_1.default)({ port: 5000 });
+        if (process.env.NODE_ENV !== "production") {
+            serverPort = await (0, get_port_1.default)({ port: 5000 });
+        }
         if (process.env.NODE_ENV !== "test") {
             app.listen(serverPort, async () => {
                 console.log(`Server is listening on port ${serverPort}...`);
