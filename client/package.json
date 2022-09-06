@@ -84,7 +84,19 @@
       "node_modules/(?!@ngrx|(?!deck.gl)|ng-dynamic)"
     ],
     "moduleNameMapper": {
-      "^~(.*)$": "<rootDir>/src$1"
+      "^app-context(.*)$": "<rootDir>/src/app-context$1",
+      "^assets(.*)$": "<rootDir>/src/assets$1",
+      "^components(.*)$": "<rootDir>/src/components$1",
+      "^constants(.*)$": "<rootDir>/src$1",
+      "^enum(.*)$": "<rootDir>/src/enum$1",
+      "^features(.*)$": "<rootDir>/src/features$1",
+      "^notifications(.*)$": "<rootDir>/src/notifications$1",
+      "^pages(.*)$": "<rootDir>/src/pages$1",
+      "^state(.*)$": "<rootDir>/src/state$1",
+      "^test(.*)$": "<rootDir>/src/test$1",
+      "^types(.*)$": "<rootDir>/src/types$1",
+      "^utils(.*)$": "<rootDir>/src/utils$1",
+      "^App": "<rootDir>/src$1"
     }
   },
   "msw": {
