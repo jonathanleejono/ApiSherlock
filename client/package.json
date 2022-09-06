@@ -82,7 +82,10 @@
   "jest": {
     "transformIgnorePatterns": [
       "node_modules/(?!@ngrx|(?!deck.gl)|ng-dynamic)"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^~(.*)$": "<rootDir>/src$1"
+    }
   },
   "msw": {
     "workerDirectory": "public"
