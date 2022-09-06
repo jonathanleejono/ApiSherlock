@@ -22,7 +22,8 @@ jobs:
 
     services:
       redis:
-        image: redis
+        image: redis:latest
+        command: ["redis-server", "--bind", "redis", "--port", "6379"]
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
