@@ -12,8 +12,8 @@ jobs:
       JWT_ACCESS_TOKEN_LIFETIME: ${{secrets.JWT_ACCESS_TOKEN_LIFETIME}}
       JWT_REFRESH_TOKEN_LIFETIME: ${{secrets.JWT_REFRESH_TOKEN_LIFETIME}}
       NODE_ENV: ${{secrets.NODE_ENV}}
-      REDIS_HOST: ${{secrets.REDIS_HOST}}
-      REDIS_PORT: ${{secrets.REDIS_PORT}}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       CORS_ORIGIN: ${{secrets.CORS_ORIGIN}}
       REACT_APP_BASE_URL: ${{secrets.REACT_APP_BASE_URL}}
       REACT_APP_MSW_DEV: ${{secrets.REACT_APP_MSW_DEV}}
