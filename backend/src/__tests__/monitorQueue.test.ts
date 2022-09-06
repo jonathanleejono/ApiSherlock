@@ -1,11 +1,3 @@
-import { deleteMonitorSuccessMsg } from "constants/messages";
-import { validMonitorDateDayOfWeekOptions } from "constants/options/monitor";
-import {
-  getQueue,
-  getQueueScheduler,
-  getQueueWorker,
-  jobBaseName,
-} from "constants/queue";
 import {
   baseApiUrl,
   baseAuthUrl,
@@ -18,7 +10,15 @@ import {
   loginUserUrl,
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
+import { deleteMonitorSuccessMsg } from "constants/messages";
+import { validMonitorDateDayOfWeekOptions } from "constants/options/monitor";
+import {
+  getQueue,
+  getQueueScheduler,
+  getQueueWorker,
+  jobBaseName,
+} from "constants/queue";
 import { redisConfiguration } from "controllers/queueController";
 import {
   MonitorDateAMOrPMOptions,
@@ -27,13 +27,11 @@ import {
 } from "enum/monitor";
 import { mockMonitor } from "mocks/mockMonitor";
 import { mockUser } from "mocks/mockUser";
-import ApiCollection from "models/ApiCollection";
-import MonitorCollection from "models/MonitorCollection";
 import { Monitor } from "models/MonitorDocument";
-import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
+import { createDbUrl } from "test/dbUrl";
 import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
@@ -58,13 +56,21 @@ const testMonitorResponse: Monitor = {
 describe("testing monitor controller", () => {
   beforeAll(async () => {
     const databaseName = "test-monitors";
-    const url = `mongodb://127.0.0.1/${databaseName}`;
+
+    let url = `mongodb://127.0.0.1/${databaseName}`;
+
+    if (process.env.USING_CI === "yes") {
+      url = createDbUrl(databaseName);
+    }
+
     try {
+      console.log("Connecting to MongoDB with url --------> ", url);
       await mongoose.connect(url);
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
+      return error;
     }
-    await UserCollection.collection.drop();
+
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
@@ -74,8 +80,8 @@ describe("testing monitor controller", () => {
       });
     const { accessToken } = response.body;
 
-    // req.user.userId isn't present in supertest,
-    // which is why a getCurrentUserId function is used
+    // this checks if the user's id is in auth headers
+    // if it isn't, tests won't run and error is thrown
     currentUserId = await getCurrentUserId(accessToken);
 
     if (!currentUserId) {
@@ -86,13 +92,12 @@ describe("testing monitor controller", () => {
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
 
-    await ApiCollection.collection.drop();
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
-
-    await MonitorCollection.collection.drop();
   });
 
   afterAll(async () => {
+    await mongoose.connection.db.dropDatabase();
+
     //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
@@ -108,10 +113,12 @@ describe("testing monitor controller", () => {
     await worker.close();
     await worker.disconnect();
 
-    //this needs to be here to wait for redis connection to properly close
-    await new Promise((res) => setTimeout(res, 3000));
+    //this needs to be here to wait for connections to properly close
+    await new Promise((res) => setTimeout(res, 4500));
+
+    //this should say "end"
     console.log("Redis connection: ", redisConfiguration.connection.status);
-  });
+  }, 10000);
 
   describe("testing monitor", () => {
     it("should not create monitor with setting off", async (): Promise<void> => {
@@ -222,6 +229,9 @@ describe("testing monitor controller", () => {
       await worker.close();
       await worker.disconnect();
 
+      //give time for connection to close properly, and prevent memory leaks
+      await new Promise((res) => setTimeout(res, 2000));
+
       console.log(
         "Start Queue Redis connection: ",
         redisConfiguration.connection.status
@@ -255,6 +265,9 @@ describe("testing monitor controller", () => {
       //place this exactly here to prevent memory leaks
       await redisConfiguration.connection.connect();
 
+      // give time for connection to open
+      await new Promise((res) => setTimeout(res, 1200));
+
       const startQueueResp = await agent.post(
         `${baseQueueUrl}${handleQueueUrl}`
       );
@@ -266,7 +279,11 @@ describe("testing monitor controller", () => {
 
       const getAllApisResp = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
 
-      const currentDateTime = new Date();
+      //adjusting the time to match the user's timezone
+      const currentDateTime =
+        Date.now() +
+        new Date().getTimezoneOffset() * 1000 * 60 +
+        1000 * 60 * 60 * mockUser.timezoneGMT;
 
       const formattedDateTime = new Intl.DateTimeFormat("en-US", {
         dateStyle: "medium",
@@ -290,11 +307,16 @@ describe("testing monitor controller", () => {
       await worker.close();
       await worker.disconnect();
 
+      //give time for connection to close properly, and prevent memory leaks
+      await new Promise((res) => setTimeout(res, 2000));
+
       console.log(
         "Ping Queue Test Redis connection: ",
         redisConfiguration.connection.status
       );
-    });
+
+      //10 sec timeout to prevent test from stopping as database connections are updating
+    }, 10000);
 
     it("should remove monitor and jobs from queue", async (): Promise<void> => {
       mockMonitor.monitorSetting = MonitorSettingOptions.OFF;

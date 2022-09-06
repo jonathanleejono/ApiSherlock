@@ -1,9 +1,4 @@
 import {
-  deleteApiSuccessMsg,
-  pingAllApisSuccessMsg,
-  pingOneApiSuccessMsg,
-} from "constants/messages";
-import {
   baseApiUrl,
   baseAuthUrl,
   baseSeedDbUrl,
@@ -18,7 +13,12 @@ import {
   pingOneApiUrl,
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
+import {
+  deleteApiSuccessMsg,
+  pingAllApisSuccessMsg,
+  pingOneApiSuccessMsg,
+} from "constants/messages";
 import { redisConfiguration } from "controllers/queueController";
 import { ApiMonitoringOptions } from "enum/apis";
 import { mockApi } from "mocks/mockApi";
@@ -26,12 +26,11 @@ import { mockApis } from "mocks/mockApis";
 import { mockApisStats } from "mocks/mockApisStats";
 import { editMockApiUrl, mockUpdatedApis } from "mocks/mockUpdatedApis";
 import { mockUser } from "mocks/mockUser";
-import ApiCollection from "models/ApiCollection";
 import { Api } from "models/ApiDocument";
-import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
+import { createDbUrl } from "test/dbUrl";
 import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
@@ -60,13 +59,21 @@ const testApiResponse: Api = {
 describe("testing api controller", () => {
   beforeAll(async () => {
     const databaseName = "test-apis";
-    const url = `mongodb://127.0.0.1/${databaseName}`;
+
+    let url = `mongodb://127.0.0.1/${databaseName}`;
+
+    if (process.env.USING_CI === "yes") {
+      url = createDbUrl(databaseName);
+    }
+
     try {
+      console.log("Connecting to MongoDB with url --------> ", url);
       await mongoose.connect(url);
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
+      return error;
     }
-    await UserCollection.collection.drop();
+
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
@@ -87,16 +94,22 @@ describe("testing api controller", () => {
 
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-    await ApiCollection.collection.drop();
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });
 
   afterAll(async () => {
+    //collections don't exist at the start,
+    //so drop them in afterAll and not beforeAll
+    await mongoose.connection.db.dropDatabase();
+
     //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
     await redisConfiguration.connection.quit();
-  });
+
+    //set timeout for connections to close properly to prevent memory leaks
+    await new Promise((res) => setTimeout(res, 4000));
+  }, 10000);
 
   describe("testing apis", () => {
     it("should get all APIs", async (): Promise<void> => {
@@ -213,17 +226,18 @@ describe("testing api controller", () => {
       it("should ping all apis", async (): Promise<void> => {
         const pingResponse = await agent.post(`${baseApiUrl}${pingAllApisUrl}`);
 
-        // give 3 seconds (3000 milliseconds) for database to update
-        await new Promise((res) => setTimeout(res, 3000));
+        // give 4 seconds for database to update
+        await new Promise((res) => setTimeout(res, 4000));
 
         const response = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
 
         expect(pingResponse.statusCode).toBe(200);
         expect(pingResponse.body).toEqual(pingAllApisSuccessMsg);
         expect(response.statusCode).toBe(200);
+
         //don't forget to reverse allApis
         expect(response.body.allApis.reverse()).toMatchObject(mockUpdatedApis);
-      }, 30000);
+      }, 10000);
     });
 
     describe("testing auth for api routes", () => {

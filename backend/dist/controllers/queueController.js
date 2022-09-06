@@ -29,7 +29,6 @@ exports.redisConfiguration = {
         password: PROD_ENV ? REDIS_PASSWORD : undefined,
         maxRetriesPerRequest: null,
     }),
-    sharedConnection: true,
 };
 const startQueue = async (req, res) => {
     try {

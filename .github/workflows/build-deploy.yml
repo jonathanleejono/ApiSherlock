@@ -1,0 +1,131 @@
+name: Build and Deploy
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      MONGO_URL: ${{secrets.MONGO_URL}}
+      JWT_SECRET: ${{secrets.JWT_SECRET}}
+      JWT_ACCESS_TOKEN_LIFETIME: ${{secrets.JWT_ACCESS_TOKEN_LIFETIME}}
+      JWT_REFRESH_TOKEN_LIFETIME: ${{secrets.JWT_REFRESH_TOKEN_LIFETIME}}
+      NODE_ENV: ${{secrets.NODE_ENV}}
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      CORS_ORIGIN: ${{secrets.CORS_ORIGIN}}
+      REACT_APP_BASE_URL: ${{secrets.REACT_APP_BASE_URL}}
+      REACT_APP_MSW_DEV: ${{secrets.REACT_APP_MSW_DEV}}
+      REACT_APP_SECRET_KEY: ${{secrets.REACT_APP_SECRET_KEY}}
+      USING_CI: ${{secrets.USING_CI}}
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+            - 6379:6379
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+        mongodb-version: ['5.0', '6.0']
+        mongodb-username: ['ci']
+        mongodb-password: ['ci']
+        mongodb-db: ['ci']
+        mongodb-port: [23456]
+
+    steps:
+      - name: Pulling Git repo
+        uses: actions/checkout@v3
+
+      - name: Start MongoDB Server v${{ matrix.mongodb-version }}
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+          mongodb-username: ${{ matrix.mongodb-username }}
+          mongodb-password: ${{ matrix.mongodb-password }}
+          mongodb-port: ${{ matrix.mongodb-port }}
+          mongodb-db: ${{ matrix.mongodb-db }}
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install && npm audit fix
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm run test
+        env:
+          USING_CI: ${{secrets.USING_CI}}
+          MONGODB_USERNAME: ${{ matrix.mongodb-username }}
+          MONGODB_PASSWORD: ${{ matrix.mongodb-password }}
+          MONGODB_PORT: ${{ matrix.mongodb-port }}
+          MONGODB_DB: ${{ matrix.mongodb-db }}
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
+      # this install script suppresses warnings
+      - name: Install all frontend dependencies
+        run: |
+          cd client
+          npm run install-testing
+
+      - name: Test frontend
+        run: |
+          cd client
+          npm run test-only
+      
+  deploy:
+    runs-on: ubuntu-latest
+
+  # jobs run in parallel, but using need creates a sequential dependent order
+    needs: [build]
+
+    steps:
+      - name: Pulling git repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install && npm audit fix
+
+      - name: Building backend webpack
+        run: |
+          cd backend
+          npm run build
+
+      - name: Deploying backend to Vercel
+        uses: amondnet/vercel-action@v20 
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} 
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID_BACKEND }} 
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_BACKEND }} 
+          working-directory: ./backend
+
+      - name: Deploying frontend to Vercel
+        uses: amondnet/vercel-action@v20 
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} 
+          vercel-args: '--prod'
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID_FRONTEND }} 
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_FRONTEND }} 
+          working-directory: ./client

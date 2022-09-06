@@ -15,7 +15,7 @@ import {
   resetMockUsersDbUrl,
   seedMockApisDbUrl,
   seedMockUsersDbUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
 
 const router = express.Router();
 

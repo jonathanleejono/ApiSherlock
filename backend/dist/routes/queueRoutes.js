@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const urls_1 = require("constants/urls");
+const apiUrls_1 = require("constants/apiUrls");
 const queueController_1 = require("controllers/queueController");
 const express_1 = require("express");
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
@@ -21,7 +21,7 @@ function createRateLimiter(minutes, maxRequests) {
     return _rateLimiter;
 }
 router
-    .route(`${urls_1.handleQueueUrl}`)
+    .route(`${apiUrls_1.handleQueueUrl}`)
     .post(createRateLimiter(15, 2), queueController_1.startQueue)
     .delete(createRateLimiter(15, 2), queueController_1.removeQueue);
 exports.default = router;

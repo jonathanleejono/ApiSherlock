@@ -1,6 +1,6 @@
-import { registerUserUrl, updateUserUrl } from "constants/urls";
+import { registerUserUrl, updateUserUrl } from "constants/apiUrls";
 import { NextFunction, Request, Response } from "express";
-import { check, validationResult } from "express-validator";
+import { body, check, validationResult } from "express-validator";
 
 export function createValidationFor(route: string) {
   switch (route) {
@@ -13,7 +13,10 @@ export function createValidationFor(route: string) {
       ];
     case updateUserUrl:
       return [
-        check("email").isEmail().withMessage("Please enter a valid email"),
+        body("email")
+          .optional()
+          .isEmail()
+          .withMessage("Please enter a valid email"),
       ];
     default:
       return [];

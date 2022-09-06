@@ -3,7 +3,7 @@ import {
   refreshAccessTokenUrl,
   registerUserUrl,
   updateUserUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
 import {
   login,
   refreshAccessToken,

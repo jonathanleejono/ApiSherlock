@@ -1,4 +1,3 @@
-import { pingHealthCheckSuccessMsg } from "constants/messages";
 import {
   baseApiUrl,
   baseAuthUrl,
@@ -6,7 +5,8 @@ import {
   baseQueueUrl,
   baseSeedDbUrl,
   pingHealthCheckUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
+import { pingHealthCheckSuccessMsg } from "constants/messages";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectDB from "db/connect";
@@ -43,6 +43,11 @@ const validateEnv = makeValidator((x) => {
     return str({ choices: ["development", "test", "production", "staging"] });
 });
 
+const validateCI = makeValidator((x) => {
+  if (!x) throw new Error("Value is empty");
+  else return str({ choices: ["no", "yes"] });
+});
+
 //throws error if env variable is missing
 cleanEnv(process.env, {
   MONGO_URL: validateStr(),
@@ -53,6 +58,7 @@ cleanEnv(process.env, {
   CORS_ORIGIN: validateStr(),
   REDIS_HOST: validateStr(),
   REDIS_PORT: port(),
+  USING_CI: validateCI(),
 });
 
 if (process.env.NODE_ENV === "production") {
@@ -113,6 +119,7 @@ const start = async () => {
     }
   } catch (error) {
     console.log(error);
+    throw new Error("Error starting app");
   }
 };
 

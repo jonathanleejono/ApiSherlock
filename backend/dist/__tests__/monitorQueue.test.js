@@ -26,20 +26,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const apiUrls_1 = require("constants/apiUrls");
 const messages_1 = require("constants/messages");
 const monitor_1 = require("constants/options/monitor");
 const queue_1 = require("constants/queue");
-const urls_1 = require("constants/urls");
 const queueController_1 = require("controllers/queueController");
 const monitor_2 = require("enum/monitor");
 const mockMonitor_1 = require("mocks/mockMonitor");
 const mockUser_1 = require("mocks/mockUser");
-const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
-const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
-const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
 const supertest_1 = __importStar(require("supertest"));
+const dbUrl_1 = require("test/dbUrl");
 const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
 let currentUserId;
@@ -60,17 +58,21 @@ const testMonitorResponse = {
 describe("testing monitor controller", () => {
     beforeAll(async () => {
         const databaseName = "test-monitors";
-        const url = `mongodb://127.0.0.1/${databaseName}`;
+        let url = `mongodb://127.0.0.1/${databaseName}`;
+        if (process.env.USING_CI === "yes") {
+            url = (0, dbUrl_1.createDbUrl)(databaseName);
+        }
         try {
+            console.log("Connecting to MongoDB with url --------> ", url);
             await mongoose_1.default.connect(url);
         }
         catch (error) {
             console.log("Error connecting to MongoDB/Mongoose: ", error);
+            return error;
         }
-        await UserCollection_1.default.collection.drop();
-        await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
+        await (0, supertest_1.default)(server_1.default).post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)
-            .post(`${urls_1.baseAuthUrl}${urls_1.loginUserUrl}`)
+            .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
             .send({
             email: mockUser_1.mockUser.email,
             password: mockUser_1.mockUser.password,
@@ -83,11 +85,10 @@ describe("testing monitor controller", () => {
         }
         const cookie = response.header["set-cookie"];
         await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-        await ApiCollection_1.default.collection.drop();
-        await agent.post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockApisDbUrl}`);
-        await MonitorCollection_1.default.collection.drop();
+        await agent.post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockApisDbUrl}`);
     });
     afterAll(async () => {
+        await mongoose_1.default.connection.db.dropDatabase();
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
         const queueScheduler = await (0, queue_1.getQueueScheduler)();
@@ -98,14 +99,14 @@ describe("testing monitor controller", () => {
         const worker = await (0, queue_1.getQueueWorker)();
         await worker.close();
         await worker.disconnect();
-        await new Promise((res) => setTimeout(res, 3000));
+        await new Promise((res) => setTimeout(res, 4500));
         console.log("Redis connection: ", queueController_1.redisConfiguration.connection.status);
-    });
+    }, 10000);
     describe("testing monitor", () => {
         it("should not create monitor with setting off", async () => {
             mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.OFF;
             const response = await agent
-                .post(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
+                .post(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             Object.assign(testMonitorResponse, mockMonitor_1.mockMonitor);
             expect(response.statusCode).toBe(400);
@@ -113,7 +114,7 @@ describe("testing monitor controller", () => {
         it("should create monitor with setting ON", async () => {
             mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.ON;
             const response = await agent
-                .post(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
+                .post(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             Object.assign(testMonitorResponse, mockMonitor_1.mockMonitor);
             expect(response.statusCode).toBe(201);
@@ -121,35 +122,35 @@ describe("testing monitor controller", () => {
         });
         it("should not create a second monitor", async () => {
             const response = await agent
-                .post(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
+                .post(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             expect(response.statusCode).toBe(400);
         });
         it("should not delete a monitor with setting ON", async () => {
-            const response = await agent.delete(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`);
+            const response = await agent.delete(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`);
             expect(response.statusCode).toBe(400);
         });
         it("should update monitor", async () => {
             mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.OFF;
             const response = await agent
-                .patch(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
+                .patch(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             Object.assign(testMonitorResponse, mockMonitor_1.mockMonitor);
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining(testMonitorResponse));
         });
         it("should delete monitor", async () => {
-            const response = await agent.delete(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`);
+            const response = await agent.delete(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`);
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining(messages_1.deleteMonitorSuccessMsg));
         });
         it("should start queue", async () => {
             mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.ON;
             const createMonitorResp = await agent
-                .post(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
+                .post(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             expect(createMonitorResp.statusCode).toBe(201);
-            const startQueueResp = await agent.post(`${urls_1.baseQueueUrl}${urls_1.handleQueueUrl}`);
+            const startQueueResp = await agent.post(`${apiUrls_1.baseQueueUrl}${apiUrls_1.handleQueueUrl}`);
             expect(startQueueResp.statusCode).toBe(200);
             const myQueue = await (0, queue_1.getQueue)();
             const repeatableJobs = await myQueue.getRepeatableJobs();
@@ -162,29 +163,34 @@ describe("testing monitor controller", () => {
             const worker = await (0, queue_1.getQueueWorker)();
             await worker.close();
             await worker.disconnect();
+            await new Promise((res) => setTimeout(res, 2000));
             console.log("Start Queue Redis connection: ", queueController_1.redisConfiguration.connection.status);
         });
         it("should ping monitored apis in queue", async () => {
             const currentHour = new Date().getHours();
             const hour = currentHour > 12 ? currentHour - 12 : currentHour;
-            const updateMonitorResp = await agent
-                .patch(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
-                .send({
+            const updates = {
                 scheduleType: monitor_2.MonitorScheduleTypeOptions.DATE,
                 dateDayOfWeek: monitor_1.validMonitorDateDayOfWeekOptions[new Date().getDay()],
                 dateHour: hour,
-                dateAMOrPM: currentHour > 12
+                dateAMOrPM: currentHour > 12 || currentHour === 12
                     ? monitor_2.MonitorDateAMOrPMOptions.PM
                     : monitor_2.MonitorDateAMOrPMOptions.AM,
                 dateMinute: new Date().getMinutes(),
-            });
+            };
+            const updateMonitorResp = await agent
+                .patch(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
+                .send(updates);
             expect(updateMonitorResp.statusCode).toBe(200);
             await queueController_1.redisConfiguration.connection.connect();
-            const startQueueResp = await agent.post(`${urls_1.baseQueueUrl}${urls_1.handleQueueUrl}`);
+            await new Promise((res) => setTimeout(res, 1200));
+            const startQueueResp = await agent.post(`${apiUrls_1.baseQueueUrl}${apiUrls_1.handleQueueUrl}`);
             expect(startQueueResp.statusCode).toBe(200);
             await new Promise((res) => setTimeout(res, 3000));
-            const getAllApisResp = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`);
-            const currentDateTime = new Date();
+            const getAllApisResp = await agent.get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getAllApisUrl}`);
+            const currentDateTime = Date.now() +
+                new Date().getTimezoneOffset() * 1000 * 60 +
+                1000 * 60 * 60 * mockUser_1.mockUser.timezoneGMT;
             const formattedDateTime = new Intl.DateTimeFormat("en-US", {
                 dateStyle: "medium",
             }).format(currentDateTime);
@@ -198,19 +204,20 @@ describe("testing monitor controller", () => {
             const worker = await (0, queue_1.getQueueWorker)();
             await worker.close();
             await worker.disconnect();
+            await new Promise((res) => setTimeout(res, 2000));
             console.log("Ping Queue Test Redis connection: ", queueController_1.redisConfiguration.connection.status);
-        });
+        }, 10000);
         it("should remove monitor and jobs from queue", async () => {
             mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.OFF;
             await agent
-                .patch(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
+                .patch(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             const deleteMonitorResp = await agent
-                .delete(`${urls_1.baseMonitorUrl}${urls_1.handleMonitorUrl}`)
+                .delete(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             expect(deleteMonitorResp.statusCode).toBe(200);
             await queueController_1.redisConfiguration.connection.connect();
-            const removeQueueResp = await agent.delete(`${urls_1.baseQueueUrl}${urls_1.handleQueueUrl}`);
+            const removeQueueResp = await agent.delete(`${apiUrls_1.baseQueueUrl}${apiUrls_1.handleQueueUrl}`);
             expect(removeQueueResp.statusCode).toBe(200);
             const myQueue = await (0, queue_1.getQueue)();
             const repeatableJobs = await myQueue.getRepeatableJobs();

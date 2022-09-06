@@ -1,4 +1,3 @@
-import { cookieName } from "constants/cookies";
 import {
   baseAuthUrl,
   baseSeedDbUrl,
@@ -6,14 +5,15 @@ import {
   registerUserUrl,
   seedMockUsersDbUrl,
   updateUserUrl,
-} from "constants/urls";
+} from "constants/apiUrls";
+import { cookieName } from "constants/cookies";
 import { redisConfiguration } from "controllers/queueController";
 import { mockUser } from "mocks/mockUser";
-import UserCollection from "models/UserCollection";
 import { User } from "models/UserDocument";
 import mongoose from "mongoose";
 import app from "server";
 import request from "supertest";
+import { createDbUrl } from "test/dbUrl";
 
 const user: Partial<User> = {
   name: "jane",
@@ -27,21 +27,34 @@ const { name, email, password, timezoneGMT } = user;
 describe("testing users controller", () => {
   beforeAll(async () => {
     const databaseName = "test-users";
-    const url = `mongodb://127.0.0.1/${databaseName}`;
+
+    let url = `mongodb://127.0.0.1/${databaseName}`;
+
+    if (process.env.USING_CI === "yes") {
+      url = createDbUrl(databaseName);
+    }
+
     try {
+      console.log("Connecting to MongoDB with url --------> ", url);
       await mongoose.connect(url);
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
+      return error;
     }
-    await UserCollection.collection.drop();
+
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
   });
 
   afterAll(async () => {
+    await mongoose.connection.db.dropDatabase();
+
     //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
     await redisConfiguration.connection.quit();
+
+    //set timeout for connections to close properly to prevent memory leaks
+    await new Promise((res) => setTimeout(res, 4000));
   });
 
   describe("given a user's name, email, and password", () => {
