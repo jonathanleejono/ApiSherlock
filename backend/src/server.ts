@@ -15,7 +15,6 @@ import { cleanEnv, makeValidator, port, str } from "envalid";
 import express from "express";
 import "express-async-errors";
 import mongoSanitize from "express-mongo-sanitize";
-import getPort from "get-port";
 import helmet from "helmet";
 import authenticateUser from "middleware/authenticateUser";
 import errorHandlerMiddleware from "middleware/errorHandler";
@@ -103,19 +102,11 @@ if (process.env.NODE_ENV === "test") {
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-let serverPort: number = parseInt(process.env.PORT as string) || 5000;
-
 const start = async () => {
   try {
-    //getPort chooses a different port if 5000 isn't available,
-    //this prevents collisions during tests
-    if (process.env.NODE_ENV !== "production") {
-      serverPort = await getPort({ port: 5000 });
-    }
-
     if (process.env.NODE_ENV !== "test") {
-      app.listen(serverPort, async () => {
-        console.log(`Server is listening on port ${serverPort}...`);
+      app.listen(process.env.PORT || 5000, async () => {
+        console.log(`Server is listening...`);
       });
       // the tests have their individual db connections,
       // so the main connection isn't needed
