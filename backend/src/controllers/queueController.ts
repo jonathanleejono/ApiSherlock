@@ -148,7 +148,11 @@ export const startQueue = async (
 
     const repeatOptions = await getRepeatOptions();
 
-    setQueueScheduler(new QueueScheduler(queueName, redisConfiguration));
+    setQueueScheduler(
+      new QueueScheduler(queueName, {
+        connection: redisConfiguration.connection.duplicate(),
+      })
+    );
 
     // jobDetails is just a description, but can also hold a value
     // in this case, instead of individually storing each url as a separate job,
