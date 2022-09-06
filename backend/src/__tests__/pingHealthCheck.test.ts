@@ -29,9 +29,6 @@ describe("testing if supertest and jest works", () => {
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
     await redisConfiguration.connection.quit();
-
-    //this is here to wait for connections to properly close
-    await new Promise((res) => setTimeout(res, 200));
   });
   it("should ping server", async () => {
     const res = await request(app).get(pingHealthCheckUrl);

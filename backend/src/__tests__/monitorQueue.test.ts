@@ -279,7 +279,11 @@ describe("testing monitor controller", () => {
 
       const getAllApisResp = await agent.get(`${baseApiUrl}${getAllApisUrl}`);
 
-      const currentDateTime = new Date();
+      //adjusting the time to match the user's timezone
+      const currentDateTime =
+        Date.now() +
+        new Date().getTimezoneOffset() * 1000 * 60 +
+        1000 * 60 * 60 * mockUser.timezoneGMT;
 
       const formattedDateTime = new Intl.DateTimeFormat("en-US", {
         dateStyle: "medium",
