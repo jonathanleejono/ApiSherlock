@@ -248,7 +248,10 @@ const showStats = async (req, res) => {
             monthlyApis = aggregate
                 .map((item) => {
                 const { _id: { year, month }, count, } = item;
-                const date = (0, datetime_1.formatCurrentMonthYear)(year, month);
+                let date = (0, datetime_1.formatCurrentMonthYear)(year, month);
+                if (process.env.NODE_ENV === "production") {
+                    date = (0, datetime_1.formatCurrentMonthYear)(year, month - 1);
+                }
                 return { date, count };
             })
                 .reverse();

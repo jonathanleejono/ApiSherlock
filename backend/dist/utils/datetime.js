@@ -1,16 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.formatCurrentMonthYear = exports.getDateWithUTCOffset = void 0;
-function getDateWithUTCOffset(offset, showTime = true) {
+function getDateWithUTCOffset(userTimezone, showTime = true) {
     try {
-        const currentDateTime = Date.now() +
-            new Date().getTimezoneOffset() * 1000 * 60 +
-            1000 * 60 * 60 * offset;
+        const currentServerDateTime = Date.now();
+        const localServerTimeDiffWithUTC = new Date().getTimezoneOffset() * 1000 * 60;
+        const timezoneOffset = 1000 * 60 * 60 * userTimezone;
+        const currentDateTimeAdjusted = currentServerDateTime + localServerTimeDiffWithUTC + timezoneOffset;
         const formattedDateTime = new Intl.DateTimeFormat("en-US", {
             dateStyle: "medium",
             timeStyle: showTime ? "medium" : undefined,
-        }).format(currentDateTime);
-        return `${formattedDateTime} (GMT ${offset})`;
+        }).format(currentDateTimeAdjusted);
+        return `${formattedDateTime} (GMT ${userTimezone})`;
     }
     catch (error) {
         console.error("Error getting date: ", error);

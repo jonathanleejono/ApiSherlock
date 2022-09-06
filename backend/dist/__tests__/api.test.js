@@ -26,8 +26,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const apiUrls_1 = require("constants/apiUrls");
 const messages_1 = require("constants/messages");
-const urls_1 = require("constants/urls");
 const queueController_1 = require("controllers/queueController");
 const apis_1 = require("enum/apis");
 const mockApi_1 = require("mocks/mockApi");
@@ -35,11 +35,10 @@ const mockApis_1 = require("mocks/mockApis");
 const mockApisStats_1 = require("mocks/mockApisStats");
 const mockUpdatedApis_1 = require("mocks/mockUpdatedApis");
 const mockUser_1 = require("mocks/mockUser");
-const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
-const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
 const supertest_1 = __importStar(require("supertest"));
+const dbUrl_1 = require("test/dbUrl");
 const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
 let currentUserId;
@@ -62,17 +61,21 @@ const testApiResponse = {
 describe("testing api controller", () => {
     beforeAll(async () => {
         const databaseName = "test-apis";
-        const url = `mongodb://127.0.0.1/${databaseName}`;
+        let url = `mongodb://127.0.0.1/${databaseName}`;
+        if (process.env.USING_CI === "yes") {
+            url = (0, dbUrl_1.createDbUrl)(databaseName);
+        }
         try {
+            console.log("Connecting to MongoDB with url --------> ", url);
             await mongoose_1.default.connect(url);
         }
         catch (error) {
             console.log("Error connecting to MongoDB/Mongoose: ", error);
+            return error;
         }
-        await UserCollection_1.default.collection.drop();
-        await (0, supertest_1.default)(server_1.default).post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockUsersDbUrl}`);
+        await (0, supertest_1.default)(server_1.default).post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)
-            .post(`${urls_1.baseAuthUrl}${urls_1.loginUserUrl}`)
+            .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
             .send({
             email: mockUser_1.mockUser.email,
             password: mockUser_1.mockUser.password,
@@ -85,17 +88,18 @@ describe("testing api controller", () => {
         }
         const cookie = response.header["set-cookie"];
         await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
-        await ApiCollection_1.default.collection.drop();
-        await agent.post(`${urls_1.baseSeedDbUrl}${urls_1.seedMockApisDbUrl}`);
+        await agent.post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockApisDbUrl}`);
     });
     afterAll(async () => {
+        await mongoose_1.default.connection.db.dropDatabase();
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
         await queueController_1.redisConfiguration.connection.quit();
-    });
+        await new Promise((res) => setTimeout(res, 4000));
+    }, 10000);
     describe("testing apis", () => {
         it("should get all APIs", async () => {
-            const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`);
+            const response = await agent.get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getAllApisUrl}`);
             const responseAllApis = response.body.allApis.reverse();
             apiObjId = responseAllApis[0]._id;
             expect(response.statusCode).toBe(200);
@@ -105,7 +109,7 @@ describe("testing api controller", () => {
             expect(response.body.numOfPages).toEqual(Math.ceil(mockApis_1.mockApis.length / 10));
         });
         it("should get all APIs with query params", async () => {
-            const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}/?monitoring=${apis_1.ApiMonitoringOptions.OFF}`);
+            const response = await agent.get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getAllApisUrl}/?monitoring=${apis_1.ApiMonitoringOptions.OFF}`);
             testApiResponse.url = mockQueryParamApi.url;
             testApiResponse.host = mockQueryParamApi.host;
             testApiResponse.monitoring = mockQueryParamApi.monitoring;
@@ -117,7 +121,7 @@ describe("testing api controller", () => {
         });
         it("should create an api object", async () => {
             const response = await agent
-                .post(`${urls_1.baseApiUrl}${urls_1.createApiUrl}`)
+                .post(`${apiUrls_1.baseApiUrl}${apiUrls_1.createApiUrl}`)
                 .send(mockApi_1.mockApi);
             testApiResponse.url = mockApi_1.mockApi.url;
             testApiResponse.host = mockApi_1.mockApi.host;
@@ -131,7 +135,7 @@ describe("testing api controller", () => {
                 url: mockUpdatedApis_1.editMockApiUrl,
             };
             const response = await agent
-                .patch(`${urls_1.baseApiUrl}${urls_1.editApiUrl}/${apiObjId}`)
+                .patch(`${apiUrls_1.baseApiUrl}${apiUrls_1.editApiUrl}/${apiObjId}`)
                 .send({
                 url: updatedData.url,
             });
@@ -143,21 +147,21 @@ describe("testing api controller", () => {
             expect(response.body).toEqual(expect.objectContaining(testApiResponse));
         });
         it("should delete an api object", async () => {
-            const response = await agent.delete(`${urls_1.baseApiUrl}${urls_1.deleteApiUrl}/${apiToDeleteId}`);
+            const response = await agent.delete(`${apiUrls_1.baseApiUrl}${apiUrls_1.deleteApiUrl}/${apiToDeleteId}`);
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining(messages_1.deleteApiSuccessMsg));
         });
         it("should show stats of all apis", async () => {
-            const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisStatsUrl}`);
+            const response = await agent.get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getAllApisStatsUrl}`);
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining(mockApisStats_1.mockApisStats));
         });
         describe("testing the pinging of APIs", () => {
             it("should ping api", async () => {
-                const pingResponse = await agent.post(`${urls_1.baseApiUrl}${urls_1.pingOneApiUrl}/${apiObjId}`);
+                const pingResponse = await agent.post(`${apiUrls_1.baseApiUrl}${apiUrls_1.pingOneApiUrl}/${apiObjId}`);
                 expect(pingResponse.statusCode).toBe(200);
                 expect(pingResponse.body).toEqual(messages_1.pingOneApiSuccessMsg);
-                const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getApiUrl}/${apiObjId}`);
+                const response = await agent.get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getApiUrl}/${apiObjId}`);
                 testApiResponse._id = expect.any(String);
                 testApiResponse.url = mockUpdatedApi.url;
                 testApiResponse.status = mockUpdatedApi.status;
@@ -167,26 +171,26 @@ describe("testing api controller", () => {
                 expect(response.body).toEqual(expect.objectContaining(testApiResponse));
             });
             it("should ping all apis", async () => {
-                const pingResponse = await agent.post(`${urls_1.baseApiUrl}${urls_1.pingAllApisUrl}`);
-                await new Promise((res) => setTimeout(res, 3000));
-                const response = await agent.get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`);
+                const pingResponse = await agent.post(`${apiUrls_1.baseApiUrl}${apiUrls_1.pingAllApisUrl}`);
+                await new Promise((res) => setTimeout(res, 4000));
+                const response = await agent.get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getAllApisUrl}`);
                 expect(pingResponse.statusCode).toBe(200);
                 expect(pingResponse.body).toEqual(messages_1.pingAllApisSuccessMsg);
                 expect(response.statusCode).toBe(200);
                 expect(response.body.allApis.reverse()).toMatchObject(mockUpdatedApis_1.mockUpdatedApis);
-            }, 30000);
+            }, 10000);
         });
         describe("testing auth for api routes", () => {
             it("should throw unauthenticated error with wrong token", async () => {
                 const response = await agent
-                    .get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`)
+                    .get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getAllApisUrl}`)
                     .set("Authorization", `Bearer INVALID_TOKEN`);
                 expect(response.statusCode).toBe(401);
             });
         });
         it("should throw unauthenticated error with wrong cookie", async () => {
             const response = await agent
-                .get(`${urls_1.baseApiUrl}${urls_1.getAllApisUrl}`)
+                .get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getAllApisUrl}`)
                 .set("Cookie", `STALE_COOKIE`);
             expect(response.statusCode).toBe(401);
         });
