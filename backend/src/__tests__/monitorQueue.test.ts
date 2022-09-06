@@ -13,12 +13,7 @@ import {
 } from "constants/apiUrls";
 import { deleteMonitorSuccessMsg } from "constants/messages";
 import { validMonitorDateDayOfWeekOptions } from "constants/options/monitor";
-import {
-  getQueue,
-  getQueueScheduler,
-  getQueueWorker,
-  jobBaseName,
-} from "constants/queue";
+import { getQueue, jobBaseName } from "constants/queue";
 import { redisConfiguration } from "controllers/queueController";
 import {
   MonitorDateAMOrPMOptions,
@@ -32,6 +27,7 @@ import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
 import { createDbUrl } from "test/dbUrl";
+import { closeRedisConnection } from "utils/closeRedisConnection";
 import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
@@ -102,19 +98,7 @@ describe("testing monitor controller", () => {
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
 
-    //this all has to be here in this exact order
-    //this is to close connections to prevent memory leaks
-    const queueScheduler = await getQueueScheduler();
-    await queueScheduler.close();
-    const myQueue = await getQueue();
-    await myQueue.obliterate();
-    await myQueue.close();
-    const worker = await getQueueWorker();
-    await worker.close();
-    await worker.disconnect();
-
-    //this needs to be here to wait for connections to properly close
-    await new Promise((res) => setTimeout(res, 4500));
+    await closeRedisConnection();
 
     //this should say "end"
     console.log("Redis connection: ", redisConfiguration.connection.status);
@@ -220,17 +204,7 @@ describe("testing monitor controller", () => {
 
       expect(repeatableJobs[0].cron).toEqual((1000 * 60 * 60).toString());
 
-      //this all has to be here in this exact order
-      const queueScheduler = await getQueueScheduler();
-      await queueScheduler.close();
-      await myQueue.obliterate();
-      await myQueue.close();
-      const worker = await getQueueWorker();
-      await worker.close();
-      await worker.disconnect();
-
-      //give time for connection to close properly, and prevent memory leaks
-      await new Promise((res) => setTimeout(res, 2000));
+      await closeRedisConnection();
 
       console.log(
         "Start Queue Redis connection: ",
@@ -297,18 +271,7 @@ describe("testing monitor controller", () => {
         `(GMT ${mockUser.timezoneGMT})`
       );
 
-      //this all has to be here in this exact order
-      const queueScheduler = await getQueueScheduler();
-      await queueScheduler.close();
-      const myQueue = await getQueue();
-      await myQueue.obliterate();
-      await myQueue.close();
-      const worker = await getQueueWorker();
-      await worker.close();
-      await worker.disconnect();
-
-      //give time for connection to close properly, and prevent memory leaks
-      await new Promise((res) => setTimeout(res, 2000));
+      await closeRedisConnection();
 
       console.log(
         "Ping Queue Test Redis connection: ",
