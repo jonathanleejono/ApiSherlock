@@ -41,8 +41,8 @@ export const redisConfiguration = {
   connection: new Redis({
     host: REDIS_HOST as string,
     port: parseInt(REDIS_PORT as string),
-    username: PROD_ENV ? REDIS_USERNAME : undefined,
-    password: PROD_ENV ? REDIS_PASSWORD : undefined,
+    username: PROD_ENV ? (REDIS_USERNAME as string) : undefined,
+    password: PROD_ENV ? (REDIS_PASSWORD as string) : undefined,
     maxRetriesPerRequest: null,
   }),
 };
@@ -104,7 +104,7 @@ export const startQueue = async (
 
       setRepeatOptions({
         cron: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
-        limit: 1,
+        limit: 2,
       });
     }
 
@@ -113,31 +113,31 @@ export const startQueue = async (
         case MonitorIntervalScheduleOptions.WEEKLY:
           setRepeatOptions({
             every: 1000 * 60 * 60 * 24 * 7,
-            limit: 1,
+            limit: 2,
           });
           break;
         case MonitorIntervalScheduleOptions.DAILY:
           setRepeatOptions({
             every: 1000 * 60 * 60 * 24,
-            limit: 1,
+            limit: 2,
           });
           break;
         case MonitorIntervalScheduleOptions.HOURLY:
           setRepeatOptions({
             every: 1000 * 60 * 60,
-            limit: 1,
+            limit: 2,
           });
           break;
         case MonitorIntervalScheduleOptions.MINUTES:
           setRepeatOptions({
             every: 1000 * 60,
-            limit: 1,
+            limit: 2,
           });
           break;
         default:
           setRepeatOptions({
             every: 1000 * 60 * 60 * 24,
-            limit: 1,
+            limit: 2,
           });
       }
     }

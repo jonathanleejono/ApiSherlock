@@ -62,7 +62,7 @@ const startQueue = async (req, res) => {
             }
             (0, queue_1.setRepeatOptions)({
                 cron: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
-                limit: 1,
+                limit: 2,
             });
         }
         if (scheduleType === monitor_1.MonitorScheduleTypeOptions.INTERVAL) {
@@ -70,38 +70,40 @@ const startQueue = async (req, res) => {
                 case monitor_1.MonitorIntervalScheduleOptions.WEEKLY:
                     (0, queue_1.setRepeatOptions)({
                         every: 1000 * 60 * 60 * 24 * 7,
-                        limit: 1,
+                        limit: 2,
                     });
                     break;
                 case monitor_1.MonitorIntervalScheduleOptions.DAILY:
                     (0, queue_1.setRepeatOptions)({
                         every: 1000 * 60 * 60 * 24,
-                        limit: 1,
+                        limit: 2,
                     });
                     break;
                 case monitor_1.MonitorIntervalScheduleOptions.HOURLY:
                     (0, queue_1.setRepeatOptions)({
                         every: 1000 * 60 * 60,
-                        limit: 1,
+                        limit: 2,
                     });
                     break;
                 case monitor_1.MonitorIntervalScheduleOptions.MINUTES:
                     (0, queue_1.setRepeatOptions)({
                         every: 1000 * 60,
-                        limit: 1,
+                        limit: 2,
                     });
                     break;
                 default:
                     (0, queue_1.setRepeatOptions)({
                         every: 1000 * 60 * 60 * 24,
-                        limit: 1,
+                        limit: 2,
                     });
             }
         }
         (0, queue_1.setQueue)(new bullmq_1.Queue(queueName, exports.redisConfiguration));
         const myQueue = await (0, queue_1.getQueue)();
         const repeatOptions = await (0, queue_1.getRepeatOptions)();
-        (0, queue_1.setQueueScheduler)(new bullmq_1.QueueScheduler(queueName, exports.redisConfiguration));
+        (0, queue_1.setQueueScheduler)(new bullmq_1.QueueScheduler(queueName, {
+            connection: exports.redisConfiguration.connection.duplicate(),
+        }));
         async function addJobToQueue(jobDetails) {
             console.log(jobDetails);
             await myQueue.add(jobName, { jobDetails }, { repeat: repeatOptions });

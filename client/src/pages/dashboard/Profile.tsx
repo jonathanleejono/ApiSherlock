@@ -26,7 +26,7 @@ const Profile = () => {
   const handleSubmit = async (event: React.FormEvent<EventTarget>) => {
     event.preventDefault();
 
-    if (!name || !email || !timezoneGMT) {
+    if (!name || !email) {
       toast.error(pleaseFillOutAllValues);
       return;
     }
