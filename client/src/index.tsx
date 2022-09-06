@@ -32,7 +32,7 @@ cleanEnv(process.env, {
 
 if (NODE_ENV === "development") {
   cleanEnv(process.env, {
-    REACT_APP__MSW_DEV: validateStr(),
+    REACT_APP_MSW_DEV: validateStr(),
   });
 }
 

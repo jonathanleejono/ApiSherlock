@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom";
 import "@testing-library/jest-dom/extend-expect";
 import { setToken } from "constants/token";
 import * as ResizeObserverModule from "resize-observer-polyfill";
@@ -12,6 +13,8 @@ import {
 } from "test/data/testKeys";
 import * as usersDB from "test/data/usersDb";
 import { server } from "test/mocks/server";
+
+//keep this file in main folder directory
 
 global.ResizeObserver = ResizeObserverModule.default;
 

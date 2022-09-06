@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import App from "app";
+import App from "App";
 import {
   authUserSuccessMsg,
   createApiSuccessMsg,

@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const apiUrls_1 = require("constants/apiUrls");
 const messages_1 = require("constants/messages");
-const urls_1 = require("constants/urls");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cors_1 = __importDefault(require("cors"));
 const connect_1 = __importDefault(require("db/connect"));
@@ -39,6 +39,12 @@ const validateEnv = (0, envalid_1.makeValidator)((x) => {
     else
         return (0, envalid_1.str)({ choices: ["development", "test", "production", "staging"] });
 });
+const validateCI = (0, envalid_1.makeValidator)((x) => {
+    if (!x)
+        throw new Error("Value is empty");
+    else
+        return (0, envalid_1.str)({ choices: ["no", "yes"] });
+});
 (0, envalid_1.cleanEnv)(process.env, {
     MONGO_URL: validateStr(),
     JWT_SECRET: validateStr(),
@@ -48,6 +54,7 @@ const validateEnv = (0, envalid_1.makeValidator)((x) => {
     CORS_ORIGIN: validateStr(),
     REDIS_HOST: validateStr(),
     REDIS_PORT: (0, envalid_1.port)(),
+    USING_CI: validateCI(),
 });
 if (process.env.NODE_ENV === "production") {
     (0, envalid_1.cleanEnv)(process.env, {
@@ -67,15 +74,15 @@ app.use((0, cors_1.default)({
     credentials: true,
 }));
 app.use((0, cookie_parser_1.default)());
-app.use(urls_1.pingHealthCheckUrl, (_, res) => {
+app.use(apiUrls_1.pingHealthCheckUrl, (_, res) => {
     res.send(messages_1.pingHealthCheckSuccessMsg);
 });
-app.use(`${urls_1.baseAuthUrl}`, authRoutes_1.default);
-app.use(`${urls_1.baseApiUrl}`, authenticateUser_1.default, apiRoutes_1.default);
-app.use(`${urls_1.baseMonitorUrl}`, authenticateUser_1.default, monitorRoutes_1.default);
-app.use(`${urls_1.baseQueueUrl}`, authenticateUser_1.default, queueRoutes_1.default);
+app.use(`${apiUrls_1.baseAuthUrl}`, authRoutes_1.default);
+app.use(`${apiUrls_1.baseApiUrl}`, authenticateUser_1.default, apiRoutes_1.default);
+app.use(`${apiUrls_1.baseMonitorUrl}`, authenticateUser_1.default, monitorRoutes_1.default);
+app.use(`${apiUrls_1.baseQueueUrl}`, authenticateUser_1.default, queueRoutes_1.default);
 if (process.env.NODE_ENV === "test") {
-    app.use(`${urls_1.baseSeedDbUrl}`, seedDbRoutes_1.default);
+    app.use(`${apiUrls_1.baseSeedDbUrl}`, seedDbRoutes_1.default);
 }
 app.use(notFoundRoute_1.default);
 app.use(errorHandler_1.default);
@@ -91,6 +98,7 @@ const start = async () => {
     }
     catch (error) {
         console.log(error);
+        throw new Error("Error starting app");
     }
 };
 start();

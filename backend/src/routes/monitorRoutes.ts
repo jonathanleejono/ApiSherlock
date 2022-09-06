@@ -1,4 +1,4 @@
-import { handleMonitorUrl } from "constants/urls";
+import { handleMonitorUrl } from "constants/apiUrls";
 import {
   createMonitor,
   deleteMonitor,

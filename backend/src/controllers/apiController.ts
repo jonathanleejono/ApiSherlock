@@ -402,7 +402,11 @@ const showStats = async (req: Request, res: Response) => {
             count,
           } = item;
 
-          const date = formatCurrentMonthYear(year, month);
+          let date = formatCurrentMonthYear(year, month);
+
+          if (process.env.NODE_ENV === "production") {
+            date = formatCurrentMonthYear(year, month - 1);
+          }
 
           return { date, count };
         })

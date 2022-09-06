@@ -1,4 +1,4 @@
-import { handleQueueUrl } from "constants/urls";
+import { handleQueueUrl } from "constants/apiUrls";
 import { removeQueue, startQueue } from "controllers/queueController";
 import { Response, Router } from "express";
 import rateLimiter from "express-rate-limit";

@@ -58,7 +58,8 @@
     "test-only": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint ./",
-    "husky": "cd .. && husky install client/.husky"
+    "husky": "cd .. && husky install client/.husky",
+    "install-testing": "npm i --no-audit"
   },
   "eslintConfig": {
     "extends": [
@@ -81,7 +82,10 @@
   "jest": {
     "transformIgnorePatterns": [
       "node_modules/(?!@ngrx|(?!deck.gl)|ng-dynamic)"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^~(.*)$": "<rootDir>/src$1"
+    }
   },
   "msw": {
     "workerDirectory": "public"
