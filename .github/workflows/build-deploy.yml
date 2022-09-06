@@ -93,16 +93,6 @@ jobs:
       - name: Pulling git repo
         uses: actions/checkout@v3
 
-      - name: Setup Node.js 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Building backend webpack
-        run: |
-          cd backend
-          npm run build
-
       - name: Deploying backend to Vercel
         uses: amondnet/vercel-action@v20 
         with:
