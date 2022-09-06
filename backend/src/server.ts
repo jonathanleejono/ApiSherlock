@@ -103,11 +103,15 @@ if (process.env.NODE_ENV === "test") {
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
+let serverPort: number = parseInt(process.env.PORT as string) || 5000;
+
 const start = async () => {
   try {
     //getPort chooses a different port if 5000 isn't available,
     //this prevents collisions during tests
-    const serverPort = await getPort({ port: 5000 });
+    if (process.env.NODE_ENV !== "production") {
+      serverPort = await getPort({ port: 5000 });
+    }
 
     if (process.env.NODE_ENV !== "test") {
       app.listen(serverPort, async () => {
