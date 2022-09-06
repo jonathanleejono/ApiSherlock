@@ -12,22 +12,13 @@ jobs:
       JWT_ACCESS_TOKEN_LIFETIME: ${{secrets.JWT_ACCESS_TOKEN_LIFETIME}}
       JWT_REFRESH_TOKEN_LIFETIME: ${{secrets.JWT_REFRESH_TOKEN_LIFETIME}}
       NODE_ENV: ${{secrets.NODE_ENV}}
-      REDIS_HOST: localhost
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       CORS_ORIGIN: ${{secrets.CORS_ORIGIN}}
       REACT_APP_BASE_URL: ${{secrets.REACT_APP_BASE_URL}}
       REACT_APP_MSW_DEV: ${{secrets.REACT_APP_MSW_DEV}}
       REACT_APP_SECRET_KEY: ${{secrets.REACT_APP_SECRET_KEY}}
       USING_CI: ${{secrets.USING_CI}}
-
-    services:
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     strategy:
       matrix:
@@ -37,6 +28,7 @@ jobs:
         mongodb-password: ['ci']
         mongodb-db: ['ci']
         mongodb-port: [23456]
+        redis-version: [5, 6]
 
     steps:
       - name: Pulling Git repo
@@ -50,6 +42,11 @@ jobs:
           mongodb-password: ${{ matrix.mongodb-password }}
           mongodb-port: ${{ matrix.mongodb-port }}
           mongodb-db: ${{ matrix.mongodb-db }}
+
+      - name: Start Redis v${{ matrix.redis-version }}
+        uses: supercharge/redis-github-action@1.4.0
+        with:
+          redis-version: ${{ matrix.redis-version }}
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -71,6 +68,8 @@ jobs:
           MONGODB_PASSWORD: ${{ matrix.mongodb-password }}
           MONGODB_PORT: ${{ matrix.mongodb-port }}
           MONGODB_DB: ${{ matrix.mongodb-db }}
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
 
       # this install script suppresses warnings
       - name: Install all frontend dependencies
