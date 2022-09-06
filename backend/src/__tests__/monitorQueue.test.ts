@@ -27,13 +27,11 @@ import {
 } from "enum/monitor";
 import { mockMonitor } from "mocks/mockMonitor";
 import { mockUser } from "mocks/mockUser";
-import ApiCollection from "models/ApiCollection";
-import MonitorCollection from "models/MonitorCollection";
 import { Monitor } from "models/MonitorDocument";
-import UserCollection from "models/UserCollection";
 import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
+import { createDbUrl } from "test/dbUrl";
 import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
@@ -55,9 +53,6 @@ const testMonitorResponse: Monitor = {
   __v: expect.any(Number),
 };
 
-const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_DB } =
-  process.env;
-
 describe("testing monitor controller", () => {
   beforeAll(async () => {
     const databaseName = "test-monitors";
@@ -65,17 +60,17 @@ describe("testing monitor controller", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${MONGODB_DB}?authMechanism=DEFAULT&authSource=admin`;
+      url = createDbUrl(databaseName);
     }
 
     try {
+      console.log("Connecting to MongoDB with url --------> ", url);
       await mongoose.connect(url);
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
       return error;
     }
 
-    await UserCollection.collection.drop();
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
@@ -97,13 +92,12 @@ describe("testing monitor controller", () => {
     const cookie = response.header["set-cookie"];
     await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
 
-    await ApiCollection.collection.drop();
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
-
-    await MonitorCollection.collection.drop();
   });
 
   afterAll(async () => {
+    await mongoose.connection.db.dropDatabase();
+
     //all of this is to prevent memory leaks
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
@@ -119,12 +113,12 @@ describe("testing monitor controller", () => {
     await worker.close();
     await worker.disconnect();
 
-    //this needs to be here to wait for redis connection to properly close
-    await new Promise((res) => setTimeout(res, 3000));
+    //this needs to be here to wait for connections to properly close
+    await new Promise((res) => setTimeout(res, 4500));
 
     //this should say "end"
     console.log("Redis connection: ", redisConfiguration.connection.status);
-  });
+  }, 10000);
 
   describe("testing monitor", () => {
     it("should not create monitor with setting off", async (): Promise<void> => {

@@ -31,8 +31,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
-        mongodb-version: ['4.2', '4.4', '5.0', '6.0']
+        node-version: [16.x, 18.x]
+        mongodb-version: ['5.0', '6.0']
         mongodb-username: ['ci']
         mongodb-password: ['ci']
         mongodb-db: ['ci']
@@ -64,7 +64,7 @@ jobs:
       - name: Run backend tests
         run: |
           cd backend
-          npm run test -- api.test.ts
+          npm run test
         env:
           USING_CI: ${{secrets.USING_CI}}
           MONGODB_USERNAME: ${{ matrix.mongodb-username }}
@@ -92,6 +92,21 @@ jobs:
     steps:
       - name: Pulling git repo
         uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install && npm audit fix
+
+      - name: Building backend webpack
+        run: |
+          cd backend
+          npm run build
 
       - name: Deploying backend to Vercel
         uses: amondnet/vercel-action@v20 

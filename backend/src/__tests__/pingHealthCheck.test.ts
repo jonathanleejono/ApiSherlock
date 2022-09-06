@@ -4,9 +4,7 @@ import { redisConfiguration } from "controllers/queueController";
 import mongoose from "mongoose";
 import app from "server";
 import request from "supertest";
-
-const { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_DB } =
-  process.env;
+import { createDbUrl } from "test/dbUrl";
 
 describe("testing if supertest and jest works", () => {
   beforeAll(async () => {
@@ -15,10 +13,11 @@ describe("testing if supertest and jest works", () => {
     let url = `mongodb://127.0.0.1/${databaseName}`;
 
     if (process.env.USING_CI === "yes") {
-      url = `mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PORT}/${MONGODB_DB}?authMechanism=DEFAULT&authSource=admin`;
+      url = createDbUrl(databaseName);
     }
 
     try {
+      console.log("Connecting to MongoDB with url --------> ", url);
       await mongoose.connect(url);
     } catch (error) {
       console.log("Error connecting to MongoDB/Mongoose: ", error);
@@ -30,6 +29,9 @@ describe("testing if supertest and jest works", () => {
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
     await redisConfiguration.connection.quit();
+
+    //this is here to wait for connections to properly close
+    await new Promise((res) => setTimeout(res, 200));
   });
   it("should ping server", async () => {
     const res = await request(app).get(pingHealthCheckUrl);
