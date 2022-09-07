@@ -65,22 +65,22 @@ const getMonitor = async (req, res) => {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
         }
-        let monitor;
-        const _monitor = await MonitorCollection_1.default.findOne({ createdBy: user._id });
-        if (!_monitor) {
-            monitor = {
+        const monitor = await MonitorCollection_1.default.findOne({ createdBy: user._id });
+        if (!monitor) {
+            const _monitor = {
                 monitorSetting: monitor_2.MonitorSettingOptions.OFF,
                 scheduleType: monitor_2.MonitorScheduleTypeOptions.INTERVAL,
                 intervalSchedule: monitor_2.MonitorIntervalScheduleOptions.WEEKLY,
-                dateDayOfWeek: 0,
-                dateHour: 0,
-                dateMinute: 0,
+                dateDayOfWeek: monitor_1.validMonitorDateDayOfWeekOptions[0],
+                dateHour: monitor_1.validMonitorDateHourOptions[0],
+                dateMinute: monitor_1.validMonitorDateMinuteOptions[0],
                 dateAMOrPM: monitor_2.MonitorDateAMOrPMOptions.AM,
             };
+            res.status(http_status_codes_1.StatusCodes.OK).json(_monitor);
         }
-        else
-            monitor = _monitor;
-        res.status(http_status_codes_1.StatusCodes.OK).json(monitor);
+        else {
+            res.status(http_status_codes_1.StatusCodes.OK).json(monitor);
+        }
     }
     catch (error) {
         (0, index_1.badRequestError)(res, error);

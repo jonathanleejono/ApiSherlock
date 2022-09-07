@@ -1,6 +1,9 @@
 import { deleteMonitorSuccessMsg } from "constants/messages";
 import {
   validCreateMonitorKeys,
+  validMonitorDateDayOfWeekOptions,
+  validMonitorDateHourOptions,
+  validMonitorDateMinuteOptions,
   validMonitorIntervalScheduleOptions,
   validMonitorScheduleTypeOptions,
   validMonitorSettingOptions,
@@ -20,6 +23,7 @@ import {
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import MonitorCollection from "models/MonitorCollection";
+import { Monitor } from "models/MonitorDocument";
 import {
   emptyValuesExist,
   validKeys,
@@ -137,25 +141,25 @@ const getMonitor = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    let monitor;
-
     //there should be only one monitor per user,
     //so no need to use monitor's id
-    const _monitor = await MonitorCollection.findOne({ createdBy: user._id });
+    const monitor = await MonitorCollection.findOne({ createdBy: user._id });
 
-    if (!_monitor) {
-      monitor = {
+    if (!monitor) {
+      const _monitor: Omit<Monitor, "_id" | "createdBy"> = {
         monitorSetting: MonitorSettingOptions.OFF,
         scheduleType: MonitorScheduleTypeOptions.INTERVAL,
         intervalSchedule: MonitorIntervalScheduleOptions.WEEKLY,
-        dateDayOfWeek: 0,
-        dateHour: 0,
-        dateMinute: 0,
+        dateDayOfWeek: validMonitorDateDayOfWeekOptions[0],
+        dateHour: validMonitorDateHourOptions[0],
+        dateMinute: validMonitorDateMinuteOptions[0],
         dateAMOrPM: MonitorDateAMOrPMOptions.AM,
       };
-    } else monitor = _monitor;
 
-    res.status(StatusCodes.OK).json(monitor);
+      res.status(StatusCodes.OK).json(_monitor);
+    } else {
+      res.status(StatusCodes.OK).json(monitor);
+    }
   } catch (error) {
     badRequestError(res, error);
     return;
