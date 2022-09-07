@@ -98,6 +98,8 @@ describe("testing monitor controller", () => {
     await Promise.all(mongoose.connections.map((con) => con.close()));
     await mongoose.disconnect();
 
+    await redisConfiguration.connection.flushall();
+
     await closeRedisConnection();
 
     //this should say "end"
@@ -238,9 +240,6 @@ describe("testing monitor controller", () => {
 
       //place this exactly here to prevent memory leaks
       await redisConfiguration.connection.connect();
-
-      // give time for connection to open
-      await new Promise((res) => setTimeout(res, 1200));
 
       const startQueueResp = await agent.post(
         `${baseQueueUrl}${handleQueueUrl}`

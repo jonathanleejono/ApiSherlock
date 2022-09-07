@@ -146,7 +146,7 @@ const startQueue = async (req, res) => {
         }
         if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
             const minute = dateMinute < 10 ? `0${dateMinute}` : dateMinute;
-            addJobToQueue(`Ping apis for user at ${monitor_1.MonitorDateDayOfWeekOptions[dateDayOfWeek]} ${dateHour}:${minute} ${dateAMOrPM}`);
+            addJobToQueue(`Ping apis for user at ${monitor_1.MonitorDateDayOfWeekOptions[dateDayOfWeek]} ${dateHour}:${minute} ${dateAMOrPM} (GMT ${user.timezoneGMT})`);
         }
         (0, queue_1.setQueueWorker)(new bullmq_1.Worker(queueName, pingAllMonitoredApis, exports.redisConfiguration));
         const worker = await (0, queue_1.getQueueWorker)();

@@ -169,7 +169,6 @@ describe("testing monitor controller", () => {
                 .send(updates);
             expect(updateMonitorResp.statusCode).toBe(200);
             await queueController_1.redisConfiguration.connection.connect();
-            await new Promise((res) => setTimeout(res, 1200));
             const startQueueResp = await agent.post(`${apiUrls_1.baseQueueUrl}${apiUrls_1.handleQueueUrl}`);
             expect(startQueueResp.statusCode).toBe(200);
             await new Promise((res) => setTimeout(res, 3000));

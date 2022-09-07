@@ -27,6 +27,7 @@ import Redis from "ioredis";
 import ApiCollection from "models/ApiCollection";
 import MonitorCollection from "models/MonitorCollection";
 import { getDateWithUTCOffset } from "utils/datetime";
+import { getCronUTCTime } from "utils/getCronUTCTime";
 import validateUserExists from "utils/validateUserExists";
 
 dotenv.config();
@@ -83,7 +84,10 @@ export const startQueue = async (
       dateAMOrPM,
     } = monitor;
 
-    // cron-parser: second, minute, hour, day of month, month, day of week
+    //first get user's selected monitoring time
+    //then, convert that monitoring time to cron time (in user's timezone)
+    //finally, convert cron time into UTC cron time (to match server)
+
     if (scheduleType === MonitorScheduleTypeOptions.DATE) {
       let hour = dateHour; // put default value of dateHour
 
@@ -102,12 +106,26 @@ export const startQueue = async (
         hour = dateHour;
       }
 
-      setRepeatOptions({
-        pattern: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
-        limit: 2,
+      const cronUTCTime = await getCronUTCTime({
+        timezone: user.timezoneGMT,
+        inputDay: dateDayOfWeek,
+        inputHour: hour,
+        inputMinute: dateMinute,
       });
+
+      //the server online uses UTC time, which is why cron is converted
+      setRepeatOptions({
+        pattern: PROD_ENV
+          ? cronUTCTime
+          : `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
+        limit: 2,
+      }); //limit 2 with cron/pattern means do it twice when
+      // the time is met (eg. do it twice at Sun 10:00AM, and do it twice next Sun 10:00AM)
     }
 
+    // limit 2 means repeats twice in the entire lifespan and stop,
+    // which is different from limit 2 with pattern/cron
+    // (eg. repeat once at hour 1, repeat twice at hour 2, and then stop)
     if (scheduleType === MonitorScheduleTypeOptions.INTERVAL) {
       switch (intervalSchedule) {
         case MonitorIntervalScheduleOptions.WEEKLY:
@@ -213,7 +231,7 @@ export const startQueue = async (
     if (scheduleType === MonitorScheduleTypeOptions.DATE) {
       const minute = dateMinute < 10 ? `0${dateMinute}` : dateMinute;
       addJobToQueue(
-        `Ping apis for user at ${MonitorDateDayOfWeekOptions[dateDayOfWeek]} ${dateHour}:${minute} ${dateAMOrPM}`
+        `Ping apis for user at ${MonitorDateDayOfWeekOptions[dateDayOfWeek]} ${dateHour}:${minute} ${dateAMOrPM} (GMT ${user.timezoneGMT})`
       );
     }
 

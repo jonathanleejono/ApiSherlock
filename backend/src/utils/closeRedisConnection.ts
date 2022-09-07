@@ -5,6 +5,7 @@ export async function closeRedisConnection() {
   //this all has to be here in this exact order
   const queueScheduler = await getQueueScheduler();
   await queueScheduler.close();
+  await queueScheduler.disconnect();
   const myQueue = await getQueue();
   await myQueue.obliterate();
   await myQueue.close();
@@ -13,5 +14,5 @@ export async function closeRedisConnection() {
   await worker.disconnect();
 
   //this needs to be here to wait for connections to properly close
-  await new Promise((res) => setTimeout(res, 3000));
+  await new Promise((res) => setTimeout(res, 3500));
 }

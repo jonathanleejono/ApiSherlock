@@ -6,6 +6,7 @@ describe("adding numbers, and testing if importing functions/modules work", () =
     //use this to prevent memory leaks
     await redisConfiguration.connection.quit();
   });
+
   it("should equal to result", () => {
     expect(sum(1, 2)).toEqual(3);
   });

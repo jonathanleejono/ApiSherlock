@@ -5,6 +5,7 @@ describe("subtracting numbers, and testing if jest works", () => {
     //use this to prevent memory leaks
     await redisConfiguration.connection.quit();
   });
+
   it("should equal to result", () => {
     expect(1 - 2).toEqual(-1);
   });
