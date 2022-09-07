@@ -16,6 +16,7 @@ const ioredis_1 = __importDefault(require("ioredis"));
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
 const datetime_1 = require("utils/datetime");
+const getCronUTCTime_1 = require("utils/getCronUTCTime");
 const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 dotenv_1.default.config();
 const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, NODE_ENV, REDIS_PASSWORD } = process.env;
@@ -60,8 +61,16 @@ const startQueue = async (req, res) => {
             if (dateHour === 12 && dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.PM) {
                 hour = dateHour;
             }
+            const cronUTCTime = await (0, getCronUTCTime_1.getCronUTCTime)({
+                timezone: user.timezoneGMT,
+                inputDay: dateDayOfWeek,
+                inputHour: hour,
+                inputMinute: dateMinute,
+            });
             (0, queue_1.setRepeatOptions)({
-                pattern: `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
+                pattern: PROD_ENV
+                    ? cronUTCTime
+                    : `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
                 limit: 2,
             });
         }

@@ -39,4 +39,15 @@ describe("testing if getCronUTCTime() converts time to GMT 0", () => {
       })
     ).toEqual("* 0 23 * * 0");
   });
+
+  it("should convert Wed 11:37AM GMT -4 to Wed 3:37PM GMT 0", async () => {
+    expect(
+      await getCronUTCTime({
+        timezone: -4,
+        inputDay: 3,
+        inputHour: 11,
+        inputMinute: 37,
+      })
+    ).toEqual("* 37 15 * * 3");
+  });
 });

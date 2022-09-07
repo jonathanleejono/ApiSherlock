@@ -92,6 +92,7 @@ describe("testing monitor controller", () => {
         await mongoose_1.default.connection.db.dropDatabase();
         await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
         await mongoose_1.default.disconnect();
+        await queueController_1.redisConfiguration.connection.flushall();
         await (0, closeRedisConnection_1.closeRedisConnection)();
         console.log("Redis connection: ", queueController_1.redisConfiguration.connection.status);
     }, 10000);
