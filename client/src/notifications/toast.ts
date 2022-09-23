@@ -40,25 +40,28 @@ const handleToast = (
 
     if (msg || message) {
       toast.success(`${msg || message}`);
-    } else if (defaultSuccessMsg) {
+    }
+
+    if (!(msg || message) && defaultSuccessMsg) {
       toast.success(`${defaultSuccessMsg}`);
     }
+
     return { data: "success", payload: resultAction.payload };
-  } else {
-    if (resultAction.payload) {
-      toast.dismiss();
-      const { error, msg, detail } = resultAction.payload;
-      if (error || msg || detail) {
-        toast.error(`${error || msg || detail}`);
-      }
-    } else {
-      toast.dismiss();
-      if (defaultErrorMsg) {
-        toast.error(`${defaultErrorMsg}`);
-      }
-    }
-    return { data: "error" };
   }
+
+  toast.dismiss();
+
+  const { error, msg, detail } = resultAction.payload;
+
+  if (error || msg || detail) {
+    toast.error(`${error || msg || detail}`);
+  }
+
+  if (!(error || msg || detail) && defaultErrorMsg) {
+    toast.error(`${defaultErrorMsg}`);
+  }
+
+  return { data: "error" };
 };
 
 const handleToastErrors = (
@@ -79,21 +82,22 @@ const handleToastErrors = (
     any,
     { rejectValue: any; dispatch: any; state: any }
   >,
-  defaultErrorMsg?: string
+  defaultErrorMsg: string
 ) => {
   if (!asyncThunk.fulfilled.match(resultAction)) {
-    if (resultAction.payload) {
-      const { error, msg, detail } = resultAction.payload;
-      if (error || msg || detail) {
-        toast.error(`${error || msg || detail}`);
-      }
-    } else {
-      if (defaultErrorMsg) {
-        toast.error(`${defaultErrorMsg}`);
-      }
+    const { error, msg, detail } = resultAction.payload;
+
+    if (error || msg || detail) {
+      toast.error(`${error || msg || detail}`);
     }
+
+    if (defaultErrorMsg) {
+      toast.error(`${defaultErrorMsg}`);
+    }
+
     return { data: "error" };
   }
+
   return { data: "success", payload: resultAction.payload };
 };
 

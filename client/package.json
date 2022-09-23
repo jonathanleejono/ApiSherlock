@@ -59,7 +59,7 @@
     "eject": "react-scripts eject",
     "lint": "eslint ./",
     "husky": "cd .. && husky install client/.husky",
-    "install-testing": "npm i --no-audit"
+    "install-no-audit": "npm i --no-audit"
   },
   "eslintConfig": {
     "extends": [
