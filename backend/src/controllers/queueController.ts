@@ -191,37 +191,24 @@ export const startQueue = async (
     }
 
     async function pingAllMonitoredApis() {
-      //the try catch is to ignore not found url error
-      Object.keys(apis).forEach(async (_, index: number) => {
-        try {
-          const res = await axios.get(apis[index].url);
-          if (res && res.status === 200) {
-            await ApiCollection.findOneAndUpdate(
-              { _id: apis[index].id },
-              {
-                status: ApiStatusOptions.HEALTHY,
-                lastPinged: getDateWithUTCOffset(user!.timezoneGMT),
-              },
-              {
-                new: true,
-                runValidators: true,
-              }
-            );
-          }
-        } catch (error) {
-          await ApiCollection.findOneAndUpdate(
-            { _id: apis[index].id },
-            {
-              status: ApiStatusOptions.UNHEALTHY,
-              lastPinged: getDateWithUTCOffset(user!.timezoneGMT),
-            },
-            {
-              new: true,
-              runValidators: true,
-            }
-          );
-        }
-      });
+      await Promise.all(
+        apis.map(async (api) => {
+          axios
+            .get(api.url)
+            .then(() => {
+              api.status = ApiStatusOptions.HEALTHY;
+              api.lastPinged = getDateWithUTCOffset(user!.timezoneGMT);
+
+              api.save();
+            })
+            .catch(() => {
+              api.status = ApiStatusOptions.UNHEALTHY;
+              api.lastPinged = getDateWithUTCOffset(user!.timezoneGMT);
+
+              api.save();
+            });
+        })
+      );
     }
 
     if (scheduleType === MonitorScheduleTypeOptions.INTERVAL) {

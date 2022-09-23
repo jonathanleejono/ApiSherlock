@@ -12,8 +12,7 @@ import checkPermissions from "utils/checkPermissions";
 import { getDateWithUTCOffset } from "utils/datetime";
 import validateUserExists from "utils/validateUserExists";
 
-//eslint-disable-next-line
-const pingAll = async (req: Request, res: Response): Promise<any> => {
+const pingAll = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await validateUserExists(req, res);
 
@@ -31,37 +30,27 @@ const pingAll = async (req: Request, res: Response): Promise<any> => {
       return;
     }
 
-    //the try catch is to ignore not found url error
-    Object.keys(apis).forEach(async (_, index: number) => {
-      try {
-        const res = await axios.get(apis[index].url);
-        if (res && res.status === 200) {
-          await ApiCollection.findOneAndUpdate(
-            { _id: apis[index].id },
-            {
-              status: ApiStatusOptions.HEALTHY,
-              lastPinged: getDateWithUTCOffset(user.timezoneGMT),
-            },
-            {
-              new: true,
-              runValidators: true,
-            }
-          );
-        }
-      } catch (error) {
-        await ApiCollection.findOneAndUpdate(
-          { _id: apis[index].id },
-          {
-            status: ApiStatusOptions.UNHEALTHY,
-            lastPinged: getDateWithUTCOffset(user.timezoneGMT),
-          },
-          {
-            new: true,
-            runValidators: true,
-          }
-        );
-      }
-    });
+    // using Promise.all() instead of .allSettled() works because
+    // no result is returned, only an update is made
+
+    await Promise.all(
+      apis.map(async (api) => {
+        axios
+          .get(api.url)
+          .then(() => {
+            api.status = ApiStatusOptions.HEALTHY;
+            api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
+
+            api.save();
+          })
+          .catch(() => {
+            api.status = ApiStatusOptions.UNHEALTHY;
+            api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
+
+            api.save();
+          });
+      })
+    );
 
     res.status(StatusCodes.OK).json(pingAllApisSuccessMsg);
   } catch (error) {
@@ -91,32 +80,17 @@ const pingOne = async (req: Request, res: Response): Promise<void> => {
     checkPermissions(res, user._id, api.createdBy);
 
     try {
-      const res = await axios.get(api.url);
-      if (res && res.status === 200) {
-        await ApiCollection.findOneAndUpdate(
-          { _id: api.id },
-          {
-            status: ApiStatusOptions.HEALTHY,
-            lastPinged: getDateWithUTCOffset(user.timezoneGMT),
-          },
-          {
-            new: true,
-            runValidators: true,
-          }
-        );
-      }
+      await axios.get(api.url);
+
+      api.status = ApiStatusOptions.HEALTHY;
+      api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
+
+      await api.save();
     } catch (error) {
-      await ApiCollection.findOneAndUpdate(
-        { _id: api.id },
-        {
-          status: ApiStatusOptions.UNHEALTHY,
-          lastPinged: getDateWithUTCOffset(user.timezoneGMT),
-        },
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
+      api.status = ApiStatusOptions.UNHEALTHY;
+      api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
+
+      await api.save();
     }
 
     res.status(StatusCodes.OK).json(pingOneApiSuccessMsg);

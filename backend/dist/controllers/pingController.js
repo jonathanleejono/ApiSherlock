@@ -27,29 +27,20 @@ const pingAll = async (req, res) => {
             (0, errors_1.notFoundError)(res, `No APIs found`);
             return;
         }
-        Object.keys(apis).forEach(async (_, index) => {
-            try {
-                const res = await axios_1.default.get(apis[index].url);
-                if (res && res.status === 200) {
-                    await ApiCollection_1.default.findOneAndUpdate({ _id: apis[index].id }, {
-                        status: apis_1.ApiStatusOptions.HEALTHY,
-                        lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
-                    }, {
-                        new: true,
-                        runValidators: true,
-                    });
-                }
-            }
-            catch (error) {
-                await ApiCollection_1.default.findOneAndUpdate({ _id: apis[index].id }, {
-                    status: apis_1.ApiStatusOptions.UNHEALTHY,
-                    lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
-                }, {
-                    new: true,
-                    runValidators: true,
-                });
-            }
-        });
+        await Promise.all(apis.map(async (api) => {
+            axios_1.default
+                .get(api.url)
+                .then(() => {
+                api.status = apis_1.ApiStatusOptions.HEALTHY;
+                api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+                api.save();
+            })
+                .catch(() => {
+                api.status = apis_1.ApiStatusOptions.UNHEALTHY;
+                api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+                api.save();
+            });
+        }));
         res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingAllApisSuccessMsg);
     }
     catch (error) {
@@ -73,25 +64,15 @@ const pingOne = async (req, res) => {
         }
         (0, checkPermissions_1.default)(res, user._id, api.createdBy);
         try {
-            const res = await axios_1.default.get(api.url);
-            if (res && res.status === 200) {
-                await ApiCollection_1.default.findOneAndUpdate({ _id: api.id }, {
-                    status: apis_1.ApiStatusOptions.HEALTHY,
-                    lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
-                }, {
-                    new: true,
-                    runValidators: true,
-                });
-            }
+            await axios_1.default.get(api.url);
+            api.status = apis_1.ApiStatusOptions.HEALTHY;
+            api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+            await api.save();
         }
         catch (error) {
-            await ApiCollection_1.default.findOneAndUpdate({ _id: api.id }, {
-                status: apis_1.ApiStatusOptions.UNHEALTHY,
-                lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
-            }, {
-                new: true,
-                runValidators: true,
-            });
+            api.status = apis_1.ApiStatusOptions.UNHEALTHY;
+            api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+            await api.save();
         }
         res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingOneApiSuccessMsg);
     }

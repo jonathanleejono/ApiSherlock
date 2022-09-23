@@ -126,29 +126,20 @@ const startQueue = async (req, res) => {
             return;
         }
         async function pingAllMonitoredApis() {
-            Object.keys(apis).forEach(async (_, index) => {
-                try {
-                    const res = await axios_1.default.get(apis[index].url);
-                    if (res && res.status === 200) {
-                        await ApiCollection_1.default.findOneAndUpdate({ _id: apis[index].id }, {
-                            status: apis_1.ApiStatusOptions.HEALTHY,
-                            lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
-                        }, {
-                            new: true,
-                            runValidators: true,
-                        });
-                    }
-                }
-                catch (error) {
-                    await ApiCollection_1.default.findOneAndUpdate({ _id: apis[index].id }, {
-                        status: apis_1.ApiStatusOptions.UNHEALTHY,
-                        lastPinged: (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT),
-                    }, {
-                        new: true,
-                        runValidators: true,
-                    });
-                }
-            });
+            await Promise.all(apis.map(async (api) => {
+                axios_1.default
+                    .get(api.url)
+                    .then(() => {
+                    api.status = apis_1.ApiStatusOptions.HEALTHY;
+                    api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+                    api.save();
+                })
+                    .catch(() => {
+                    api.status = apis_1.ApiStatusOptions.UNHEALTHY;
+                    api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+                    api.save();
+                });
+            }));
         }
         if (scheduleType === monitor_1.MonitorScheduleTypeOptions.INTERVAL) {
             addJobToQueue(`Ping apis for user at ${intervalSchedule}`);
