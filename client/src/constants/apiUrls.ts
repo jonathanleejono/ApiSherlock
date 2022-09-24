@@ -9,11 +9,11 @@ const createApiUrl = `${baseApiUrl}`;
 const deleteApiUrl = `${baseApiUrl}`; // needs :id
 const editApiUrl = `${baseApiUrl}`; // needs :id
 const getAllApisStatsUrl = `${baseApiUrl}/stats`;
-const pingAllApisUrl = `${baseApiUrl}/pingAll`;
-const pingOneApiUrl = `${baseApiUrl}/pingOne`; // needs :id
+const pingAllApisUrl = `${baseApiUrl}/ping/all`;
+const pingOneApiUrl = `${baseApiUrl}/ping`; // needs :id
 const registerUserUrl = `${baseAuthUrl}/register`;
 const loginUserUrl = `${baseAuthUrl}/login`;
-const updateUserUrl = `${baseAuthUrl}/updateUser`;
+const authUserUrl = `${baseAuthUrl}/user`;
 const refreshAccessTokenUrl = `${baseAuthUrl}/refreshToken`;
 const handleMonitorUrl = `${baseMonitorUrl}`;
 const handleQueueUrl = `${baseQueueUrl}`;
@@ -31,7 +31,7 @@ export {
   pingOneApiUrl,
   registerUserUrl,
   loginUserUrl,
-  updateUserUrl,
+  authUserUrl,
   refreshAccessTokenUrl,
   handleMonitorUrl,
   handleQueueUrl,

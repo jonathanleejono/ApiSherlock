@@ -19,7 +19,8 @@ import {
   pingAllApisSuccessMsg,
   pingOneApiSuccessMsg,
 } from "constants/messages";
-import { redisConfiguration } from "controllers/queueController";
+import closeMongoose from "db/closeMongoose";
+import connectMongoose from "db/connectMongoose";
 import { ApiMonitoringOptions } from "enum/apis";
 import { mockApi } from "mocks/mockApi";
 import { mockApis } from "mocks/mockApis";
@@ -31,7 +32,6 @@ import mongoose, { Schema } from "mongoose";
 import app from "server";
 import request, { agent as supertest } from "supertest";
 import { createDbUrl } from "test/dbUrl";
-import getCurrentUserId from "utils/getCurrentUserId";
 
 const agent = supertest(app);
 
@@ -56,25 +56,20 @@ const testApiResponse: Api = {
   __v: expect.any(Number),
 };
 
+const databaseName = "test-apis";
+
+let url = `mongodb://127.0.0.1/${databaseName}`;
+
+if (process.env.USING_CI === "yes") {
+  url = createDbUrl(databaseName);
+}
+
 describe("testing api controller", () => {
   beforeAll(async () => {
-    const databaseName = "test-apis";
-
-    let url = `mongodb://127.0.0.1/${databaseName}`;
-
-    if (process.env.USING_CI === "yes") {
-      url = createDbUrl(databaseName);
-    }
-
-    try {
-      console.log("Connecting to MongoDB with url --------> ", url);
-      await mongoose.connect(url);
-    } catch (error) {
-      console.log("Error connecting to MongoDB/Mongoose: ", error);
-      return error;
-    }
+    await connectMongoose(url);
 
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
+
     const response = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
       .send({
@@ -83,17 +78,14 @@ describe("testing api controller", () => {
       });
     const { accessToken } = response.body;
 
-    // req.user.userId isn't present in supertest,
-    // which is why a getCurrentUserId function is used
-    currentUserId = await getCurrentUserId(accessToken);
+    currentUserId = response.body.user.id;
 
     if (!currentUserId) {
       console.error("Couldn't get current user id");
       return;
     }
 
-    const cookie = response.header["set-cookie"];
-    await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
+    await agent.auth(accessToken, { type: "bearer" });
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });
 
@@ -102,13 +94,7 @@ describe("testing api controller", () => {
     //so drop them in afterAll and not beforeAll
     await mongoose.connection.db.dropDatabase();
 
-    //all of this is to prevent memory leaks
-    await Promise.all(mongoose.connections.map((con) => con.close()));
-    await mongoose.disconnect();
-    await redisConfiguration.connection.quit();
-
-    //set timeout for connections to close properly to prevent memory leaks
-    await new Promise((res) => setTimeout(res, 4000));
+    await closeMongoose();
   }, 10000);
 
   describe("testing apis", () => {
@@ -247,13 +233,6 @@ describe("testing api controller", () => {
           .set("Authorization", `Bearer INVALID_TOKEN`);
         expect(response.statusCode).toBe(401);
       });
-    });
-
-    it("should throw unauthenticated error with wrong cookie", async (): Promise<void> => {
-      const response = await agent
-        .get(`${baseApiUrl}${getAllApisUrl}`)
-        .set("Cookie", `STALE_COOKIE`);
-      expect(response.statusCode).toBe(401);
     });
   });
 });

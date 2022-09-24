@@ -22,7 +22,7 @@ jest.setTimeout(10000);
 
 beforeAll(() => {
   // Enable the mocking in tests.
-  // Bypass to ignore pingAll/pingOne axios url fetches
+  // Bypass to ignore pingAll/ping axios url fetches
   server.listen({ onUnhandledRequest: "bypass" });
   localStorage.removeItem(testUserKey);
   localStorage.removeItem(testAllApisKey);

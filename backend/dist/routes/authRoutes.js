@@ -27,8 +27,8 @@ router
     .post(createRateLimiter(15, 3), (0, expressValidator_1.createValidationFor)(`${apiUrls_1.registerUserUrl}`), expressValidator_1.checkValidationResult, authController_1.register);
 router.route(`${apiUrls_1.loginUserUrl}`).post(createRateLimiter(15, 10), authController_1.login);
 router
-    .route(`${apiUrls_1.updateUserUrl}`)
-    .patch(authenticateUser_1.default, (0, expressValidator_1.createValidationFor)(`${apiUrls_1.updateUserUrl}`), expressValidator_1.checkValidationResult, authController_1.updateUser);
-router.route(`${apiUrls_1.refreshAccessTokenUrl}`).get(authController_1.refreshAccessToken);
+    .route(`${apiUrls_1.authUserUrl}`)
+    .patch(authenticateUser_1.default, (0, expressValidator_1.createValidationFor)(`${apiUrls_1.authUserUrl}`), expressValidator_1.checkValidationResult, authController_1.updateUser)
+    .get(authenticateUser_1.default, authController_1.getAuthUser);
 exports.default = router;
 //# sourceMappingURL=authRoutes.js.map

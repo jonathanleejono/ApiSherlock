@@ -4,19 +4,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.seedApiCollection = exports.seedUsersCollection = exports.resetMonitorCollection = exports.resetApiCollection = exports.resetUsersCollection = void 0;
-const dotenv_1 = __importDefault(require("dotenv"));
+const envVars_1 = require("constants/envVars");
 const index_1 = require("errors/index");
 const mockApis_1 = require("mocks/mockApis");
 const mockUser_1 = require("mocks/mockUser");
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
 const UserCollection_1 = __importDefault(require("models/UserCollection"));
-const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
-dotenv_1.default.config();
-const TEST_ENV = process.env.NODE_ENV === "test";
+const getUser_1 = __importDefault(require("utils/getUser"));
 const resetUsersCollection = async (_, res) => {
     try {
-        if (!TEST_ENV) {
+        if (!envVars_1.TEST_ENV) {
             (0, index_1.badRequestError)(res, "Can only seed db in testing");
             return;
         }
@@ -34,7 +32,7 @@ const resetUsersCollection = async (_, res) => {
 exports.resetUsersCollection = resetUsersCollection;
 const resetApiCollection = async (_, res) => {
     try {
-        if (!TEST_ENV) {
+        if (!envVars_1.TEST_ENV) {
             (0, index_1.badRequestError)(res, "Can only seed db in testing");
             return;
         }
@@ -52,7 +50,7 @@ const resetApiCollection = async (_, res) => {
 exports.resetApiCollection = resetApiCollection;
 const resetMonitorCollection = async (_, res) => {
     try {
-        if (!TEST_ENV) {
+        if (!envVars_1.TEST_ENV) {
             (0, index_1.badRequestError)(res, "Can only seed db in testing");
             return;
         }
@@ -70,7 +68,7 @@ const resetMonitorCollection = async (_, res) => {
 exports.resetMonitorCollection = resetMonitorCollection;
 const seedUsersCollection = async (_, res) => {
     try {
-        if (!TEST_ENV) {
+        if (!envVars_1.TEST_ENV) {
             (0, index_1.badRequestError)(res, "Can only seed db in testing");
             return;
         }
@@ -89,13 +87,13 @@ const seedUsersCollection = async (_, res) => {
 };
 exports.seedUsersCollection = seedUsersCollection;
 const seedApiCollection = async (req, res) => {
-    if (!TEST_ENV) {
+    if (!envVars_1.TEST_ENV) {
         (0, index_1.badRequestError)(res, "Can only seed db in testing");
         return;
     }
     else {
         try {
-            const user = await (0, validateUserExists_1.default)(req, res);
+            const user = await (0, getUser_1.default)(req, res);
             if (!user) {
                 (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
                 return;
@@ -112,4 +110,4 @@ const seedApiCollection = async (req, res) => {
     }
 };
 exports.seedApiCollection = seedApiCollection;
-//# sourceMappingURL=seedDb.js.map
+//# sourceMappingURL=seedDB.js.map

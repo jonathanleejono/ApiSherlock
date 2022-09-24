@@ -1,4 +1,4 @@
-import { registerUserUrl, updateUserUrl } from "constants/apiUrls";
+import { authUserUrl, registerUserUrl } from "constants/apiUrls";
 import { NextFunction, Request, Response } from "express";
 import { body, check, validationResult } from "express-validator";
 
@@ -11,7 +11,7 @@ export function createValidationFor(route: string) {
           .isLength({ min: 6 })
           .withMessage("Please enter a password at least 6 characters long"),
       ];
-    case updateUserUrl:
+    case authUserUrl:
       return [
         body("email")
           .optional()

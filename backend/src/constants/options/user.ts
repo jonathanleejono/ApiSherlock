@@ -1,10 +1,7 @@
-import { mockUser } from "mocks/mockUser";
+import UserCollection from "models/UserCollection";
 
-// mockUser uses User typing
-const { name, email, password, timezoneGMT } = mockUser;
+export const validRegisterKeys = Object.keys(UserCollection.schema.obj);
 
-export const validRegisterKeys = Object.keys(mockUser);
+export const validLoginKeys = ["email", "password"];
 
-export const validLoginKeys = Object.keys({ email, password });
-
-export const validUpdateUserKeys = Object.keys({ name, email, timezoneGMT });
+export const validUpdateUserKeys = ["name", "email", "timezoneGMT"];

@@ -6,11 +6,7 @@ import {
   updateUserActionType,
   userSliceName,
 } from "constants/actionTypes";
-import {
-  loginUserUrl,
-  registerUserUrl,
-  updateUserUrl,
-} from "constants/apiUrls";
+import { authUserUrl, loginUserUrl, registerUserUrl } from "constants/apiUrls";
 import { setToken } from "constants/token";
 import { clearAllApisState } from "features/allApis/allApisSlice";
 import { resetApiState } from "features/api/apiSlice";
@@ -67,7 +63,7 @@ const updateUser = createAsyncThunk<
   }
 >(`${userSliceName}${updateUserActionType}`, async (updatingUser, thunkAPI) => {
   try {
-    const resp = await customFetch.patch(`${updateUserUrl}`, updatingUser);
+    const resp = await customFetch.patch(`${authUserUrl}`, updatingUser);
     return resp.data;
   } catch (error) {
     checkPermissions(error, thunkAPI);

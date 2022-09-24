@@ -1,12 +1,7 @@
+import { authUserUrl, loginUserUrl, registerUserUrl } from "constants/apiUrls";
 import {
-  loginUserUrl,
-  refreshAccessTokenUrl,
-  registerUserUrl,
-  updateUserUrl,
-} from "constants/apiUrls";
-import {
+  getAuthUser,
   login,
-  refreshAccessToken,
   register,
   updateUser,
 } from "controllers/authController";
@@ -48,16 +43,13 @@ router.route(`${loginUserUrl}`).post(createRateLimiter(15, 10), login);
 //user shouldn't be able to access another user's profile,
 //which is why authenticateUser is here
 router
-  .route(`${updateUserUrl}`)
+  .route(`${authUserUrl}`)
   .patch(
     authenticateUser,
-    createValidationFor(`${updateUserUrl}`),
+    createValidationFor(`${authUserUrl}`),
     checkValidationResult,
     updateUser
-  );
-
-//can't add authenticateUser middleware here, because user
-//doesn't have an access token, so only cookies are validated
-router.route(`${refreshAccessTokenUrl}`).get(refreshAccessToken);
+  )
+  .get(authenticateUser, getAuthUser);
 
 export default router;

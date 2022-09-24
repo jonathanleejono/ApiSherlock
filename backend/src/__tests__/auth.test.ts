@@ -1,13 +1,13 @@
 import {
+  authUserUrl,
   baseAuthUrl,
   baseSeedDbUrl,
   loginUserUrl,
   registerUserUrl,
   seedMockUsersDbUrl,
-  updateUserUrl,
 } from "constants/apiUrls";
-import { cookieName } from "constants/cookies";
-import { redisConfiguration } from "controllers/queueController";
+import closeMongoose from "db/closeMongoose";
+import connectMongoose from "db/connectMongoose";
 import { mockUser } from "mocks/mockUser";
 import { User } from "models/UserDocument";
 import mongoose from "mongoose";
@@ -15,32 +15,24 @@ import app from "server";
 import request from "supertest";
 import { createDbUrl } from "test/dbUrl";
 
-const user: Partial<User> = {
+const user: Omit<User, "_id"> = {
   name: "jane",
   email: "janedoe2@gmail.com",
   password: "password",
   timezoneGMT: -5,
 };
 
-const { name, email, password, timezoneGMT } = user;
+const databaseName = "test-users";
+
+let url = `mongodb://127.0.0.1/${databaseName}`;
+
+if (process.env.USING_CI === "yes") {
+  url = createDbUrl(databaseName);
+}
 
 describe("testing users controller", () => {
   beforeAll(async () => {
-    const databaseName = "test-users";
-
-    let url = `mongodb://127.0.0.1/${databaseName}`;
-
-    if (process.env.USING_CI === "yes") {
-      url = createDbUrl(databaseName);
-    }
-
-    try {
-      console.log("Connecting to MongoDB with url --------> ", url);
-      await mongoose.connect(url);
-    } catch (error) {
-      console.log("Error connecting to MongoDB/Mongoose: ", error);
-      return error;
-    }
+    await connectMongoose(url);
 
     await request(app).post(`${baseSeedDbUrl}${seedMockUsersDbUrl}`);
   });
@@ -48,13 +40,7 @@ describe("testing users controller", () => {
   afterAll(async () => {
     await mongoose.connection.db.dropDatabase();
 
-    //all of this is to prevent memory leaks
-    await Promise.all(mongoose.connections.map((con) => con.close()));
-    await mongoose.disconnect();
-    await redisConfiguration.connection.quit();
-
-    //set timeout for connections to close properly to prevent memory leaks
-    await new Promise((res) => setTimeout(res, 4000));
+    await closeMongoose();
   });
 
   describe("given a user's name, email, and password", () => {
@@ -62,10 +48,10 @@ describe("testing users controller", () => {
       const response = await request(app)
         .post(`${baseAuthUrl}${registerUserUrl}`)
         .send({
-          name: name,
-          email: email,
-          password: password,
-          timezoneGMT: timezoneGMT,
+          name: user.name,
+          email: user.email,
+          password: user.password,
+          timezoneGMT: user.timezoneGMT,
         });
 
       expect(response.statusCode).toBe(201);
@@ -74,8 +60,13 @@ describe("testing users controller", () => {
       );
       expect(response.body).toEqual(
         expect.objectContaining({
+          user: {
+            id: expect.any(String),
+            name: user.name,
+            email: user.email,
+            timezoneGMT: user.timezoneGMT,
+          },
           accessToken: expect.any(String),
-          user: { name, email, timezoneGMT },
         })
       );
     });
@@ -92,12 +83,13 @@ describe("testing users controller", () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(
         expect.objectContaining({
-          accessToken: expect.any(String),
           user: {
+            id: expect.any(String),
             name: mockUser.name,
             email: mockUser.email,
             timezoneGMT: mockUser.timezoneGMT,
           },
+          accessToken: expect.any(String),
         })
       );
     });
@@ -113,29 +105,56 @@ describe("testing users controller", () => {
       const { accessToken } = loginResponse.body;
 
       const response = await request(app)
-        .patch(`${baseAuthUrl}${updateUserUrl}`)
+        .patch(`${baseAuthUrl}${authUserUrl}`)
         .send({
           name: "bob",
           email: mockUser.email,
           timezoneGMT: mockUser.timezoneGMT,
         })
-        .set("Authorization", `Bearer ${accessToken}`)
-        .set("Cookie", loginResponse.header["set-cookie"]);
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(
         expect.objectContaining({
-          accessToken: expect.any(String),
           user: {
+            id: expect.any(String),
             name: "bob",
             email: mockUser.email,
             timezoneGMT: mockUser.timezoneGMT,
           },
+          accessToken: expect.any(String),
         })
       );
     });
 
-    it("should give unauthenticated response for wrong password", async (): Promise<void> => {
+    it("should get a user", async (): Promise<void> => {
+      const loginResponse = await request(app)
+        .post(`${baseAuthUrl}${loginUserUrl}`)
+        .send({
+          email: user.email,
+          password: user.password,
+        });
+
+      const { accessToken } = loginResponse.body;
+
+      const response = await request(app)
+        .get(`${baseAuthUrl}${authUserUrl}`)
+        .set("Authorization", `Bearer ${accessToken}`);
+
+      expect(response.statusCode).toBe(200);
+
+      // make sure there's no outer user key
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          name: user.name,
+          email: user.email,
+          timezoneGMT: user.timezoneGMT,
+        })
+      );
+    });
+
+    it("should give unauthorized response for wrong password", async (): Promise<void> => {
       const loginResponse = await request(app)
         .post(`${baseAuthUrl}${loginUserUrl}`)
         .send({
@@ -147,23 +166,25 @@ describe("testing users controller", () => {
     });
   });
 
-  describe("testing cookies", () => {
-    it("should show cookies in header", async () => {
-      const loginResponse = await request(app)
-        .post(`${baseAuthUrl}${loginUserUrl}`)
-        .send({
-          email: mockUser.email,
-          password: mockUser.password,
-        });
+  it("should give unauthorized response for invalid token ", async () => {
+    const loginResponse = await request(app)
+      .post(`${baseAuthUrl}${loginUserUrl}`)
+      .send({
+        email: mockUser.email,
+        password: mockUser.password,
+      });
 
-      const cookieHeader = loginResponse.headers["set-cookie"];
+    expect(loginResponse.statusCode).toBe(200);
 
-      expect(loginResponse.statusCode).toBe(200);
-      expect(cookieHeader).toBeTruthy();
+    const response = await request(app)
+      .patch(`${baseAuthUrl}${authUserUrl}`)
+      .send({
+        name: "bob",
+        email: mockUser.email,
+        timezoneGMT: mockUser.timezoneGMT,
+      })
+      .set("Authorization", `Bearer INVALID_TOKEN`);
 
-      const cookie = cookieHeader[0];
-
-      expect(cookie).toContain(cookieName);
-    });
+    expect(response.statusCode).toBe(401);
   });
 });

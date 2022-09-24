@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const apiUrls_1 = require("constants/apiUrls");
+const envVars_1 = require("constants/envVars");
 const messages_1 = require("constants/messages");
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cors_1 = __importDefault(require("cors"));
-const connect_1 = __importDefault(require("db/connect"));
+const connectMongoose_1 = __importDefault(require("db/connectMongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const envalid_1 = require("envalid");
 const express_1 = __importDefault(require("express"));
@@ -49,20 +49,19 @@ const validateCI = (0, envalid_1.makeValidator)((x) => {
     MONGO_URL: validateStr(),
     JWT_SECRET: validateStr(),
     JWT_ACCESS_TOKEN_LIFETIME: validateStr(),
-    JWT_REFRESH_TOKEN_LIFETIME: validateStr(),
     NODE_ENV: validateEnv(),
     CORS_ORIGIN: validateStr(),
     REDIS_HOST: validateStr(),
     REDIS_PORT: (0, envalid_1.port)(),
     USING_CI: validateCI(),
 });
-if (process.env.NODE_ENV === "production") {
+if (envVars_1.PROD_ENV) {
     (0, envalid_1.cleanEnv)(process.env, {
         REDIS_USERNAME: validateStr(),
         REDIS_PASSWORD: validateStr(),
     });
 }
-if (process.env.NODE_ENV !== "production") {
+if (!envVars_1.PROD_ENV) {
     app.use((0, morgan_1.default)("dev"));
 }
 app.use(express_1.default.json());
@@ -73,7 +72,6 @@ app.use((0, cors_1.default)({
     origin: [process.env.CORS_ORIGIN],
     credentials: true,
 }));
-app.use((0, cookie_parser_1.default)());
 app.use(apiUrls_1.pingHealthCheckUrl, (_, res) => {
     res.send(messages_1.pingHealthCheckSuccessMsg);
 });
@@ -81,7 +79,7 @@ app.use(`${apiUrls_1.baseAuthUrl}`, authRoutes_1.default);
 app.use(`${apiUrls_1.baseApiUrl}`, authenticateUser_1.default, apiRoutes_1.default);
 app.use(`${apiUrls_1.baseMonitorUrl}`, authenticateUser_1.default, monitorRoutes_1.default);
 app.use(`${apiUrls_1.baseQueueUrl}`, authenticateUser_1.default, queueRoutes_1.default);
-if (process.env.NODE_ENV === "test") {
+if (envVars_1.TEST_ENV) {
     app.use(`${apiUrls_1.baseSeedDbUrl}`, seedDbRoutes_1.default);
 }
 app.use(notFoundRoute_1.default);
@@ -89,14 +87,14 @@ app.use(errorHandler_1.default);
 let serverPort = parseInt(process.env.PORT) || 5000;
 const start = async () => {
     try {
-        if (process.env.NODE_ENV !== "production") {
+        if (envVars_1.PROD_ENV) {
             serverPort = await (0, get_port_1.default)({ port: 5000 });
         }
-        if (process.env.NODE_ENV !== "test") {
+        if (!envVars_1.TEST_ENV) {
             app.listen(serverPort, async () => {
                 console.log(`Server is listening on port ${serverPort}...`);
             });
-            await (0, connect_1.default)(process.env.MONGO_URL);
+            await (0, connectMongoose_1.default)(process.env.MONGO_URL);
         }
     }
     catch (error) {

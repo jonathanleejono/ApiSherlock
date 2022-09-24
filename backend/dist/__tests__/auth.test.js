@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const apiUrls_1 = require("constants/apiUrls");
-const cookies_1 = require("constants/cookies");
-const queueController_1 = require("controllers/queueController");
+const closeMongoose_1 = __importDefault(require("db/closeMongoose"));
+const connectMongoose_1 = __importDefault(require("db/connectMongoose"));
 const mockUser_1 = require("mocks/mockUser");
 const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
@@ -17,46 +17,40 @@ const user = {
     password: "password",
     timezoneGMT: -5,
 };
-const { name, email, password, timezoneGMT } = user;
+const databaseName = "test-users";
+let url = `mongodb://127.0.0.1/${databaseName}`;
+if (process.env.USING_CI === "yes") {
+    url = (0, dbUrl_1.createDbUrl)(databaseName);
+}
 describe("testing users controller", () => {
     beforeAll(async () => {
-        const databaseName = "test-users";
-        let url = `mongodb://127.0.0.1/${databaseName}`;
-        if (process.env.USING_CI === "yes") {
-            url = (0, dbUrl_1.createDbUrl)(databaseName);
-        }
-        try {
-            console.log("Connecting to MongoDB with url --------> ", url);
-            await mongoose_1.default.connect(url);
-        }
-        catch (error) {
-            console.log("Error connecting to MongoDB/Mongoose: ", error);
-            return error;
-        }
+        await (0, connectMongoose_1.default)(url);
         await (0, supertest_1.default)(server_1.default).post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockUsersDbUrl}`);
     });
     afterAll(async () => {
         await mongoose_1.default.connection.db.dropDatabase();
-        await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
-        await mongoose_1.default.disconnect();
-        await queueController_1.redisConfiguration.connection.quit();
-        await new Promise((res) => setTimeout(res, 4000));
+        await (0, closeMongoose_1.default)();
     });
     describe("given a user's name, email, and password", () => {
         it("should create a user", async () => {
             const response = await (0, supertest_1.default)(server_1.default)
                 .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.registerUserUrl}`)
                 .send({
-                name: name,
-                email: email,
-                password: password,
-                timezoneGMT: timezoneGMT,
+                name: user.name,
+                email: user.email,
+                password: user.password,
+                timezoneGMT: user.timezoneGMT,
             });
             expect(response.statusCode).toBe(201);
             expect(response.headers["content-type"]).toEqual(expect.stringContaining("json"));
             expect(response.body).toEqual(expect.objectContaining({
+                user: {
+                    id: expect.any(String),
+                    name: user.name,
+                    email: user.email,
+                    timezoneGMT: user.timezoneGMT,
+                },
                 accessToken: expect.any(String),
-                user: { name, email, timezoneGMT },
             }));
         });
         it("should login a user", async () => {
@@ -68,12 +62,13 @@ describe("testing users controller", () => {
             });
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining({
-                accessToken: expect.any(String),
                 user: {
+                    id: expect.any(String),
                     name: mockUser_1.mockUser.name,
                     email: mockUser_1.mockUser.email,
                     timezoneGMT: mockUser_1.mockUser.timezoneGMT,
                 },
+                accessToken: expect.any(String),
             }));
         });
         it("should update a user", async () => {
@@ -85,25 +80,44 @@ describe("testing users controller", () => {
             });
             const { accessToken } = loginResponse.body;
             const response = await (0, supertest_1.default)(server_1.default)
-                .patch(`${apiUrls_1.baseAuthUrl}${apiUrls_1.updateUserUrl}`)
+                .patch(`${apiUrls_1.baseAuthUrl}${apiUrls_1.authUserUrl}`)
                 .send({
                 name: "bob",
                 email: mockUser_1.mockUser.email,
                 timezoneGMT: mockUser_1.mockUser.timezoneGMT,
             })
-                .set("Authorization", `Bearer ${accessToken}`)
-                .set("Cookie", loginResponse.header["set-cookie"]);
+                .set("Authorization", `Bearer ${accessToken}`);
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining({
-                accessToken: expect.any(String),
                 user: {
+                    id: expect.any(String),
                     name: "bob",
                     email: mockUser_1.mockUser.email,
                     timezoneGMT: mockUser_1.mockUser.timezoneGMT,
                 },
+                accessToken: expect.any(String),
             }));
         });
-        it("should give unauthenticated response for wrong password", async () => {
+        it("should get a user", async () => {
+            const loginResponse = await (0, supertest_1.default)(server_1.default)
+                .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
+                .send({
+                email: user.email,
+                password: user.password,
+            });
+            const { accessToken } = loginResponse.body;
+            const response = await (0, supertest_1.default)(server_1.default)
+                .get(`${apiUrls_1.baseAuthUrl}${apiUrls_1.authUserUrl}`)
+                .set("Authorization", `Bearer ${accessToken}`);
+            expect(response.statusCode).toBe(200);
+            expect(response.body).toEqual(expect.objectContaining({
+                id: expect.any(String),
+                name: user.name,
+                email: user.email,
+                timezoneGMT: user.timezoneGMT,
+            }));
+        });
+        it("should give unauthorized response for wrong password", async () => {
             const loginResponse = await (0, supertest_1.default)(server_1.default)
                 .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
                 .send({
@@ -113,20 +127,23 @@ describe("testing users controller", () => {
             expect(loginResponse.statusCode).toBe(401);
         });
     });
-    describe("testing cookies", () => {
-        it("should show cookies in header", async () => {
-            const loginResponse = await (0, supertest_1.default)(server_1.default)
-                .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
-                .send({
-                email: mockUser_1.mockUser.email,
-                password: mockUser_1.mockUser.password,
-            });
-            const cookieHeader = loginResponse.headers["set-cookie"];
-            expect(loginResponse.statusCode).toBe(200);
-            expect(cookieHeader).toBeTruthy();
-            const cookie = cookieHeader[0];
-            expect(cookie).toContain(cookies_1.cookieName);
+    it("should give unauthorized response for invalid token ", async () => {
+        const loginResponse = await (0, supertest_1.default)(server_1.default)
+            .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
+            .send({
+            email: mockUser_1.mockUser.email,
+            password: mockUser_1.mockUser.password,
         });
+        expect(loginResponse.statusCode).toBe(200);
+        const response = await (0, supertest_1.default)(server_1.default)
+            .patch(`${apiUrls_1.baseAuthUrl}${apiUrls_1.authUserUrl}`)
+            .send({
+            name: "bob",
+            email: mockUser_1.mockUser.email,
+            timezoneGMT: mockUser_1.mockUser.timezoneGMT,
+        })
+            .set("Authorization", `Bearer INVALID_TOKEN`);
+        expect(response.statusCode).toBe(401);
     });
 });
 //# sourceMappingURL=auth.test.js.map

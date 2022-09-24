@@ -1,7 +1,7 @@
 import { getQueue, getQueueScheduler, getQueueWorker } from "constants/queue";
 
 //this is to close connections to prevent memory leaks
-export async function closeRedisConnection() {
+export async function closeQueueRedisConnection() {
   //this all has to be here in this exact order
   const queueScheduler = await getQueueScheduler();
   await queueScheduler.close();

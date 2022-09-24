@@ -24,17 +24,17 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import MonitorCollection from "models/MonitorCollection";
 import { Monitor } from "models/MonitorDocument";
+import getUser from "utils/getUser";
 import {
   emptyValuesExist,
   validKeys,
   validValues,
 } from "utils/validateKeysValues";
 import { validMonitorDate } from "utils/validateMonitorDate";
-import validateUserExists from "utils/validateUserExists";
 
 const createMonitor = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUserExists(req, res);
+    const user = await getUser(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -134,7 +134,7 @@ const createMonitor = async (req: Request, res: Response): Promise<void> => {
 
 const getMonitor = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUserExists(req, res);
+    const user = await getUser(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -168,7 +168,7 @@ const getMonitor = async (req: Request, res: Response): Promise<void> => {
 
 const updateMonitor = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await validateUserExists(req, res);
+    const user = await getUser(req, res);
 
     if (!user) {
       unAuthenticatedError(res, "Invalid Credentials");
@@ -245,7 +245,7 @@ const updateMonitor = async (req: Request, res: Response): Promise<void> => {
 };
 
 const deleteMonitor = async (req: Request, res: Response): Promise<void> => {
-  const user = await validateUserExists(req, res);
+  const user = await getUser(req, res);
 
   if (!user) {
     unAuthenticatedError(res, "Invalid Credentials");

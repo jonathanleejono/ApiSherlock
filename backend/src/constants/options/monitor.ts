@@ -21,12 +21,16 @@ export const validMonitorScheduleTypeOptions = Object.values(
   MonitorScheduleTypeOptions
 );
 
-// array goes from 1 to 12
-// the selected number gets handled before submitted to cron
-// (eg. 12AM gets subtracted by 12 to make it the 0 hour)
+// Array from 0 to 6
+export const validMonitorDateDayOfWeekOptions = Array.from(
+  { length: 7 },
+  (_, i) => i
+);
+
+// Array from 0 to 12
 export const validMonitorDateHourOptions = [...Array(13).keys()].slice(1);
 
-// array goes from 0 to 59
+// Array from 0 to 59
 export const validMonitorDateMinuteOptions = Array.from(
   { length: 60 },
   (_, i) => i
@@ -34,13 +38,6 @@ export const validMonitorDateMinuteOptions = Array.from(
 
 export const validMonitorDateAMorPMOptions = Object.values(
   MonitorDateAMOrPMOptions
-);
-
-// goes from 0 to 6
-// frontend options are different
-export const validMonitorDateDayOfWeekOptions = Array.from(
-  { length: 7 },
-  (_, i) => i
 );
 
 export function getEnumDay<T>(type: T, day: number): T[keyof T] {

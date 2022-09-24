@@ -1,9 +1,9 @@
 import {
+  authUserUrl,
   baseUrl,
   loginUserUrl,
   refreshAccessTokenUrl,
   registerUserUrl,
-  updateUserUrl,
 } from "constants/apiUrls";
 import {
   loginUserErrorMsg,
@@ -84,7 +84,7 @@ const userHandlers = [
   }),
 
   // UPDATE user
-  rest.patch(customClientFetch(updateUserUrl), async (req, res, ctx) => {
+  rest.patch(customClientFetch(authUserUrl), async (req, res, ctx) => {
     // in render-utils.tsx, the auth accessToken is set in loginAsUser()
     // axios/customFetch gets the accessToken and sets it in headers
     // the mock api req uses the accessToken -> the beauty of mock apis!

@@ -1,11 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const queueController_1 = require("controllers/queueController");
 const getCronUTCTime_1 = require("utils/getCronUTCTime");
 describe("testing if getCronUTCTime() converts time to GMT 0", () => {
-    afterAll(async () => {
-        await queueController_1.redisConfiguration.connection.quit();
-    });
     it("should convert Tues 8:29 PM GMT -4 to Wed 12:29 AM GMT 0", async () => {
         expect(await (0, getCronUTCTime_1.getCronUTCTime)({
             timezone: -4,

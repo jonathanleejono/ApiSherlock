@@ -12,7 +12,7 @@ function createValidationFor(route) {
                     .isLength({ min: 6 })
                     .withMessage("Please enter a password at least 6 characters long"),
             ];
-        case apiUrls_1.updateUserUrl:
+        case apiUrls_1.authUserUrl:
             return [
                 (0, express_validator_1.body)("email")
                     .optional()

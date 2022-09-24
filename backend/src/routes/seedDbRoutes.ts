@@ -7,7 +7,7 @@ import {
   resetUsersCollection,
   seedApiCollection,
   seedUsersCollection,
-} from "db/seedDb";
+} from "db/seedDB";
 
 import {
   resetMockApisDbUrl,

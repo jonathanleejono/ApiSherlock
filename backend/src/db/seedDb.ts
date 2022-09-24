@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import { TEST_ENV } from "constants/envVars";
 import { badRequestError, unAuthenticatedError } from "errors/index";
 import { Request, Response } from "express";
 import { mockApis } from "mocks/mockApis";
@@ -6,11 +6,7 @@ import { mockUser } from "mocks/mockUser";
 import ApiCollection from "models/ApiCollection";
 import MonitorCollection from "models/MonitorCollection";
 import UserCollection from "models/UserCollection";
-import validateUserExists from "utils/validateUserExists";
-
-dotenv.config();
-
-const TEST_ENV = process.env.NODE_ENV === "test";
+import getUser from "utils/getUser";
 
 const resetUsersCollection = async (
   _: Request,
@@ -96,7 +92,7 @@ const seedApiCollection = async (
     return;
   } else {
     try {
-      const user = await validateUserExists(req, res);
+      const user = await getUser(req, res);
 
       if (!user) {
         unAuthenticatedError(res, "Invalid Credentials");

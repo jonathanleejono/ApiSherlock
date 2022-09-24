@@ -12,74 +12,62 @@ const http_status_codes_1 = require("http-status-codes");
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const checkPermissions_1 = __importDefault(require("utils/checkPermissions"));
 const datetime_1 = require("utils/datetime");
-const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
+const getUser_1 = __importDefault(require("utils/getUser"));
 const pingAll = async (req, res) => {
-    try {
-        const user = await (0, validateUserExists_1.default)(req, res);
-        if (!user) {
-            (0, errors_1.unAuthenticatedError)(res, "Invalid Credentials");
-            return;
-        }
-        const apis = await ApiCollection_1.default.find({
-            createdBy: user._id,
-        });
-        if (!apis || !(apis.length > 0)) {
-            (0, errors_1.notFoundError)(res, `No APIs found`);
-            return;
-        }
-        await Promise.all(apis.map(async (api) => {
-            axios_1.default
-                .get(api.url)
-                .then(() => {
-                api.status = apis_1.ApiStatusOptions.HEALTHY;
-                api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
-                api.save();
-            })
-                .catch(() => {
-                api.status = apis_1.ApiStatusOptions.UNHEALTHY;
-                api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
-                api.save();
-            });
-        }));
-        res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingAllApisSuccessMsg);
-    }
-    catch (error) {
-        (0, errors_1.badRequestError)(res, error);
+    const user = await (0, getUser_1.default)(req, res);
+    if (!user) {
+        (0, errors_1.unAuthenticatedError)(res, "Invalid Credentials");
         return;
     }
+    const apis = await ApiCollection_1.default.find({
+        createdBy: user._id,
+    });
+    if (!apis || !(apis.length > 0)) {
+        (0, errors_1.notFoundError)(res, `No APIs found`);
+        return;
+    }
+    await Promise.all(apis.map(async (api) => {
+        axios_1.default
+            .get(api.url)
+            .then(() => {
+            api.status = apis_1.ApiStatusOptions.HEALTHY;
+            api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+            api.save();
+        })
+            .catch(() => {
+            api.status = apis_1.ApiStatusOptions.UNHEALTHY;
+            api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+            api.save();
+        });
+    }));
+    res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingAllApisSuccessMsg);
 };
 exports.pingAll = pingAll;
 const pingOne = async (req, res) => {
-    try {
-        const user = await (0, validateUserExists_1.default)(req, res);
-        if (!user) {
-            (0, errors_1.unAuthenticatedError)(res, "Invalid Credentials");
-            return;
-        }
-        const { id: apiId } = req.params;
-        const api = await ApiCollection_1.default.findOne({ _id: apiId });
-        if (!api) {
-            (0, errors_1.notFoundError)(res, `No API with id: ${apiId}`);
-            return;
-        }
-        (0, checkPermissions_1.default)(res, user._id, api.createdBy);
-        try {
-            await axios_1.default.get(api.url);
-            api.status = apis_1.ApiStatusOptions.HEALTHY;
-            api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
-            await api.save();
-        }
-        catch (error) {
-            api.status = apis_1.ApiStatusOptions.UNHEALTHY;
-            api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
-            await api.save();
-        }
-        res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingOneApiSuccessMsg);
-    }
-    catch (error) {
-        (0, errors_1.badRequestError)(res, error);
+    const user = await (0, getUser_1.default)(req, res);
+    if (!user) {
+        (0, errors_1.unAuthenticatedError)(res, "Invalid Credentials");
         return;
     }
+    const { id: apiId } = req.params;
+    const api = await ApiCollection_1.default.findOne({ _id: apiId });
+    if (!api) {
+        (0, errors_1.notFoundError)(res, `No API with id: ${apiId}`);
+        return;
+    }
+    (0, checkPermissions_1.default)(res, user._id, api.createdBy);
+    try {
+        await axios_1.default.get(api.url);
+        api.status = apis_1.ApiStatusOptions.HEALTHY;
+        api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+        await api.save();
+    }
+    catch (error) {
+        api.status = apis_1.ApiStatusOptions.UNHEALTHY;
+        api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
+        await api.save();
+    }
+    res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingOneApiSuccessMsg);
 };
 exports.pingOne = pingOne;
 //# sourceMappingURL=pingController.js.map

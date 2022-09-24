@@ -10,12 +10,12 @@ const monitor_2 = require("enum/monitor");
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");
 const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
+const getUser_1 = __importDefault(require("utils/getUser"));
 const validateKeysValues_1 = require("utils/validateKeysValues");
 const validateMonitorDate_1 = require("utils/validateMonitorDate");
-const validateUserExists_1 = __importDefault(require("utils/validateUserExists"));
 const createMonitor = async (req, res) => {
     try {
-        const user = await (0, validateUserExists_1.default)(req, res);
+        const user = await (0, getUser_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -60,7 +60,7 @@ const createMonitor = async (req, res) => {
 exports.createMonitor = createMonitor;
 const getMonitor = async (req, res) => {
     try {
-        const user = await (0, validateUserExists_1.default)(req, res);
+        const user = await (0, getUser_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -90,7 +90,7 @@ const getMonitor = async (req, res) => {
 exports.getMonitor = getMonitor;
 const updateMonitor = async (req, res) => {
     try {
-        const user = await (0, validateUserExists_1.default)(req, res);
+        const user = await (0, getUser_1.default)(req, res);
         if (!user) {
             (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
             return;
@@ -126,7 +126,7 @@ const updateMonitor = async (req, res) => {
 };
 exports.updateMonitor = updateMonitor;
 const deleteMonitor = async (req, res) => {
-    const user = await (0, validateUserExists_1.default)(req, res);
+    const user = await (0, getUser_1.default)(req, res);
     if (!user) {
         (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
         return;

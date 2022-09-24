@@ -5,9 +5,9 @@ import {
   ApiSortOptions,
   ApiStatusOptions,
 } from "enum/apis";
-import { mockApi } from "mocks/mockApi";
+import ApiCollection from "models/ApiCollection";
 
-export const validCreateApiKeys = Object.keys(mockApi);
+export const validCreateApiKeys = Object.keys(ApiCollection.schema.obj);
 
 export const validUpdateApiKeys = validCreateApiKeys;
 

@@ -6,10 +6,10 @@ import {
   baseSeedDbUrl,
   pingHealthCheckUrl,
 } from "constants/apiUrls";
+import { PROD_ENV, TEST_ENV } from "constants/envVars";
 import { pingHealthCheckSuccessMsg } from "constants/messages";
-import cookieParser from "cookie-parser";
 import cors from "cors";
-import connectDB from "db/connect";
+import connectMongoose from "db/connectMongoose";
 import dotenv from "dotenv";
 import { cleanEnv, makeValidator, port, str } from "envalid";
 import express from "express";
@@ -53,7 +53,6 @@ cleanEnv(process.env, {
   MONGO_URL: validateStr(),
   JWT_SECRET: validateStr(),
   JWT_ACCESS_TOKEN_LIFETIME: validateStr(),
-  JWT_REFRESH_TOKEN_LIFETIME: validateStr(),
   NODE_ENV: validateEnv(),
   CORS_ORIGIN: validateStr(),
   REDIS_HOST: validateStr(),
@@ -61,14 +60,14 @@ cleanEnv(process.env, {
   USING_CI: validateCI(),
 });
 
-if (process.env.NODE_ENV === "production") {
+if (PROD_ENV) {
   cleanEnv(process.env, {
     REDIS_USERNAME: validateStr(),
     REDIS_PASSWORD: validateStr(),
   });
 }
 
-if (process.env.NODE_ENV !== "production") {
+if (!PROD_ENV) {
   app.use(morgan("dev"));
 }
 
@@ -84,9 +83,6 @@ app.use(
   })
 );
 
-//make sure this is placed before routers
-app.use(cookieParser());
-
 app.use(pingHealthCheckUrl, (_, res) => {
   res.send(pingHealthCheckSuccessMsg);
 });
@@ -96,7 +92,7 @@ app.use(`${baseApiUrl}`, authenticateUser, apiRouter);
 app.use(`${baseMonitorUrl}`, authenticateUser, monitorRouter);
 app.use(`${baseQueueUrl}`, authenticateUser, queueRouter);
 
-if (process.env.NODE_ENV === "test") {
+if (TEST_ENV) {
   app.use(`${baseSeedDbUrl}`, seedDbRouter);
 }
 
@@ -109,17 +105,18 @@ const start = async () => {
   try {
     //getPort chooses a different port if 5000 isn't available,
     //this prevents collisions during tests
-    if (process.env.NODE_ENV !== "production") {
+    if (PROD_ENV) {
       serverPort = await getPort({ port: 5000 });
     }
 
-    if (process.env.NODE_ENV !== "test") {
+    if (!TEST_ENV) {
       app.listen(serverPort, async () => {
         console.log(`Server is listening on port ${serverPort}...`);
       });
+
       // the tests have their individual db connections,
       // so the main connection isn't needed
-      await connectDB(process.env.MONGO_URL as string);
+      await connectMongoose(process.env.MONGO_URL as string);
     }
   } catch (error) {
     console.log(error);

@@ -28,7 +28,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const apiUrls_1 = require("constants/apiUrls");
 const messages_1 = require("constants/messages");
-const queueController_1 = require("controllers/queueController");
+const closeMongoose_1 = __importDefault(require("db/closeMongoose"));
+const connectMongoose_1 = __importDefault(require("db/connectMongoose"));
 const apis_1 = require("enum/apis");
 const mockApi_1 = require("mocks/mockApi");
 const mockApis_1 = require("mocks/mockApis");
@@ -39,7 +40,6 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
 const supertest_1 = __importStar(require("supertest"));
 const dbUrl_1 = require("test/dbUrl");
-const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
 let currentUserId;
 let apiObjId;
@@ -58,21 +58,14 @@ const testApiResponse = {
     updatedAt: expect.any(String),
     __v: expect.any(Number),
 };
+const databaseName = "test-apis";
+let url = `mongodb://127.0.0.1/${databaseName}`;
+if (process.env.USING_CI === "yes") {
+    url = (0, dbUrl_1.createDbUrl)(databaseName);
+}
 describe("testing api controller", () => {
     beforeAll(async () => {
-        const databaseName = "test-apis";
-        let url = `mongodb://127.0.0.1/${databaseName}`;
-        if (process.env.USING_CI === "yes") {
-            url = (0, dbUrl_1.createDbUrl)(databaseName);
-        }
-        try {
-            console.log("Connecting to MongoDB with url --------> ", url);
-            await mongoose_1.default.connect(url);
-        }
-        catch (error) {
-            console.log("Error connecting to MongoDB/Mongoose: ", error);
-            return error;
-        }
+        await (0, connectMongoose_1.default)(url);
         await (0, supertest_1.default)(server_1.default).post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)
             .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
@@ -81,21 +74,17 @@ describe("testing api controller", () => {
             password: mockUser_1.mockUser.password,
         });
         const { accessToken } = response.body;
-        currentUserId = await (0, getCurrentUserId_1.default)(accessToken);
+        currentUserId = response.body.user.id;
         if (!currentUserId) {
             console.error("Couldn't get current user id");
             return;
         }
-        const cookie = response.header["set-cookie"];
-        await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
+        await agent.auth(accessToken, { type: "bearer" });
         await agent.post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockApisDbUrl}`);
     });
     afterAll(async () => {
         await mongoose_1.default.connection.db.dropDatabase();
-        await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
-        await mongoose_1.default.disconnect();
-        await queueController_1.redisConfiguration.connection.quit();
-        await new Promise((res) => setTimeout(res, 4000));
+        await (0, closeMongoose_1.default)();
     }, 10000);
     describe("testing apis", () => {
         it("should get all APIs", async () => {
@@ -187,12 +176,6 @@ describe("testing api controller", () => {
                     .set("Authorization", `Bearer INVALID_TOKEN`);
                 expect(response.statusCode).toBe(401);
             });
-        });
-        it("should throw unauthenticated error with wrong cookie", async () => {
-            const response = await agent
-                .get(`${apiUrls_1.baseApiUrl}${apiUrls_1.getAllApisUrl}`)
-                .set("Cookie", `STALE_COOKIE`);
-            expect(response.statusCode).toBe(401);
         });
     });
 });

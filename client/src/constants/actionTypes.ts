@@ -15,8 +15,8 @@ const loginUserActionType = `/loginUser`;
 const updateUserActionType = `/updateUser`;
 const clearStoreActionType = `/clearStore`;
 
-const pingOneActionType = `/pingOne`;
-const pingAllActionType = `/pingAll`;
+const pingOneActionType = `/ping`;
+const pingAllActionType = `/ping/all`;
 
 const createMonitorActionType = `/create`;
 const getMonitorActionType = `/get`;

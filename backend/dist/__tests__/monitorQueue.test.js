@@ -30,7 +30,10 @@ const apiUrls_1 = require("constants/apiUrls");
 const messages_1 = require("constants/messages");
 const monitor_1 = require("constants/options/monitor");
 const queue_1 = require("constants/queue");
-const queueController_1 = require("controllers/queueController");
+const closeMongoose_1 = __importDefault(require("db/closeMongoose"));
+const closeQueueRedisConnection_1 = require("db/closeQueueRedisConnection");
+const connectMongoose_1 = __importDefault(require("db/connectMongoose"));
+const flushRedisDb_1 = __importDefault(require("db/flushRedisDb"));
 const monitor_2 = require("enum/monitor");
 const mockMonitor_1 = require("mocks/mockMonitor");
 const mockUser_1 = require("mocks/mockUser");
@@ -38,8 +41,6 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const server_1 = __importDefault(require("server"));
 const supertest_1 = __importStar(require("supertest"));
 const dbUrl_1 = require("test/dbUrl");
-const closeRedisConnection_1 = require("utils/closeRedisConnection");
-const getCurrentUserId_1 = __importDefault(require("utils/getCurrentUserId"));
 const agent = (0, supertest_1.agent)(server_1.default);
 let currentUserId;
 const testMonitorResponse = {
@@ -56,21 +57,14 @@ const testMonitorResponse = {
     updatedAt: expect.any(String),
     __v: expect.any(Number),
 };
+const databaseName = "test-monitors";
+let url = `mongodb://127.0.0.1/${databaseName}`;
+if (process.env.USING_CI === "yes") {
+    url = (0, dbUrl_1.createDbUrl)(databaseName);
+}
 describe("testing monitor controller", () => {
     beforeAll(async () => {
-        const databaseName = "test-monitors";
-        let url = `mongodb://127.0.0.1/${databaseName}`;
-        if (process.env.USING_CI === "yes") {
-            url = (0, dbUrl_1.createDbUrl)(databaseName);
-        }
-        try {
-            console.log("Connecting to MongoDB with url --------> ", url);
-            await mongoose_1.default.connect(url);
-        }
-        catch (error) {
-            console.log("Error connecting to MongoDB/Mongoose: ", error);
-            return error;
-        }
+        await (0, connectMongoose_1.default)(url);
         await (0, supertest_1.default)(server_1.default).post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockUsersDbUrl}`);
         const response = await (0, supertest_1.default)(server_1.default)
             .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
@@ -79,22 +73,19 @@ describe("testing monitor controller", () => {
             password: mockUser_1.mockUser.password,
         });
         const { accessToken } = response.body;
-        currentUserId = await (0, getCurrentUserId_1.default)(accessToken);
+        currentUserId = response.body.user.id;
         if (!currentUserId) {
             console.error("Couldn't get current user id");
             return;
         }
-        const cookie = response.header["set-cookie"];
-        await agent.auth(accessToken, { type: "bearer" }).set("Cookie", cookie);
+        await agent.auth(accessToken, { type: "bearer" });
         await agent.post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockApisDbUrl}`);
     });
     afterAll(async () => {
         await mongoose_1.default.connection.db.dropDatabase();
-        await Promise.all(mongoose_1.default.connections.map((con) => con.close()));
-        await mongoose_1.default.disconnect();
-        await queueController_1.redisConfiguration.connection.flushall();
-        await (0, closeRedisConnection_1.closeRedisConnection)();
-        console.log("Redis connection: ", queueController_1.redisConfiguration.connection.status);
+        await (0, closeMongoose_1.default)();
+        await (0, flushRedisDb_1.default)();
+        await (0, closeQueueRedisConnection_1.closeQueueRedisConnection)();
     }, 10000);
     describe("testing monitor", () => {
         it("should not create monitor with setting off", async () => {
@@ -150,8 +141,6 @@ describe("testing monitor controller", () => {
             const repeatableJobs = await myQueue.getRepeatableJobs();
             expect(repeatableJobs[0].name).toContain(`${queue_1.jobBaseName}-${mockUser_1.mockUser.email}`);
             expect(repeatableJobs[0].cron).toEqual((1000 * 60 * 60).toString());
-            await (0, closeRedisConnection_1.closeRedisConnection)();
-            console.log("Start Queue Redis connection: ", queueController_1.redisConfiguration.connection.status);
         });
         it("should ping monitored apis in queue", async () => {
             const currentHour = new Date().getHours();
@@ -169,7 +158,6 @@ describe("testing monitor controller", () => {
                 .patch(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(updates);
             expect(updateMonitorResp.statusCode).toBe(200);
-            await queueController_1.redisConfiguration.connection.connect();
             const startQueueResp = await agent.post(`${apiUrls_1.baseQueueUrl}${apiUrls_1.handleQueueUrl}`);
             expect(startQueueResp.statusCode).toBe(200);
             await new Promise((res) => setTimeout(res, 3000));
@@ -182,8 +170,6 @@ describe("testing monitor controller", () => {
             }).format(currentDateTime);
             expect(getAllApisResp.body.allApis[0].lastPinged).toContain(`${formattedDateTime},`);
             expect(getAllApisResp.body.allApis[0].lastPinged).toContain(`(GMT ${mockUser_1.mockUser.timezoneGMT})`);
-            await (0, closeRedisConnection_1.closeRedisConnection)();
-            console.log("Ping Queue Test Redis connection: ", queueController_1.redisConfiguration.connection.status);
         }, 10000);
         it("should remove monitor and jobs from queue", async () => {
             mockMonitor_1.mockMonitor.monitorSetting = monitor_2.MonitorSettingOptions.OFF;
@@ -194,13 +180,11 @@ describe("testing monitor controller", () => {
                 .delete(`${apiUrls_1.baseMonitorUrl}${apiUrls_1.handleMonitorUrl}`)
                 .send(mockMonitor_1.mockMonitor);
             expect(deleteMonitorResp.statusCode).toBe(200);
-            await queueController_1.redisConfiguration.connection.connect();
             const removeQueueResp = await agent.delete(`${apiUrls_1.baseQueueUrl}${apiUrls_1.handleQueueUrl}`);
             expect(removeQueueResp.statusCode).toBe(200);
             const myQueue = await (0, queue_1.getQueue)();
             const repeatableJobs = await myQueue.getRepeatableJobs();
             expect(repeatableJobs).toEqual([]);
-            console.log("Remove Queue Redis connection: ", queueController_1.redisConfiguration.connection.status);
         });
     });
 });
