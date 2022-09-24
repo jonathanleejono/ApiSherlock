@@ -13,7 +13,7 @@ import { userHash } from "test/data/usersDb";
 
 const customClientFetch = (path: string) => `${baseUrl}${path}`.toString();
 
-const handlers = [
+const monitorHandlers = [
   //   GET monitor
   rest.get(customClientFetch(handleMonitorUrl), async (req, res, ctx) => {
     try {
@@ -115,4 +115,4 @@ const handlers = [
   }),
 ];
 
-export { handlers };
+export { monitorHandlers };

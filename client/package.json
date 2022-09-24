@@ -59,6 +59,7 @@
     "test-only": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint ./",
+    "lint-fix": "eslint ./ --fix",
     "husky": "cd .. && husky install client/.husky",
     "install-no-audit": "npm i --no-audit"
   },

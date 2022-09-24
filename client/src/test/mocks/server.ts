@@ -1,14 +1,16 @@
 import { setupServer } from "msw/node";
-import { handlers as apiHandlers } from "test/mocks/handlers/apiHandlers";
-import { handlers as monitorHandlers } from "test/mocks/handlers/monitorHandlers";
-import { handlers as queueHandlers } from "test/mocks/handlers/queueHandlers";
-import { handlers as userHandlers } from "test/mocks/handlers/userHandlers";
+import { apiHandlers } from "test/mocks/handlers/apiHandlers";
+import { monitorHandlers } from "test/mocks/handlers/monitorHandlers";
+import { pingHealthCheckHandler } from "test/mocks/handlers/pingHealthCheckHandler";
+import { queueHandlers } from "test/mocks/handlers/queueHandlers";
+import { userHandlers } from "test/mocks/handlers/userHandlers";
 
 const server = setupServer(
   ...userHandlers,
   ...apiHandlers,
   ...monitorHandlers,
-  ...queueHandlers
+  ...queueHandlers,
+  ...pingHealthCheckHandler
 );
 
 export * from "msw";

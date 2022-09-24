@@ -24,7 +24,7 @@ const { NODE_ENV } = process.env;
 
 const PROD_ENV = NODE_ENV === "production";
 
-const handlers = [
+const userHandlers = [
   // LOGIN user
   rest.post(customClientFetch(loginUserUrl), async (req, res, ctx) => {
     try {
@@ -115,4 +115,4 @@ const handlers = [
   }),
 ];
 
-export { handlers };
+export { userHandlers };

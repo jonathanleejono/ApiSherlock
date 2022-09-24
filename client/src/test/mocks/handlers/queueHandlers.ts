@@ -7,7 +7,7 @@ import { userHash } from "test/data/usersDb";
 
 const customClientFetch = (path: string) => `${baseUrl}${path}`.toString();
 
-const handlers = [
+const queueHandlers = [
   //   START queue
   rest.post(customClientFetch(handleQueueUrl), async (req, res, ctx) => {
     try {
@@ -39,4 +39,4 @@ const handlers = [
   }),
 ];
 
-export { handlers };
+export { queueHandlers };

@@ -28,7 +28,7 @@ import { constructDateTime } from "utils/datetime";
 
 const customClientFetch = (path: string) => `${baseUrl}${path}`.toString();
 
-const handlers = [
+const apiHandlers = [
   //   GET allApis
   rest.get(customClientFetch(`${getAllApisUrl}`), async (req, res, ctx) => {
     try {
@@ -184,4 +184,4 @@ const handlers = [
   ),
 ];
 
-export { handlers };
+export { apiHandlers };
