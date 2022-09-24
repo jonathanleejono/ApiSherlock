@@ -8,8 +8,8 @@ import {
 } from "controllers/monitorController";
 import express, { Response, Router } from "express";
 import rateLimiter from "express-rate-limit";
-import { monitorValidator } from "validator/monitorValidator";
-import { validateResult } from "validator/validateResult";
+import { monitorValidator } from "middleware/validator/monitorValidator";
+import { validateResult } from "middleware/validator/validateResult";
 
 const router: Router = express.Router();
 

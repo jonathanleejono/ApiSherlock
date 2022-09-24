@@ -9,8 +9,8 @@ const authController_1 = require("controllers/authController");
 const express_1 = __importDefault(require("express"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const authenticateUser_1 = __importDefault(require("middleware/authenticateUser"));
-const authValidator_1 = require("validator/authValidator");
-const validateResult_1 = require("validator/validateResult");
+const authValidator_1 = require("middleware/validator/authValidator");
+const validateResult_1 = require("middleware/validator/validateResult");
 const router = express_1.default.Router();
 function createRateLimiter(minutes, maxRequests) {
     const _rateLimiter = (0, express_rate_limit_1.default)({

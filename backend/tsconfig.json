@@ -37,10 +37,9 @@
       "routes": ["routes/*"],
       "test": ["test/*"],
       "types": ["types/*"],
-      "utils": ["utils/*"],
-      "validator": ["validator/*"]
+      "utils": ["utils/*"]
     }
   },
   "exclude": ["node_modules"],
-  "include": ["src/**/*.ts", "w.ts"]
+  "include": ["src/**/*.ts"]
 }

@@ -8,8 +8,8 @@ const envVars_1 = require("constants/envVars");
 const monitorController_1 = require("controllers/monitorController");
 const express_1 = __importDefault(require("express"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
-const monitorValidator_1 = require("validator/monitorValidator");
-const validateResult_1 = require("validator/validateResult");
+const monitorValidator_1 = require("middleware/validator/monitorValidator");
+const validateResult_1 = require("middleware/validator/validateResult");
 const router = express_1.default.Router();
 function createRateLimiter(minutes, maxRequests) {
     const _rateLimiter = (0, express_rate_limit_1.default)({

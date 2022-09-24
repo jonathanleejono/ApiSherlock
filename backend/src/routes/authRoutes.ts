@@ -9,8 +9,8 @@ import {
 import express, { Response, Router } from "express";
 import rateLimiter from "express-rate-limit";
 import authenticateUser from "middleware/authenticateUser";
-import { authValidator } from "validator/authValidator";
-import { validateResult } from "validator/validateResult";
+import { authValidator } from "middleware/validator/authValidator";
+import { validateResult } from "middleware/validator/validateResult";
 
 const router: Router = express.Router();
 
