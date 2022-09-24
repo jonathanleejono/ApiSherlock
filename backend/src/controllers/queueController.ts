@@ -175,24 +175,24 @@ export const startQueue = async (
   }
 
   async function pingAllMonitoredApis() {
-    await Promise.all(
-      apis.map(async (api) => {
-        axios
-          .get(api.url)
-          .then(() => {
-            api.status = ApiStatusOptions.HEALTHY;
-            api.lastPinged = getDateWithUTCOffset(user!.timezoneGMT);
+    Object.keys(apis).forEach(async (_, index: number) => {
+      const api = apis[index];
 
-            api.save();
-          })
-          .catch(() => {
-            api.status = ApiStatusOptions.UNHEALTHY;
-            api.lastPinged = getDateWithUTCOffset(user!.timezoneGMT);
+      axios
+        .get(api.url)
+        .then(() => {
+          api.status = ApiStatusOptions.HEALTHY;
+          api.lastPinged = getDateWithUTCOffset(user!.timezoneGMT);
 
-            api.save();
-          });
-      })
-    );
+          api.save();
+        })
+        .catch(() => {
+          api.status = ApiStatusOptions.UNHEALTHY;
+          api.lastPinged = getDateWithUTCOffset(user!.timezoneGMT);
+
+          api.save();
+        });
+    });
   }
 
   if (scheduleType === MonitorScheduleTypeOptions.INTERVAL) {

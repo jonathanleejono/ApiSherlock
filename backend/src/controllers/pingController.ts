@@ -29,27 +29,24 @@ const pingAll = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // using Promise.all() instead of .allSettled() works because
-  // no result is returned, only an update is made
+  Object.keys(apis).forEach(async (_, index: number) => {
+    const api = apis[index];
 
-  await Promise.all(
-    apis.map(async (api) => {
-      axios
-        .get(api.url)
-        .then(() => {
-          api.status = ApiStatusOptions.HEALTHY;
-          api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
+    axios
+      .get(api.url)
+      .then(() => {
+        api.status = ApiStatusOptions.HEALTHY;
+        api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
 
-          api.save();
-        })
-        .catch(() => {
-          api.status = ApiStatusOptions.UNHEALTHY;
-          api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
+        api.save();
+      })
+      .catch(() => {
+        api.status = ApiStatusOptions.UNHEALTHY;
+        api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
 
-          api.save();
-        });
-    })
-  );
+        api.save();
+      });
+  });
 
   res.status(StatusCodes.OK).json(pingAllApisSuccessMsg);
 };

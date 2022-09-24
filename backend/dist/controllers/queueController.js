@@ -113,7 +113,8 @@ const startQueue = async (req, res) => {
         return;
     }
     async function pingAllMonitoredApis() {
-        await Promise.all(apis.map(async (api) => {
+        Object.keys(apis).forEach(async (_, index) => {
+            const api = apis[index];
             axios_1.default
                 .get(api.url)
                 .then(() => {
@@ -126,7 +127,7 @@ const startQueue = async (req, res) => {
                 api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
                 api.save();
             });
-        }));
+        });
     }
     if (scheduleType === monitor_1.MonitorScheduleTypeOptions.INTERVAL) {
         addJobToQueue(`Ping apis for user at ${intervalSchedule}`);

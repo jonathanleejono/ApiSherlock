@@ -26,7 +26,8 @@ const pingAll = async (req, res) => {
         (0, errors_1.notFoundError)(res, `No APIs found`);
         return;
     }
-    await Promise.all(apis.map(async (api) => {
+    Object.keys(apis).forEach(async (_, index) => {
+        const api = apis[index];
         axios_1.default
             .get(api.url)
             .then(() => {
@@ -39,7 +40,7 @@ const pingAll = async (req, res) => {
             api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
             api.save();
         });
-    }));
+    });
     res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingAllApisSuccessMsg);
 };
 exports.pingAll = pingAll;
