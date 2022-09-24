@@ -24,7 +24,7 @@ const AddApi = () => {
 
   useEffect(() => {
     dispatch(resetApiState());
-  }, []);
+  }, [dispatch]);
 
   const { isLoading, monitoring, url, host } = useAppSelector(
     (store) => store.api

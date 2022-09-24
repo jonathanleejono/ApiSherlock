@@ -2,11 +2,11 @@ import Wrapper from "assets/wrappers/ApisContainer";
 import Api from "components/Api";
 import Loading from "components/Loading";
 import PageBtnContainer from "components/PageBtnContainer";
+import { getAllApisErrorMsg } from "constants/messages";
 import { getAllApis } from "features/allApis/allApisThunk";
 import { ApiDataResponse } from "interfaces/apis";
 import { handleToastErrors } from "notifications/toast";
-import { useEffect } from "react";
-import { getAllApisErrorMsg } from "constants/messages";
+import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const ApisContainer: React.FC = () => {
@@ -15,14 +15,14 @@ const ApisContainer: React.FC = () => {
     (store) => store.allApis
   );
 
-  const handleFetchApis = async () => {
+  const handleFetchApis = useCallback(async () => {
     const resultAction = await dispatch(getAllApis());
     handleToastErrors(resultAction, getAllApis, getAllApisErrorMsg);
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     handleFetchApis();
-  }, []);
+  }, [handleFetchApis]);
 
   if (isLoading) {
     return <Loading center />;

@@ -42,22 +42,22 @@ import {
   startQueue,
 } from "features/monitor/monitorThunk";
 import { handleToast, handleToastErrors } from "notifications/toast";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "state/hooks";
 
 const Monitoring = () => {
   const dispatch = useAppDispatch();
 
-  const handleFetchMonitor = async () => {
+  const handleFetchMonitor = useCallback(async () => {
     const resultAction = await dispatch(getMonitor());
 
     handleToastErrors(resultAction, getMonitor, getMonitorErrorMsg);
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     handleFetchMonitor();
-  }, []);
+  }, [handleFetchMonitor]);
 
   const {
     isLoading,

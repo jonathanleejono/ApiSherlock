@@ -80,7 +80,7 @@ jobs:
       - name: Install all frontend dependencies
         run: |
           cd client
-          npm run install-testing
+          npm run install-no-audit
 
       - name: Test frontend
         run: |

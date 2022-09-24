@@ -25,7 +25,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       dispatch(clearStore());
       navigate(landingRoute);
     }
-  }, [user, navigate]);
+  }, [user, navigate, dispatch]);
 
   return children;
 };
