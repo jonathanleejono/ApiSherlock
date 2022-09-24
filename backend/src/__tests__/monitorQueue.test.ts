@@ -70,7 +70,6 @@ describe("testing monitor controller", () => {
         email: mockUser.email,
         password: mockUser.password,
       });
-    const { accessToken } = response.body;
 
     currentUserId = response.body.user.id;
 
@@ -79,7 +78,8 @@ describe("testing monitor controller", () => {
       return;
     }
 
-    await agent.auth(accessToken, { type: "bearer" });
+    const cookie = response.header["set-cookie"];
+    await agent.set("Cookie", cookie);
 
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });

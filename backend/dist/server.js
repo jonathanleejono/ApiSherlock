@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const apiUrls_1 = require("constants/apiUrls");
 const envVars_1 = require("constants/envVars");
 const messages_1 = require("constants/messages");
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cors_1 = __importDefault(require("cors"));
 const connectMongoose_1 = __importDefault(require("db/connectMongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -72,6 +73,7 @@ app.use((0, cors_1.default)({
     origin: [process.env.CORS_ORIGIN],
     credentials: true,
 }));
+app.use((0, cookie_parser_1.default)());
 app.use(apiUrls_1.pingHealthCheckUrl, (_, res) => {
     res.send(messages_1.pingHealthCheckSuccessMsg);
 });

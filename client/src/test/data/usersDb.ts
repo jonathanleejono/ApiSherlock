@@ -160,18 +160,9 @@ function generateToken(userId: string) {
 const getToken = (req: RestRequest<DefaultBodyType, PathParams<string>>) =>
   req.headers.get("Authorization")?.replace("Bearer ", "");
 
-export const cookieName = "testApiSherlockId";
-
 async function authenticateUser(
   req: RestRequest<DefaultBodyType, PathParams<string>>
 ) {
-  const cookie = req.cookies[cookieName];
-
-  if (!cookie) {
-    const error = new UnAuthenticatedError("A refresh token must be provided");
-    throw error;
-  }
-
   const accessToken = getToken(req);
 
   if (!accessToken) {
@@ -213,6 +204,8 @@ async function resetDB() {
   userInMemory = { name: "", email: "", password: "", timezoneGMT: 0 };
   persist();
 }
+
+export const cookieName = "testApiSherlockId";
 
 export {
   loginUser,

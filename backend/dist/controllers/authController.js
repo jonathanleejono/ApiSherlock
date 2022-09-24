@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAuthUser = exports.updateUser = exports.login = exports.register = void 0;
+const cookies_1 = require("constants/cookies");
 const envVars_1 = require("constants/envVars");
 const user_1 = require("constants/options/user");
 const index_1 = require("errors/index");
@@ -24,7 +25,15 @@ const register = async (req, res) => {
     await user.validate();
     await UserCollection_1.default.create(user);
     const accessToken = user.createJWT(envVars_1.JWT_ACCESS_TOKEN_LIFETIME);
-    res.status(http_status_codes_1.StatusCodes.CREATED).json({
+    res
+        .cookie(cookies_1.cookieName, accessToken, {
+        maxAge: cookies_1.cookieExpiryTime,
+        secure: cookies_1.cookieSecureSetting,
+        httpOnly: cookies_1.cookieHttpOnlySetting,
+        sameSite: cookies_1.cookieSameSiteSetting,
+    })
+        .status(http_status_codes_1.StatusCodes.CREATED)
+        .json({
         user: {
             id: user._id,
             email: user.email,
@@ -51,7 +60,15 @@ const login = async (req, res) => {
     }
     const accessToken = user.createJWT(envVars_1.JWT_ACCESS_TOKEN_LIFETIME);
     user.password = "";
-    res.status(http_status_codes_1.StatusCodes.OK).json({
+    res
+        .cookie(cookies_1.cookieName, accessToken, {
+        maxAge: cookies_1.cookieExpiryTime,
+        secure: cookies_1.cookieSecureSetting,
+        httpOnly: cookies_1.cookieHttpOnlySetting,
+        sameSite: cookies_1.cookieSameSiteSetting,
+    })
+        .status(http_status_codes_1.StatusCodes.OK)
+        .json({
         user: {
             id: user._id,
             email: user.email,
@@ -83,7 +100,15 @@ const updateUser = async (req, res) => {
     await user.save();
     user.password = "";
     const accessToken = user.createJWT(envVars_1.JWT_ACCESS_TOKEN_LIFETIME);
-    res.status(http_status_codes_1.StatusCodes.OK).json({
+    res
+        .cookie(cookies_1.cookieName, accessToken, {
+        maxAge: cookies_1.cookieExpiryTime,
+        secure: cookies_1.cookieSecureSetting,
+        httpOnly: cookies_1.cookieHttpOnlySetting,
+        sameSite: cookies_1.cookieSameSiteSetting,
+    })
+        .status(http_status_codes_1.StatusCodes.OK)
+        .json({
         user: {
             id: user._id,
             email: user.email,

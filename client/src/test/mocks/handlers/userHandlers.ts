@@ -2,12 +2,11 @@ import {
   authUserUrl,
   baseUrl,
   loginUserUrl,
-  refreshAccessTokenUrl,
   registerUserUrl,
 } from "constants/apiUrls";
 import {
+  getUserErrorMsg,
   loginUserErrorMsg,
-  refreshTokenErrorMsg,
   registerUserErrorMsg,
   updateUserErrorMsg,
 } from "constants/messages";
@@ -16,9 +15,6 @@ import * as usersDB from "test/data/usersDb";
 import { userHash } from "test/data/usersDb";
 
 const customClientFetch = (path: string) => `${baseUrl}${path}`.toString();
-
-//this is set in the "refresh token" handler
-export let newAccessToken: string;
 
 const { NODE_ENV } = process.env;
 
@@ -34,13 +30,10 @@ const userHandlers = [
         password,
       });
 
-      const userId = userHash(user.email);
-      const refreshToken = usersDB.generateToken(userId);
-
       return res(
         ctx.status(200),
         ctx.json({ user, accessToken }),
-        ctx.cookie(usersDB.cookieName, refreshToken, {
+        ctx.cookie(usersDB.cookieName, accessToken, {
           maxAge: 1000 * 60 * 60 * 24,
           httpOnly: true,
           secure: PROD_ENV ? true : false,
@@ -64,13 +57,10 @@ const userHandlers = [
         timezoneGMT,
       });
 
-      const userId = userHash(user.email);
-      const refreshToken = usersDB.generateToken(userId);
-
       return res(
         ctx.status(201),
         ctx.json({ user, accessToken }),
-        ctx.cookie(usersDB.cookieName, refreshToken, {
+        ctx.cookie(usersDB.cookieName, accessToken, {
           maxAge: 1000 * 60 * 60 * 24,
           httpOnly: true,
           secure: PROD_ENV ? true : false,
@@ -96,21 +86,30 @@ const userHandlers = [
         name,
         email,
       });
-      return res(ctx.json({ user, accessToken }));
+      return res(
+        ctx.json({ user, accessToken }),
+        ctx.cookie(usersDB.cookieName, accessToken, {
+          maxAge: 1000 * 60 * 60 * 24,
+          httpOnly: true,
+          secure: PROD_ENV ? true : false,
+          sameSite: PROD_ENV ? "none" : "lax",
+        })
+      );
     } catch (err) {
       console.log("Update User Error: ", err);
       return res(ctx.status(400), ctx.json({ error: updateUserErrorMsg }));
     }
   }),
 
-  // REFRESH token
-  rest.get(customClientFetch(refreshAccessTokenUrl), async (_, res, ctx) => {
+  // GET user
+  rest.get(customClientFetch(authUserUrl), async (req, res, ctx) => {
     try {
-      newAccessToken = usersDB.generateToken("fakeUserId");
-      return res(ctx.json({ accessToken: newAccessToken }));
+      const user = await usersDB.authenticateUser(req);
+      const { name, email, timezoneGMT } = user;
+      return res(ctx.json({ name, email, timezoneGMT }));
     } catch (err) {
-      console.log("Refresh Token Error: ", err);
-      return res(ctx.status(400), ctx.json({ error: refreshTokenErrorMsg }));
+      console.log("Get User Error: ", err);
+      return res(ctx.status(400), ctx.json({ error: getUserErrorMsg }));
     }
   }),
 ];

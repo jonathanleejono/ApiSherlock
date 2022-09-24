@@ -13,6 +13,7 @@ interface LoginUserData extends UserBaseData {
 }
 
 interface UserDataResponse extends UserBaseData {
+  id?: string;
   name: string;
   timezoneGMT: number;
 }

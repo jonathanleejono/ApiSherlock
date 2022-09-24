@@ -13,6 +13,7 @@ const updateApiActionType = `/updateApi`;
 const registerUserActionType = `/registerUser`;
 const loginUserActionType = `/loginUser`;
 const updateUserActionType = `/updateUser`;
+const getUserActionType = `/getUser`;
 const clearStoreActionType = `/clearStore`;
 
 const pingOneActionType = `/ping`;
@@ -41,6 +42,7 @@ export {
   registerUserActionType,
   loginUserActionType,
   updateUserActionType,
+  getUserActionType,
   clearStoreActionType,
   pingOneActionType,
   pingAllActionType,

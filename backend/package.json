@@ -12,7 +12,7 @@
     "server-no-redis": "concurrently --kill-others-on-fail \" npm run watch\" \" npm run dev\"",
     "server-node-path": "NODE_PATH=./dist node ./dist/server.js",
     "webpack": "npx webpack --stats-error-details",
-    "vercel-deploy": "npm run build && vercel --prod",
+    "vercel-deploy": "npm run webpack && vercel --prod",
     "redis-shutdown": "redis-cli shutdown",
     "start-mongo": "brew services start mongodb-community@5.0",
     "stop-mongo": "brew services stop mongodb-community@5.0",

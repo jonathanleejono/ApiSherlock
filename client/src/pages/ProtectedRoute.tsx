@@ -1,9 +1,7 @@
 import { landingRoute } from "constants/routes";
-import { clearStore } from "features/user/userThunk";
 import PropTypes, { InferProps } from "prop-types";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "state/hooks";
+import { Navigate } from "react-router-dom";
+import { useAppSelector } from "state/hooks";
 
 const propTypes = {
   children: PropTypes.element.isRequired,
@@ -12,20 +10,11 @@ const propTypes = {
 type ProtectedRouteProps = InferProps<typeof propTypes>;
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user } = useAppSelector((store) => store.user);
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const { userAuthenticated } = useAppSelector((store) => store.user);
 
-  useEffect(() => {
-    if (
-      !user ||
-      JSON.stringify(user) ===
-        JSON.stringify({ name: "", email: "", timezoneGMT: 0 })
-    ) {
-      dispatch(clearStore());
-      navigate(landingRoute);
-    }
-  }, [user, navigate, dispatch]);
+  if (!userAuthenticated) {
+    return <Navigate to={landingRoute} />;
+  }
 
   return children;
 };

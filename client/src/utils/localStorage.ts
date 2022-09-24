@@ -1,15 +1,13 @@
-import { AuthUser } from "interfaces/users";
 import { testAllApisKey, testUserKey } from "test/data/testKeys";
-import { decryptData, encryptData } from "utils/encrypt";
 
 export const appUserKey = "user";
 
-const addUserToLocalStorage = (user: AuthUser) => {
+const addUserToLocalStorage = () => {
   try {
-    const encryptedUser = encryptData(JSON.stringify(user));
-    localStorage.setItem(appUserKey, encryptedUser);
+    localStorage.setItem(appUserKey, JSON.stringify(true));
   } catch (error) {
     console.error("Error adding user: ", error);
+    return error;
   }
 };
 
@@ -23,17 +21,17 @@ const removeUserFromLocalStorage = () => {
   }
 };
 
-const getUserFromLocalStorage = () => {
+const getUserFromLocalStorage = (): boolean => {
   try {
     const result = localStorage.getItem(appUserKey);
 
-    const decryptedUser = result
-      ? JSON.parse(decryptData(result))
-      : { name: "", email: "", timezoneGMT: 0 };
+    if (result) {
+      return true;
+    }
 
-    return decryptedUser;
+    return false;
   } catch (error) {
-    console.error("Invalid user");
+    console.error("Error getting user");
     return error;
   }
 };

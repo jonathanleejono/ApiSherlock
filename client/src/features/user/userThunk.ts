@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   clearStoreActionType,
+  getUserActionType,
   loginUserActionType,
   registerUserActionType,
   updateUserActionType,
@@ -17,6 +18,7 @@ import {
   LoginUserData,
   RegisterUserData,
   UpdateUserData,
+  UserDataResponse,
 } from "interfaces/users";
 import customFetch from "utils/axios";
 import { checkPermissions } from "utils/checkPermissions";
@@ -71,6 +73,22 @@ const updateUser = createAsyncThunk<
   }
 });
 
+const getUser = createAsyncThunk<
+  UserDataResponse,
+  void,
+  {
+    rejectValue: Partial<ValidationErrors> & { error: string };
+  }
+>(`${userSliceName}${getUserActionType}`, async (_, thunkAPI) => {
+  try {
+    const resp = await customFetch.get(`${authUserUrl}`);
+    return resp.data;
+  } catch (error) {
+    checkPermissions(error, thunkAPI);
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
 const clearStore = createAsyncThunk<
   //eslint-disable-next-line
   Promise<any>,
@@ -92,4 +110,4 @@ const clearStore = createAsyncThunk<
   }
 });
 
-export { registerUser, loginUser, updateUser, clearStore };
+export { registerUser, loginUser, updateUser, getUser, clearStore };

@@ -76,7 +76,6 @@ describe("testing api controller", () => {
         email: mockUser.email,
         password: mockUser.password,
       });
-    const { accessToken } = response.body;
 
     currentUserId = response.body.user.id;
 
@@ -85,7 +84,9 @@ describe("testing api controller", () => {
       return;
     }
 
-    await agent.auth(accessToken, { type: "bearer" });
+    const cookie = response.header["set-cookie"];
+    await agent.set("Cookie", cookie);
+
     await agent.post(`${baseSeedDbUrl}${seedMockApisDbUrl}`);
   });
 
@@ -230,7 +231,7 @@ describe("testing api controller", () => {
       it("should throw unauthenticated error with wrong token", async (): Promise<void> => {
         const response = await agent
           .get(`${baseApiUrl}${getAllApisUrl}`)
-          .set("Authorization", `Bearer INVALID_TOKEN`);
+          .set("Cookie", `STALE_COOKIE`);
         expect(response.statusCode).toBe(401);
       });
     });

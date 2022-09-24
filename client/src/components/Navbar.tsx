@@ -1,9 +1,11 @@
 import Wrapper from "assets/wrappers/Navbar";
 import Logo from "components/Logo";
+import { getUserErrorMsg } from "constants/messages";
 import { landingRoute } from "constants/routes";
 import { toggleSidebar } from "features/user/userSlice";
-import { clearStore } from "features/user/userThunk";
-import { useState } from "react";
+import { clearStore, getUser } from "features/user/userThunk";
+import { handleToastErrors } from "notifications/toast";
+import { useCallback, useEffect, useState } from "react";
 import { FaAlignLeft, FaCaretDown, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -12,6 +14,17 @@ import { useAppDispatch, useAppSelector } from "state/hooks";
 const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const handleFetchUser = useCallback(async () => {
+    const resultAction = await dispatch(getUser());
+
+    handleToastErrors(resultAction, getUser, getUserErrorMsg);
+  }, [dispatch]);
+
+  useEffect(() => {
+    handleFetchUser();
+  }, [handleFetchUser]);
+
   const [showLogout, setShowLogout] = useState(false);
   const { user } = useAppSelector((store) => store.user);
 
@@ -42,7 +55,7 @@ const Navbar: React.FC = () => {
             onClick={() => setShowLogout(!showLogout)}
           >
             <FaUserCircle />
-            {user?.name}
+            {user.name}
             <FaCaretDown />
           </button>
           <div className={showLogout ? "dropdown show-dropdown" : "dropdown"}>

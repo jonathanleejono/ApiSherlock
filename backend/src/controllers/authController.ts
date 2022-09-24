@@ -1,3 +1,10 @@
+import {
+  cookieExpiryTime,
+  cookieHttpOnlySetting,
+  cookieName,
+  cookieSameSiteSetting,
+  cookieSecureSetting,
+} from "constants/cookies";
 import { JWT_ACCESS_TOKEN_LIFETIME } from "constants/envVars";
 import {
   validLoginKeys,
@@ -38,15 +45,24 @@ const register = async (req: Request, res: Response): Promise<void> => {
 
   const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME as string);
 
-  res.status(StatusCodes.CREATED).json({
-    user: {
-      id: user._id,
-      email: user.email,
-      name: user.name,
-      timezoneGMT: user.timezoneGMT,
-    },
-    accessToken,
-  });
+  res
+    .cookie(cookieName, accessToken, {
+      //use maxAge, not "expires"
+      maxAge: cookieExpiryTime, // expires in a day
+      secure: cookieSecureSetting,
+      httpOnly: cookieHttpOnlySetting,
+      sameSite: cookieSameSiteSetting,
+    })
+    .status(StatusCodes.CREATED)
+    .json({
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        timezoneGMT: user.timezoneGMT,
+      },
+      accessToken,
+    });
 };
 
 const login = async (req: Request, res: Response): Promise<void> => {
@@ -80,15 +96,23 @@ const login = async (req: Request, res: Response): Promise<void> => {
 
   user.password = "";
 
-  res.status(StatusCodes.OK).json({
-    user: {
-      id: user._id,
-      email: user.email,
-      name: user.name,
-      timezoneGMT: user.timezoneGMT,
-    },
-    accessToken,
-  });
+  res
+    .cookie(cookieName, accessToken, {
+      maxAge: cookieExpiryTime,
+      secure: cookieSecureSetting,
+      httpOnly: cookieHttpOnlySetting,
+      sameSite: cookieSameSiteSetting,
+    })
+    .status(StatusCodes.OK)
+    .json({
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        timezoneGMT: user.timezoneGMT,
+      },
+      accessToken,
+    });
 };
 
 const updateUser = async (req: Request, res: Response): Promise<void> => {
@@ -129,15 +153,23 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
 
   const accessToken = user.createJWT(JWT_ACCESS_TOKEN_LIFETIME as string);
 
-  res.status(StatusCodes.OK).json({
-    user: {
-      id: user._id,
-      email: user.email,
-      name: user.name,
-      timezoneGMT: user.timezoneGMT,
-    },
-    accessToken,
-  });
+  res
+    .cookie(cookieName, accessToken, {
+      maxAge: cookieExpiryTime,
+      secure: cookieSecureSetting,
+      httpOnly: cookieHttpOnlySetting,
+      sameSite: cookieSameSiteSetting,
+    })
+    .status(StatusCodes.OK)
+    .json({
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        timezoneGMT: user.timezoneGMT,
+      },
+      accessToken,
+    });
 };
 
 const getAuthUser = async (req: Request, res: Response): Promise<void> => {

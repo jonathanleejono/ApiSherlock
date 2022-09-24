@@ -1,7 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { UserDataResponse } from "interfaces/users";
-import { loginUser, registerUser, updateUser } from "features/user/userThunk";
 import { userSliceName } from "constants/actionTypes";
+import {
+  getUser,
+  loginUser,
+  registerUser,
+  updateUser,
+} from "features/user/userThunk";
+import { UserDataResponse } from "interfaces/users";
 import { getUserFromLocalStorage } from "utils/localStorage";
 
 interface UsersState {
@@ -14,8 +19,8 @@ interface UsersState {
 const initialState: UsersState = {
   isLoading: false,
   isSidebarOpen: false,
-  user: getUserFromLocalStorage(),
-  userAuthenticated: false,
+  user: { name: "", email: "", timezoneGMT: 0 },
+  userAuthenticated: getUserFromLocalStorage(),
 };
 
 const userSlice = createSlice({
@@ -66,6 +71,19 @@ const userSlice = createSlice({
         state.userAuthenticated = true;
       }),
       builder.addCase(updateUser.rejected, (state) => {
+        state.isLoading = false;
+        state.userAuthenticated = false;
+      });
+    builder.addCase(getUser.pending, (state) => {
+      state.isLoading = true;
+    }),
+      builder.addCase(getUser.fulfilled, (state, { payload }) => {
+        state.isLoading = false;
+        const { name, email, timezoneGMT } = payload;
+        state.user = { name, email, timezoneGMT };
+        state.userAuthenticated = true;
+      }),
+      builder.addCase(getUser.rejected, (state) => {
         state.isLoading = false;
         state.userAuthenticated = false;
       });

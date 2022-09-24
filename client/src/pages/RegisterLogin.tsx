@@ -8,6 +8,7 @@ import {
   registerUserErrorMsg,
 } from "constants/messages";
 import { timezoneOffsets } from "constants/options/timezoneOffsets";
+import { statsRoute } from "constants/routes";
 import { setToken } from "constants/token";
 import { loginUser, registerUser } from "features/user/userThunk";
 import { handleToast } from "notifications/toast";
@@ -96,9 +97,7 @@ const Register = () => {
     );
 
     if (resp.data === "success") {
-      const { user, accessToken } = resp.payload;
-      setToken(accessToken);
-      addUserToLocalStorage(user);
+      addUserToLocalStorage();
     }
   };
 
@@ -112,17 +111,17 @@ const Register = () => {
     );
 
     if (resp.data === "success") {
-      const { user, accessToken } = resp.payload;
+      const { accessToken } = resp.payload;
       setToken(accessToken);
-      addUserToLocalStorage(user);
+      addUserToLocalStorage();
     }
   };
 
   useEffect(() => {
     if (userAuthenticated) {
       setTimeout(() => {
-        navigate("/");
-      }, 3000);
+        navigate(statsRoute);
+      }, 1500);
     }
   }, [userAuthenticated, navigate]);
 

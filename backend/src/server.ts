@@ -8,6 +8,7 @@ import {
 } from "constants/apiUrls";
 import { PROD_ENV, TEST_ENV } from "constants/envVars";
 import { pingHealthCheckSuccessMsg } from "constants/messages";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectMongoose from "db/connectMongoose";
 import dotenv from "dotenv";
@@ -82,6 +83,9 @@ app.use(
     credentials: true,
   })
 );
+
+//make sure this is placed before routers
+app.use(cookieParser());
 
 app.use(pingHealthCheckUrl, (_, res) => {
   res.send(pingHealthCheckSuccessMsg);

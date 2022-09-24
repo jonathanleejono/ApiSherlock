@@ -72,13 +72,13 @@ describe("testing monitor controller", () => {
             email: mockUser_1.mockUser.email,
             password: mockUser_1.mockUser.password,
         });
-        const { accessToken } = response.body;
         currentUserId = response.body.user.id;
         if (!currentUserId) {
             console.error("Couldn't get current user id");
             return;
         }
-        await agent.auth(accessToken, { type: "bearer" });
+        const cookie = response.header["set-cookie"];
+        await agent.set("Cookie", cookie);
         await agent.post(`${apiUrls_1.baseSeedDbUrl}${apiUrls_1.seedMockApisDbUrl}`);
     });
     afterAll(async () => {

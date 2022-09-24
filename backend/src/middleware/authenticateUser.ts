@@ -1,3 +1,4 @@
+import { cookieName } from "constants/cookies";
 import { unAuthenticatedError } from "errors/index";
 import { NextFunction, Request, Response } from "express";
 import { JwtPayload } from "interfaces/jwtPayload";
@@ -8,14 +9,14 @@ const authenticateUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers.authorization;
+  const accessToken = req.cookies[cookieName];
 
-  if (!authHeader || !authHeader.startsWith("Bearer")) {
+  if (!accessToken) {
     unAuthenticatedError(res, "Invalid credentials, please login again");
     return;
   }
 
-  const accessToken = authHeader.split(" ")[1];
+  // don't split authheader for cookies
 
   try {
     const accessTokenPayload = jwt.verify(

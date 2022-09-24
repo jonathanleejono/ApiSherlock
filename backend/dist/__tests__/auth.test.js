@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const apiUrls_1 = require("constants/apiUrls");
+const cookies_1 = require("constants/cookies");
 const closeMongoose_1 = __importDefault(require("db/closeMongoose"));
 const connectMongoose_1 = __importDefault(require("db/connectMongoose"));
 const mockUser_1 = require("mocks/mockUser");
@@ -78,7 +79,6 @@ describe("testing users controller", () => {
                 email: mockUser_1.mockUser.email,
                 password: mockUser_1.mockUser.password,
             });
-            const { accessToken } = loginResponse.body;
             const response = await (0, supertest_1.default)(server_1.default)
                 .patch(`${apiUrls_1.baseAuthUrl}${apiUrls_1.authUserUrl}`)
                 .send({
@@ -86,7 +86,7 @@ describe("testing users controller", () => {
                 email: mockUser_1.mockUser.email,
                 timezoneGMT: mockUser_1.mockUser.timezoneGMT,
             })
-                .set("Authorization", `Bearer ${accessToken}`);
+                .set("Cookie", loginResponse.header["set-cookie"]);
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining({
                 user: {
@@ -105,10 +105,9 @@ describe("testing users controller", () => {
                 email: user.email,
                 password: user.password,
             });
-            const { accessToken } = loginResponse.body;
             const response = await (0, supertest_1.default)(server_1.default)
                 .get(`${apiUrls_1.baseAuthUrl}${apiUrls_1.authUserUrl}`)
-                .set("Authorization", `Bearer ${accessToken}`);
+                .set("Cookie", loginResponse.header["set-cookie"]);
             expect(response.statusCode).toBe(200);
             expect(response.body).toEqual(expect.objectContaining({
                 id: expect.any(String),
@@ -127,23 +126,18 @@ describe("testing users controller", () => {
             expect(loginResponse.statusCode).toBe(401);
         });
     });
-    it("should give unauthorized response for invalid token ", async () => {
+    it("should show cookies in header", async () => {
         const loginResponse = await (0, supertest_1.default)(server_1.default)
             .post(`${apiUrls_1.baseAuthUrl}${apiUrls_1.loginUserUrl}`)
             .send({
             email: mockUser_1.mockUser.email,
             password: mockUser_1.mockUser.password,
         });
+        const cookieHeader = loginResponse.headers["set-cookie"];
         expect(loginResponse.statusCode).toBe(200);
-        const response = await (0, supertest_1.default)(server_1.default)
-            .patch(`${apiUrls_1.baseAuthUrl}${apiUrls_1.authUserUrl}`)
-            .send({
-            name: "bob",
-            email: mockUser_1.mockUser.email,
-            timezoneGMT: mockUser_1.mockUser.timezoneGMT,
-        })
-            .set("Authorization", `Bearer INVALID_TOKEN`);
-        expect(response.statusCode).toBe(401);
+        expect(cookieHeader).toBeTruthy();
+        const cookie = cookieHeader[0];
+        expect(cookie).toContain(cookies_1.cookieName);
     });
 });
 //# sourceMappingURL=auth.test.js.map

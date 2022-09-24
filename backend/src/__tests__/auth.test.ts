@@ -6,6 +6,7 @@ import {
   registerUserUrl,
   seedMockUsersDbUrl,
 } from "constants/apiUrls";
+import { cookieName } from "constants/cookies";
 import closeMongoose from "db/closeMongoose";
 import connectMongoose from "db/connectMongoose";
 import { mockUser } from "mocks/mockUser";
@@ -102,8 +103,6 @@ describe("testing users controller", () => {
           password: mockUser.password,
         });
 
-      const { accessToken } = loginResponse.body;
-
       const response = await request(app)
         .patch(`${baseAuthUrl}${authUserUrl}`)
         .send({
@@ -111,7 +110,7 @@ describe("testing users controller", () => {
           email: mockUser.email,
           timezoneGMT: mockUser.timezoneGMT,
         })
-        .set("Authorization", `Bearer ${accessToken}`);
+        .set("Cookie", loginResponse.header["set-cookie"]);
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(
@@ -135,11 +134,9 @@ describe("testing users controller", () => {
           password: user.password,
         });
 
-      const { accessToken } = loginResponse.body;
-
       const response = await request(app)
         .get(`${baseAuthUrl}${authUserUrl}`)
-        .set("Authorization", `Bearer ${accessToken}`);
+        .set("Cookie", loginResponse.header["set-cookie"]);
 
       expect(response.statusCode).toBe(200);
 
@@ -166,7 +163,7 @@ describe("testing users controller", () => {
     });
   });
 
-  it("should give unauthorized response for invalid token ", async () => {
+  it("should show cookies in header", async () => {
     const loginResponse = await request(app)
       .post(`${baseAuthUrl}${loginUserUrl}`)
       .send({
@@ -174,17 +171,13 @@ describe("testing users controller", () => {
         password: mockUser.password,
       });
 
+    const cookieHeader = loginResponse.headers["set-cookie"];
+
     expect(loginResponse.statusCode).toBe(200);
+    expect(cookieHeader).toBeTruthy();
 
-    const response = await request(app)
-      .patch(`${baseAuthUrl}${authUserUrl}`)
-      .send({
-        name: "bob",
-        email: mockUser.email,
-        timezoneGMT: mockUser.timezoneGMT,
-      })
-      .set("Authorization", `Bearer INVALID_TOKEN`);
+    const cookie = cookieHeader[0];
 
-    expect(response.statusCode).toBe(401);
+    expect(cookie).toContain(cookieName);
   });
 });

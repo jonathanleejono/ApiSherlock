@@ -1,21 +1,32 @@
 import Wrapper from "assets/wrappers/DashboardFormPage";
 import { FormRow, FormRowSelect } from "components";
 import {
+  getUserErrorMsg,
   pleaseFillOutAllValues,
   updateUserErrorMsg,
   updateUserSuccessMsg,
 } from "constants/messages";
 import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import { setToken } from "constants/token";
-import { clearStore, updateUser } from "features/user/userThunk";
-import { handleToast } from "notifications/toast";
-import { useState } from "react";
+import { clearStore, getUser, updateUser } from "features/user/userThunk";
+import { handleToast, handleToastErrors } from "notifications/toast";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "state/hooks";
 import { addUserToLocalStorage } from "utils/localStorage";
 
 const Profile = () => {
   const dispatch = useAppDispatch();
+
+  const handleFetchUser = useCallback(async () => {
+    const resultAction = await dispatch(getUser());
+
+    handleToastErrors(resultAction, getUser, getUserErrorMsg);
+  }, [dispatch]);
+
+  useEffect(() => {
+    handleFetchUser();
+  }, [handleFetchUser]);
 
   const { user, isLoading } = useAppSelector((store) => store.user);
 
@@ -43,9 +54,9 @@ const Profile = () => {
     );
 
     if (resp.data === "success") {
-      const { user, accessToken } = resp.payload;
+      const { accessToken } = resp.payload;
       setToken(accessToken);
-      addUserToLocalStorage(user);
+      addUserToLocalStorage();
     } else if (resp.data === "error") {
       dispatch(clearStore());
     }
