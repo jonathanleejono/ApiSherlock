@@ -4,9 +4,6 @@ import {
   validMonitorDateDayOfWeekOptions,
   validMonitorDateHourOptions,
   validMonitorDateMinuteOptions,
-  validMonitorIntervalScheduleOptions,
-  validMonitorScheduleTypeOptions,
-  validMonitorSettingOptions,
   validUpdateMonitorKeys,
 } from "constants/options/monitor";
 import {
@@ -25,12 +22,7 @@ import { StatusCodes } from "http-status-codes";
 import MonitorCollection from "models/MonitorCollection";
 import { Monitor } from "models/MonitorDocument";
 import getUser from "utils/getUser";
-import {
-  emptyValuesExist,
-  validKeys,
-  validValues,
-} from "utils/validateKeysValues";
-import { validMonitorDate } from "utils/validateMonitorDate";
+import { validKeys } from "utils/validateKeysValues";
 
 const createMonitor = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -57,65 +49,18 @@ const createMonitor = async (req: Request, res: Response): Promise<void> => {
       !validKeys(
         res,
         Object.keys(req.body),
-        `Invalid monitor creation, can only input: `,
+        `Invalid monitor input, can only input: `,
         validCreateMonitorKeys
       )
     )
       return;
 
-    if (emptyValuesExist(res, Object.values(req.body))) return;
-
-    const {
-      monitorSetting,
-      scheduleType,
-      intervalSchedule,
-      dateDayOfWeek,
-      dateHour,
-      dateMinute,
-      dateAMOrPM,
-    } = req.body;
-
-    if (
-      !validValues(
-        res,
-        monitorSetting,
-        `Invalid monitor setting, please select one of: `,
-        validMonitorSettingOptions
-      )
-    )
-      return;
+    const { monitorSetting } = req.body;
 
     if (monitorSetting !== MonitorSettingOptions.ON) {
       badRequestError(res, "Monitor setting must be on to add monitor");
       return;
     }
-
-    if (
-      !validValues(
-        res,
-        scheduleType,
-        `Invalid schedule type, please select one of: `,
-        validMonitorScheduleTypeOptions
-      )
-    )
-      return;
-
-    if (
-      scheduleType === MonitorScheduleTypeOptions.INTERVAL &&
-      !validValues(
-        res,
-        intervalSchedule,
-        `Invalid interval schedule, please select one of: `,
-        validMonitorIntervalScheduleOptions
-      )
-    )
-      return;
-
-    if (
-      scheduleType === MonitorScheduleTypeOptions.DATE &&
-      !validMonitorDate(res, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM)
-    )
-      return;
 
     req.body.createdBy = user._id;
 
@@ -189,45 +134,6 @@ const updateMonitor = async (req: Request, res: Response): Promise<void> => {
         `Error updating monitor, can only use: `,
         validUpdateMonitorKeys
       )
-    )
-      return;
-
-    if (emptyValuesExist(res, Object.values(req.body))) return;
-
-    const {
-      scheduleType,
-      intervalSchedule,
-      dateDayOfWeek,
-      dateHour,
-      dateMinute,
-      dateAMOrPM,
-    } = req.body;
-
-    if (
-      scheduleType &&
-      !validValues(
-        res,
-        scheduleType,
-        `Invalid schedule type, please select one of: `,
-        validMonitorScheduleTypeOptions
-      )
-    )
-      return;
-
-    if (
-      scheduleType === MonitorScheduleTypeOptions.INTERVAL &&
-      !validValues(
-        res,
-        intervalSchedule,
-        `Invalid interval schedule, please select one of: `,
-        validMonitorIntervalScheduleOptions
-      )
-    )
-      return;
-
-    if (
-      scheduleType === MonitorScheduleTypeOptions.DATE &&
-      !validMonitorDate(res, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM)
     )
       return;
 

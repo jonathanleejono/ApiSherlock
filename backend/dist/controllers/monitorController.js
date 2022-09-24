@@ -12,7 +12,6 @@ const http_status_codes_1 = require("http-status-codes");
 const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
 const getUser_1 = __importDefault(require("utils/getUser"));
 const validateKeysValues_1 = require("utils/validateKeysValues");
-const validateMonitorDate_1 = require("utils/validateMonitorDate");
 const createMonitor = async (req, res) => {
     try {
         const user = await (0, getUser_1.default)(req, res);
@@ -27,25 +26,13 @@ const createMonitor = async (req, res) => {
             (0, index_1.badRequestError)(res, "Error, can only have one monitor, please turn off to remove");
             return;
         }
-        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid monitor creation, can only input: `, monitor_1.validCreateMonitorKeys))
+        if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid monitor input, can only input: `, monitor_1.validCreateMonitorKeys))
             return;
-        if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
-            return;
-        const { monitorSetting, scheduleType, intervalSchedule, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM, } = req.body;
-        if (!(0, validateKeysValues_1.validValues)(res, monitorSetting, `Invalid monitor setting, please select one of: `, monitor_1.validMonitorSettingOptions))
-            return;
+        const { monitorSetting } = req.body;
         if (monitorSetting !== monitor_2.MonitorSettingOptions.ON) {
             (0, index_1.badRequestError)(res, "Monitor setting must be on to add monitor");
             return;
         }
-        if (!(0, validateKeysValues_1.validValues)(res, scheduleType, `Invalid schedule type, please select one of: `, monitor_1.validMonitorScheduleTypeOptions))
-            return;
-        if (scheduleType === monitor_2.MonitorScheduleTypeOptions.INTERVAL &&
-            !(0, validateKeysValues_1.validValues)(res, intervalSchedule, `Invalid interval schedule, please select one of: `, monitor_1.validMonitorIntervalScheduleOptions))
-            return;
-        if (scheduleType === monitor_2.MonitorScheduleTypeOptions.DATE &&
-            !(0, validateMonitorDate_1.validMonitorDate)(res, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM))
-            return;
         req.body.createdBy = user._id;
         const monitor = new MonitorCollection_1.default(req.body);
         await monitor.validate();
@@ -101,18 +88,6 @@ const updateMonitor = async (req, res) => {
             return;
         }
         if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Error updating monitor, can only use: `, monitor_1.validUpdateMonitorKeys))
-            return;
-        if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
-            return;
-        const { scheduleType, intervalSchedule, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM, } = req.body;
-        if (scheduleType &&
-            !(0, validateKeysValues_1.validValues)(res, scheduleType, `Invalid schedule type, please select one of: `, monitor_1.validMonitorScheduleTypeOptions))
-            return;
-        if (scheduleType === monitor_2.MonitorScheduleTypeOptions.INTERVAL &&
-            !(0, validateKeysValues_1.validValues)(res, intervalSchedule, `Invalid interval schedule, please select one of: `, monitor_1.validMonitorIntervalScheduleOptions))
-            return;
-        if (scheduleType === monitor_2.MonitorScheduleTypeOptions.DATE &&
-            !(0, validateMonitorDate_1.validMonitorDate)(res, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM))
             return;
         Object.assign(monitor, req.body);
         await monitor.validate();

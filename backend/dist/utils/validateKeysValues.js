@@ -1,17 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.emptyValuesExist = exports.validValues = exports.validKeys = void 0;
+exports.emptyValuesExist = exports.validValues = exports.validKeys = exports.validFieldsFormatted = void 0;
 const errors_1 = require("errors");
 function checkIfDuplicateExists(arr) {
     return new Set(arr).size !== arr.length;
 }
-function validKeys(res, arrReqInput, errorMsg, arrValid) {
-    if (!arrReqInput.every((elem) => arrValid.includes(elem))) {
-        (0, errors_1.badRequestError)(res, `${errorMsg}` + `${arrValid}`.replace(/,/g, ", "));
+function validFieldsFormatted(validFields) {
+    return `${validFields}`.replace(/,/g, ", ");
+}
+exports.validFieldsFormatted = validFieldsFormatted;
+function validKeys(res, inputArray, errorMsg, validFields) {
+    const validFields_ = validFieldsFormatted(validFields);
+    if (!inputArray.every((elem) => validFields.includes(elem))) {
+        (0, errors_1.badRequestError)(res, `${errorMsg}` + validFields_);
         return false;
     }
-    else if (checkIfDuplicateExists(arrReqInput)) {
-        (0, errors_1.badRequestError)(res, `Duplicate info, please only provide one of each field`);
+    if (checkIfDuplicateExists(inputArray)) {
+        (0, errors_1.badRequestError)(res, `Duplicate fields, please only provide one of each: ${validFields_}`);
         return false;
     }
     return true;
@@ -20,12 +25,12 @@ exports.validKeys = validKeys;
 function validValues(res, reqInput, errorMsg, validOptions, labelValidOptions) {
     if (labelValidOptions) {
         if (!validOptions.includes(reqInput)) {
-            (0, errors_1.badRequestError)(res, `${errorMsg}` + `${labelValidOptions}`.replace(/,/g, ", "));
+            (0, errors_1.badRequestError)(res, `${errorMsg}` + validFieldsFormatted(labelValidOptions));
             return false;
         }
     }
     if (!validOptions.includes(reqInput)) {
-        (0, errors_1.badRequestError)(res, `${errorMsg}` + `${validOptions}`.replace(/,/g, ", "));
+        (0, errors_1.badRequestError)(res, `${errorMsg}` + validFieldsFormatted(validOptions));
         return false;
     }
     return true;

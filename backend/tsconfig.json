@@ -37,7 +37,8 @@
       "routes": ["routes/*"],
       "test": ["test/*"],
       "types": ["types/*"],
-      "utils": ["utils/*"]
+      "utils": ["utils/*"],
+      "validator": ["validator/*"]
     }
   },
   "exclude": ["node_modules"],

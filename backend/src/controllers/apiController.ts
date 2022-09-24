@@ -1,9 +1,6 @@
 import { deleteApiSuccessMsg } from "constants/messages";
 import {
-  validApiHostOptions,
-  validApiMonitoringOptions,
   validApiSearchParams,
-  validApiStatusOptions,
   validCreateApiKeys,
   validUpdateApiKeys,
 } from "constants/options/apis";
@@ -22,11 +19,7 @@ import { SortOrder } from "mongoose";
 import checkPermissions from "utils/checkPermissions";
 import { formatCurrentMonthYear } from "utils/datetime";
 import getUser from "utils/getUser";
-import {
-  emptyValuesExist,
-  validKeys,
-  validValues,
-} from "utils/validateKeysValues";
+import { validKeys } from "utils/validateKeysValues";
 
 const createApi = async (req: Request, res: Response): Promise<void> => {
   const user = await getUser(req, res);
@@ -42,30 +35,6 @@ const createApi = async (req: Request, res: Response): Promise<void> => {
       Object.keys(req.body),
       `Invalid API creation, can only input: `,
       validCreateApiKeys
-    )
-  )
-    return;
-
-  if (emptyValuesExist(res, Object.values(req.body))) return;
-
-  const { host, monitoring } = req.body;
-
-  if (
-    !validValues(
-      res,
-      host,
-      `Invalid host, please select one of: `,
-      validApiHostOptions
-    )
-  )
-    return;
-
-  if (
-    !validValues(
-      res,
-      monitoring,
-      `Invalid monitoring, please select one of: `,
-      validApiMonitoringOptions
     )
   )
     return;
@@ -105,45 +74,15 @@ const getAllApis = async (req: Request, res: Response): Promise<void> => {
     createdBy: user._id,
   };
 
-  if (
-    host &&
-    !validValues(
-      res,
-      host as string,
-      `Invalid host search, please select one of: `,
-      [...validApiHostOptions, "All"]
-    )
-  )
-    return;
-  else if (host && host !== "All") {
+  if (host && host !== "All") {
     queryObject.host = host as string;
   }
 
-  if (
-    status &&
-    !validValues(
-      res,
-      status as string,
-      `Invalid status search, please select one of: `,
-      [...validApiStatusOptions, "All"]
-    )
-  )
-    return;
-  else if (status && status !== "All") {
+  if (status && status !== "All") {
     queryObject.status = status as string;
   }
 
-  if (
-    monitoring &&
-    !validValues(
-      res,
-      monitoring as string,
-      `Invalid monitoring search, please select one of: `,
-      [...validApiMonitoringOptions, "All"]
-    )
-  )
-    return;
-  else if (monitoring && monitoring !== "All") {
+  if (monitoring && monitoring !== "All") {
     queryObject.monitoring = monitoring as string;
   }
 
@@ -219,32 +158,6 @@ const updateApi = async (req: Request, res: Response): Promise<void> => {
       Object.keys(req.body),
       `Error updating API, can only use: `,
       validUpdateApiKeys
-    )
-  )
-    return;
-
-  if (emptyValuesExist(res, Object.values(req.body))) return;
-
-  const { host, monitoring } = req.body;
-
-  if (
-    host &&
-    !validValues(
-      res,
-      host,
-      `Invalid host, please select one of: `,
-      validApiHostOptions
-    )
-  )
-    return;
-
-  if (
-    monitoring &&
-    !validValues(
-      res,
-      monitoring,
-      `Invalid monitoring, please select one of: `,
-      validApiMonitoringOptions
     )
   )
     return;

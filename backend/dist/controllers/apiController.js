@@ -22,13 +22,6 @@ const createApi = async (req, res) => {
     }
     if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid API creation, can only input: `, apis_1.validCreateApiKeys))
         return;
-    if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
-        return;
-    const { host, monitoring } = req.body;
-    if (!(0, validateKeysValues_1.validValues)(res, host, `Invalid host, please select one of: `, apis_1.validApiHostOptions))
-        return;
-    if (!(0, validateKeysValues_1.validValues)(res, monitoring, `Invalid monitoring, please select one of: `, apis_1.validApiMonitoringOptions))
-        return;
     req.body.createdBy = user._id;
     const api = new ApiCollection_1.default(req.body);
     await api.validate();
@@ -48,22 +41,13 @@ const getAllApis = async (req, res) => {
     const queryObject = {
         createdBy: user._id,
     };
-    if (host &&
-        !(0, validateKeysValues_1.validValues)(res, host, `Invalid host search, please select one of: `, [...apis_1.validApiHostOptions, "All"]))
-        return;
-    else if (host && host !== "All") {
+    if (host && host !== "All") {
         queryObject.host = host;
     }
-    if (status &&
-        !(0, validateKeysValues_1.validValues)(res, status, `Invalid status search, please select one of: `, [...apis_1.validApiStatusOptions, "All"]))
-        return;
-    else if (status && status !== "All") {
+    if (status && status !== "All") {
         queryObject.status = status;
     }
-    if (monitoring &&
-        !(0, validateKeysValues_1.validValues)(res, monitoring, `Invalid monitoring search, please select one of: `, [...apis_1.validApiMonitoringOptions, "All"]))
-        return;
-    else if (monitoring && monitoring !== "All") {
+    if (monitoring && monitoring !== "All") {
         queryObject.monitoring = monitoring;
     }
     if (search) {
@@ -114,15 +98,6 @@ const updateApi = async (req, res) => {
         return;
     }
     if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Error updating API, can only use: `, apis_1.validUpdateApiKeys))
-        return;
-    if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
-        return;
-    const { host, monitoring } = req.body;
-    if (host &&
-        !(0, validateKeysValues_1.validValues)(res, host, `Invalid host, please select one of: `, apis_1.validApiHostOptions))
-        return;
-    if (monitoring &&
-        !(0, validateKeysValues_1.validValues)(res, monitoring, `Invalid monitoring, please select one of: `, apis_1.validApiMonitoringOptions))
         return;
     const api = await ApiCollection_1.default.findOne({ _id: apiId });
     if (!api) {

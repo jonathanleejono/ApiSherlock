@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAuthUser = exports.updateUser = exports.login = exports.register = void 0;
 const envVars_1 = require("constants/envVars");
-const timezoneOffsets_1 = require("constants/options/timezoneOffsets");
 const user_1 = require("constants/options/user");
 const index_1 = require("errors/index");
 const http_status_codes_1 = require("http-status-codes");
@@ -13,13 +12,9 @@ const UserCollection_1 = __importDefault(require("models/UserCollection"));
 const getUser_1 = __importDefault(require("utils/getUser"));
 const validateKeysValues_1 = require("utils/validateKeysValues");
 const register = async (req, res) => {
-    if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid register, can only use: `, user_1.validRegisterKeys))
+    if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid register, can only input: `, user_1.validRegisterKeys))
         return;
-    if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
-        return;
-    const { email, timezoneGMT } = req.body;
-    if (!(0, validateKeysValues_1.validValues)(res, timezoneGMT, `Invalid timezone, please select one of: `, timezoneOffsets_1.timezoneOffsets))
-        return;
+    const { email } = req.body;
     const emailAlreadyExists = await UserCollection_1.default.findOne({ email });
     if (emailAlreadyExists) {
         (0, index_1.badRequestError)(res, "Please use a different email");
@@ -41,9 +36,7 @@ const register = async (req, res) => {
 };
 exports.register = register;
 const login = async (req, res) => {
-    if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid login, can only use: `, user_1.validLoginKeys))
-        return;
-    if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
+    if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid login, can only input: `, user_1.validLoginKeys))
         return;
     const { email, password } = req.body;
     const user = await UserCollection_1.default.findOne({ email }).select("+password");
@@ -75,14 +68,9 @@ const updateUser = async (req, res) => {
         (0, index_1.unAuthenticatedError)(res, "Invalid Credentials");
         return;
     }
-    if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid update, can only update: `, user_1.validUpdateUserKeys))
+    if (!(0, validateKeysValues_1.validKeys)(res, Object.keys(req.body), `Invalid update profile, can only input: `, user_1.validUpdateUserKeys))
         return;
-    if ((0, validateKeysValues_1.emptyValuesExist)(res, Object.values(req.body)))
-        return;
-    const { email, timezoneGMT } = req.body;
-    if (timezoneGMT &&
-        !(0, validateKeysValues_1.validValues)(res, timezoneGMT, `Invalid timezone, please select one of: `, timezoneOffsets_1.timezoneOffsets))
-        return;
+    const { email } = req.body;
     if (email && user.email !== email) {
         const emailAlreadyExists = await UserCollection_1.default.findOne({ email });
         if (emailAlreadyExists) {

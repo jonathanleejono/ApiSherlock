@@ -6,22 +6,31 @@ function checkIfDuplicateExists(arr: Array<string | number>): boolean {
   return new Set(arr).size !== arr.length;
 }
 
+export function validFieldsFormatted(validFields: string[] | number[]) {
+  return `${validFields}`.replace(/,/g, ", ");
+}
+
 export function validKeys(
   res: Response,
-  arrReqInput: string[],
+  inputArray: string[],
   errorMsg: string,
-  arrValid: string[]
+  validFields: string[]
 ): boolean {
-  if (!arrReqInput.every((elem) => arrValid.includes(elem))) {
-    badRequestError(res, `${errorMsg}` + `${arrValid}`.replace(/,/g, ", "));
+  const validFields_ = validFieldsFormatted(validFields);
+
+  if (!inputArray.every((elem) => validFields.includes(elem))) {
+    badRequestError(res, `${errorMsg}` + validFields_);
     return false;
-  } else if (checkIfDuplicateExists(arrReqInput)) {
+  }
+
+  if (checkIfDuplicateExists(inputArray)) {
     badRequestError(
       res,
-      `Duplicate info, please only provide one of each field`
+      `Duplicate fields, please only provide one of each: ${validFields_}`
     );
     return false;
   }
+
   return true;
 }
 
@@ -32,20 +41,20 @@ export function validValues(
   validOptions: any[],
   labelValidOptions?: any[]
 ): boolean {
-  //labelValidOptions is if the database
-  // valid options are non-human centric (eg. int)
+  // labelValidOptions is if the frontend's
+  // values are different from the backend
   if (labelValidOptions) {
     if (!validOptions.includes(reqInput)) {
       badRequestError(
         res,
-        `${errorMsg}` + `${labelValidOptions}`.replace(/,/g, ", ")
+        `${errorMsg}` + validFieldsFormatted(labelValidOptions)
       );
       return false;
     }
   }
 
   if (!validOptions.includes(reqInput)) {
-    badRequestError(res, `${errorMsg}` + `${validOptions}`.replace(/,/g, ", "));
+    badRequestError(res, `${errorMsg}` + validFieldsFormatted(validOptions));
     return false;
   }
   return true;

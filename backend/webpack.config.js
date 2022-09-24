@@ -30,6 +30,7 @@ module.exports = {
       test: path.resolve(__dirname, "src/test"),
       types: path.resolve(__dirname, "src/types"),
       utils: path.resolve(__dirname, "src/utils"),
+      validator: path.resolve(__dirname, "src/validator"),
     },
     modules: ["src"],
     extensions: [".ts", ".js"],

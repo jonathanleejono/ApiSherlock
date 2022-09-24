@@ -1,5 +1,4 @@
 import { JWT_ACCESS_TOKEN_LIFETIME } from "constants/envVars";
-import { timezoneOffsets } from "constants/options/timezoneOffsets";
 import {
   validLoginKeys,
   validRegisterKeys,
@@ -10,36 +9,20 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import UserCollection from "models/UserCollection";
 import getUser from "utils/getUser";
-import {
-  emptyValuesExist,
-  validKeys,
-  validValues,
-} from "utils/validateKeysValues";
+import { validKeys } from "utils/validateKeysValues";
 
 const register = async (req: Request, res: Response): Promise<void> => {
   if (
     !validKeys(
       res,
       Object.keys(req.body),
-      `Invalid register, can only use: `,
+      `Invalid register, can only input: `,
       validRegisterKeys
     )
   )
     return;
 
-  if (emptyValuesExist(res, Object.values(req.body))) return;
-
-  const { email, timezoneGMT } = req.body;
-
-  if (
-    !validValues(
-      res,
-      timezoneGMT,
-      `Invalid timezone, please select one of: `,
-      timezoneOffsets
-    )
-  )
-    return;
+  const { email } = req.body;
 
   const emailAlreadyExists = await UserCollection.findOne({ email });
 
@@ -71,13 +54,11 @@ const login = async (req: Request, res: Response): Promise<void> => {
     !validKeys(
       res,
       Object.keys(req.body),
-      `Invalid login, can only use: `,
+      `Invalid login, can only input: `,
       validLoginKeys
     )
   )
     return;
-
-  if (emptyValuesExist(res, Object.values(req.body))) return;
 
   const { email, password } = req.body;
 
@@ -122,29 +103,13 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
     !validKeys(
       res,
       Object.keys(req.body),
-      `Invalid update, can only update: `,
+      `Invalid update profile, can only input: `,
       validUpdateUserKeys
     )
   )
     return;
 
-  // not all validUpdateUserKeys need to be present,
-  // but if a key is present but the value is empty,
-  // an error is returned
-  if (emptyValuesExist(res, Object.values(req.body))) return;
-
-  const { email, timezoneGMT } = req.body;
-
-  if (
-    timezoneGMT &&
-    !validValues(
-      res,
-      timezoneGMT,
-      `Invalid timezone, please select one of: `,
-      timezoneOffsets
-    )
-  )
-    return;
+  const { email } = req.body;
 
   if (email && user.email !== email) {
     const emailAlreadyExists = await UserCollection.findOne({ email });

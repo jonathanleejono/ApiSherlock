@@ -1,4 +1,5 @@
 import { authUserUrl, loginUserUrl, registerUserUrl } from "constants/apiUrls";
+import { PROD_ENV } from "constants/envVars";
 import {
   getAuthUser,
   login,
@@ -8,10 +9,8 @@ import {
 import express, { Response, Router } from "express";
 import rateLimiter from "express-rate-limit";
 import authenticateUser from "middleware/authenticateUser";
-import {
-  checkValidationResult,
-  createValidationFor,
-} from "middleware/expressValidator";
+import { authValidator } from "validator/authValidator";
+import { validateResult } from "validator/validateResult";
 
 const router: Router = express.Router();
 
@@ -29,27 +28,37 @@ function createRateLimiter(minutes: number, maxRequests: number) {
   return _rateLimiter;
 }
 
+const maxRequests = PROD_ENV ? 5 : 30;
+
 router
   .route(`${registerUserUrl}`)
   .post(
-    createRateLimiter(15, 3),
-    createValidationFor(`${registerUserUrl}`),
-    checkValidationResult,
+    createRateLimiter(15, maxRequests),
+    authValidator(`${registerUserUrl}`),
+    validateResult,
     register
   );
 
-router.route(`${loginUserUrl}`).post(createRateLimiter(15, 10), login);
+router
+  .route(`${loginUserUrl}`)
+  .post(
+    createRateLimiter(15, maxRequests),
+    authValidator(`${loginUserUrl}`),
+    validateResult,
+    login
+  );
 
 //user shouldn't be able to access another user's profile,
 //which is why authenticateUser is here
 router
   .route(`${authUserUrl}`)
   .patch(
+    createRateLimiter(15, maxRequests),
     authenticateUser,
-    createValidationFor(`${authUserUrl}`),
-    checkValidationResult,
+    authValidator(`${authUserUrl}`),
+    validateResult,
     updateUser
   )
-  .get(authenticateUser, getAuthUser);
+  .get(createRateLimiter(15, maxRequests), authenticateUser, getAuthUser);
 
 export default router;
