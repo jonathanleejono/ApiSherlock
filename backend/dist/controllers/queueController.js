@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.removeQueue = exports.startQueue = void 0;
-const axios_1 = __importDefault(require("axios"));
 const bullmq_1 = require("bullmq");
 const envVars_1 = require("constants/envVars");
 const queue_1 = require("constants/queue");
@@ -15,9 +14,11 @@ const errors_1 = require("errors");
 const http_status_codes_1 = require("http-status-codes");
 const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const MonitorCollection_1 = __importDefault(require("models/MonitorCollection"));
-const datetime_1 = require("utils/datetime");
-const getCronUTCTime_1 = require("utils/getCronUTCTime");
 const getUser_1 = __importDefault(require("utils/getUser"));
+const pingApis_1 = require("utils/pingApis");
+const getCronUTCTime_1 = require("utils/queue/getCronUTCTime");
+const getQueueHour_1 = require("utils/queue/getQueueHour");
+const setQueueIntervalSchedule_1 = require("utils/queue/setQueueIntervalSchedule");
 const startQueue = async (req, res) => {
     const user = await (0, getUser_1.default)(req, res);
     if (!user) {
@@ -38,16 +39,7 @@ const startQueue = async (req, res) => {
     }
     const { scheduleType, intervalSchedule, dateDayOfWeek, dateHour, dateMinute, dateAMOrPM, } = monitor;
     if (scheduleType === monitor_1.MonitorScheduleTypeOptions.DATE) {
-        let hour = dateHour;
-        if (dateHour === 12 && dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.AM) {
-            hour = dateHour - 12;
-        }
-        if (dateHour !== 12 && dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.PM) {
-            hour = dateHour + 12;
-        }
-        if (dateHour === 12 && dateAMOrPM === monitor_1.MonitorDateAMOrPMOptions.PM) {
-            hour = dateHour;
-        }
+        const hour = (0, getQueueHour_1.getQueueHour)(dateHour, dateAMOrPM);
         const cronUTCTime = await (0, getCronUTCTime_1.getCronUTCTime)({
             timezone: user.timezoneGMT,
             inputDay: dateDayOfWeek,
@@ -62,37 +54,7 @@ const startQueue = async (req, res) => {
         });
     }
     if (scheduleType === monitor_1.MonitorScheduleTypeOptions.INTERVAL) {
-        switch (intervalSchedule) {
-            case monitor_1.MonitorIntervalScheduleOptions.WEEKLY:
-                (0, queue_1.setRepeatOptions)({
-                    every: 1000 * 60 * 60 * 24 * 7,
-                    limit: 2,
-                });
-                break;
-            case monitor_1.MonitorIntervalScheduleOptions.DAILY:
-                (0, queue_1.setRepeatOptions)({
-                    every: 1000 * 60 * 60 * 24,
-                    limit: 2,
-                });
-                break;
-            case monitor_1.MonitorIntervalScheduleOptions.HOURLY:
-                (0, queue_1.setRepeatOptions)({
-                    every: 1000 * 60 * 60,
-                    limit: 2,
-                });
-                break;
-            case monitor_1.MonitorIntervalScheduleOptions.MINUTES:
-                (0, queue_1.setRepeatOptions)({
-                    every: 1000 * 60,
-                    limit: 2,
-                });
-                break;
-            default:
-                (0, queue_1.setRepeatOptions)({
-                    every: 1000 * 60 * 60 * 24,
-                    limit: 2,
-                });
-        }
+        (0, setQueueIntervalSchedule_1.setQueueIntervalSchedule)(intervalSchedule);
     }
     (0, queue_1.setQueue)(new bullmq_1.Queue(queueName, redisConfiguration));
     const myQueue = await (0, queue_1.getQueue)();
@@ -112,23 +74,6 @@ const startQueue = async (req, res) => {
         (0, errors_1.notFoundError)(res, `No APIs found`);
         return;
     }
-    async function pingAllMonitoredApis() {
-        Object.keys(apis).forEach(async (_, index) => {
-            const api = apis[index];
-            axios_1.default
-                .get(api.url)
-                .then(() => {
-                api.status = apis_1.ApiStatusOptions.HEALTHY;
-                api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
-                api.save();
-            })
-                .catch(() => {
-                api.status = apis_1.ApiStatusOptions.UNHEALTHY;
-                api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
-                api.save();
-            });
-        });
-    }
     if (scheduleType === monitor_1.MonitorScheduleTypeOptions.INTERVAL) {
         addJobToQueue(`Ping apis for user at ${intervalSchedule}`);
     }
@@ -136,7 +81,9 @@ const startQueue = async (req, res) => {
         const minute = dateMinute < 10 ? `0${dateMinute}` : dateMinute;
         addJobToQueue(`Ping apis for user at ${monitor_1.MonitorDateDayOfWeekOptions[dateDayOfWeek]} ${dateHour}:${minute} ${dateAMOrPM} (GMT ${user.timezoneGMT})`);
     }
-    (0, queue_1.setQueueWorker)(new bullmq_1.Worker(queueName, pingAllMonitoredApis, redisConfiguration));
+    (0, queue_1.setQueueWorker)(new bullmq_1.Worker(queueName, async (_) => {
+        await (0, pingApis_1.pingApis)(apis, user);
+    }, redisConfiguration));
     const worker = await (0, queue_1.getQueueWorker)();
     worker.on("completed", async (job) => {
         if (!envVars_1.TEST_ENV) {

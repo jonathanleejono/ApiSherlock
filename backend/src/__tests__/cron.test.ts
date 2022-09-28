@@ -1,4 +1,4 @@
-import { getCronUTCTime } from "utils/getCronUTCTime";
+import { getCronUTCTime } from "utils/queue/getCronUTCTime";
 
 describe("testing if getCronUTCTime() converts time to GMT 0", () => {
   it("should convert Tues 8:29 PM GMT -4 to Wed 12:29 AM GMT 0", async () => {

@@ -13,6 +13,7 @@ const ApiCollection_1 = __importDefault(require("models/ApiCollection"));
 const checkPermissions_1 = __importDefault(require("utils/checkPermissions"));
 const datetime_1 = require("utils/datetime");
 const getUser_1 = __importDefault(require("utils/getUser"));
+const pingApis_1 = require("utils/pingApis");
 const pingAll = async (req, res) => {
     const user = await (0, getUser_1.default)(req, res);
     if (!user) {
@@ -26,21 +27,7 @@ const pingAll = async (req, res) => {
         (0, errors_1.notFoundError)(res, `No APIs found`);
         return;
     }
-    Object.keys(apis).forEach(async (_, index) => {
-        const api = apis[index];
-        axios_1.default
-            .get(api.url)
-            .then(() => {
-            api.status = apis_1.ApiStatusOptions.HEALTHY;
-            api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
-            api.save();
-        })
-            .catch(() => {
-            api.status = apis_1.ApiStatusOptions.UNHEALTHY;
-            api.lastPinged = (0, datetime_1.getDateWithUTCOffset)(user.timezoneGMT);
-            api.save();
-        });
-    });
+    await (0, pingApis_1.pingApis)(apis, user);
     res.status(http_status_codes_1.StatusCodes.OK).json(messages_1.pingAllApisSuccessMsg);
 };
 exports.pingAll = pingAll;

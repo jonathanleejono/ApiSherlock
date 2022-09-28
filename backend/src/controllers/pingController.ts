@@ -11,6 +11,7 @@ import ApiCollection from "models/ApiCollection";
 import checkPermissions from "utils/checkPermissions";
 import { getDateWithUTCOffset } from "utils/datetime";
 import getUser from "utils/getUser";
+import { pingApis } from "utils/pingApis";
 
 const pingAll = async (req: Request, res: Response): Promise<void> => {
   const user = await getUser(req, res);
@@ -29,24 +30,7 @@ const pingAll = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  Object.keys(apis).forEach(async (_, index: number) => {
-    const api = apis[index];
-
-    axios
-      .get(api.url)
-      .then(() => {
-        api.status = ApiStatusOptions.HEALTHY;
-        api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
-
-        api.save();
-      })
-      .catch(() => {
-        api.status = ApiStatusOptions.UNHEALTHY;
-        api.lastPinged = getDateWithUTCOffset(user.timezoneGMT);
-
-        api.save();
-      });
-  });
+  await pingApis(apis, user);
 
   res.status(StatusCodes.OK).json(pingAllApisSuccessMsg);
 };

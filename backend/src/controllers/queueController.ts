@@ -1,4 +1,3 @@
-import axios from "axios";
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import { PROD_ENV, TEST_ENV } from "constants/envVars";
 import {
@@ -13,11 +12,9 @@ import {
   setRepeatOptions,
 } from "constants/queue";
 import connectRedisDB from "db/connectRedisDB";
-import { ApiMonitoringOptions, ApiStatusOptions } from "enum/apis";
+import { ApiMonitoringOptions } from "enum/apis";
 import {
-  MonitorDateAMOrPMOptions,
   MonitorDateDayOfWeekOptions,
-  MonitorIntervalScheduleOptions,
   MonitorScheduleTypeOptions,
   MonitorSettingOptions,
 } from "enum/monitor";
@@ -26,9 +23,11 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import ApiCollection from "models/ApiCollection";
 import MonitorCollection from "models/MonitorCollection";
-import { getDateWithUTCOffset } from "utils/datetime";
-import { getCronUTCTime } from "utils/getCronUTCTime";
 import getUser from "utils/getUser";
+import { pingApis } from "utils/pingApis";
+import { getCronUTCTime } from "utils/queue/getCronUTCTime";
+import { getQueueHour } from "utils/queue/getQueueHour";
+import { setQueueIntervalSchedule } from "utils/queue/setQueueIntervalSchedule";
 
 export const startQueue = async (
   req: Request,
@@ -68,28 +67,10 @@ export const startQueue = async (
     dateAMOrPM,
   } = monitor;
 
-  //first get user's selected monitoring time
-  //then, convert that monitoring time to cron time (in user's timezone)
-  //finally, convert cron time into UTC cron time (to match server)
-
   if (scheduleType === MonitorScheduleTypeOptions.DATE) {
-    let hour = dateHour; // put default value of dateHour
+    const hour = getQueueHour(dateHour, dateAMOrPM);
 
-    //if it's 12AM, the hour should be 0:00AM to match cron
-    if (dateHour === 12 && dateAMOrPM === MonitorDateAMOrPMOptions.AM) {
-      hour = dateHour - 12;
-    }
-
-    //if it's PM and not 12PM, add 12 hours, eg. 3PM -> 15:00
-    if (dateHour !== 12 && dateAMOrPM === MonitorDateAMOrPMOptions.PM) {
-      hour = dateHour + 12;
-    }
-
-    //if it's 12PM, don't add or subtract anything, leave as 12:00
-    if (dateHour === 12 && dateAMOrPM === MonitorDateAMOrPMOptions.PM) {
-      hour = dateHour;
-    }
-
+    //the server online uses UTC time, which is why cron is converted
     const cronUTCTime = await getCronUTCTime({
       timezone: user.timezoneGMT,
       inputDay: dateDayOfWeek,
@@ -97,51 +78,19 @@ export const startQueue = async (
       inputMinute: dateMinute,
     });
 
-    //the server online uses UTC time, which is why cron is converted
+    // using "limit: 2" with pattern/cron means do it twice when
+    // the time is met (eg. do it twice at Sun 10:00AM, and do it twice next Sun 10:00AM)
+    // which is not the same as using limit with "every" prop
     setRepeatOptions({
       pattern: PROD_ENV
         ? cronUTCTime
         : `* ${dateMinute} ${hour} * * ${dateDayOfWeek}`,
       limit: 2,
-    }); //limit 2 with cron/pattern means do it twice when
-    // the time is met (eg. do it twice at Sun 10:00AM, and do it twice next Sun 10:00AM)
+    });
   }
 
-  // limit 2 means repeats twice in the entire lifespan and stop,
-  // which is different from limit 2 with pattern/cron
-  // (eg. repeat once at hour 1, repeat twice at hour 2, and then stop)
   if (scheduleType === MonitorScheduleTypeOptions.INTERVAL) {
-    switch (intervalSchedule) {
-      case MonitorIntervalScheduleOptions.WEEKLY:
-        setRepeatOptions({
-          every: 1000 * 60 * 60 * 24 * 7,
-          limit: 2,
-        });
-        break;
-      case MonitorIntervalScheduleOptions.DAILY:
-        setRepeatOptions({
-          every: 1000 * 60 * 60 * 24,
-          limit: 2,
-        });
-        break;
-      case MonitorIntervalScheduleOptions.HOURLY:
-        setRepeatOptions({
-          every: 1000 * 60 * 60,
-          limit: 2,
-        });
-        break;
-      case MonitorIntervalScheduleOptions.MINUTES:
-        setRepeatOptions({
-          every: 1000 * 60,
-          limit: 2,
-        });
-        break;
-      default:
-        setRepeatOptions({
-          every: 1000 * 60 * 60 * 24,
-          limit: 2,
-        });
-    }
+    setQueueIntervalSchedule(intervalSchedule);
   }
 
   setQueue(new Queue(queueName, redisConfiguration));
@@ -150,6 +99,8 @@ export const startQueue = async (
 
   const repeatOptions = await getRepeatOptions();
 
+  // QueueScheduler requires blocking connections and can't
+  // reuse existing connections, which is why connection is duplicated
   setQueueScheduler(
     new QueueScheduler(queueName, {
       connection: redisConfiguration.connection.duplicate(),
@@ -174,27 +125,6 @@ export const startQueue = async (
     return;
   }
 
-  async function pingAllMonitoredApis() {
-    Object.keys(apis).forEach(async (_, index: number) => {
-      const api = apis[index];
-
-      axios
-        .get(api.url)
-        .then(() => {
-          api.status = ApiStatusOptions.HEALTHY;
-          api.lastPinged = getDateWithUTCOffset(user!.timezoneGMT);
-
-          api.save();
-        })
-        .catch(() => {
-          api.status = ApiStatusOptions.UNHEALTHY;
-          api.lastPinged = getDateWithUTCOffset(user!.timezoneGMT);
-
-          api.save();
-        });
-    });
-  }
-
   if (scheduleType === MonitorScheduleTypeOptions.INTERVAL) {
     addJobToQueue(`Ping apis for user at ${intervalSchedule}`);
   }
@@ -207,7 +137,13 @@ export const startQueue = async (
   }
 
   setQueueWorker(
-    new Worker(queueName, pingAllMonitoredApis, redisConfiguration)
+    new Worker(
+      queueName,
+      async (_) => {
+        await pingApis(apis, user);
+      },
+      redisConfiguration
+    )
   );
 
   const worker = await getQueueWorker();
@@ -246,11 +182,6 @@ export const removeQueue = async (
     badRequestError(res, `Monitor must be deleted to stop queue`);
     return;
   }
-
-  // can optionally stop individual jobs like this:
-  // const repeatOptions = await getRepeatOptions();
-  // const jobName = `${jobBaseName}-${user.email}`;
-  // await myQueue.removeRepeatable(jobName, repeatOptions);
 
   const myQueue = await getQueue();
 
