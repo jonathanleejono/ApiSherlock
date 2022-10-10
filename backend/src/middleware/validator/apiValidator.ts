@@ -51,7 +51,7 @@ export function apiValidator(route: string) {
       return [
         query("host")
           .optional()
-          .isIn([...validApiHostOptions, "All"])
+          .isIn([...validApiHostOptions, "All", undefined])
           .withMessage(
             `Invalid host search, must be one of: ${validFieldsFormatted([
               ...validApiHostOptions,
@@ -60,7 +60,7 @@ export function apiValidator(route: string) {
           ),
         query("status")
           .optional()
-          .isIn([...validApiStatusOptions, "All"])
+          .isIn([...validApiStatusOptions, "All", undefined])
           .withMessage(
             `Invalid status search, must be one of: ${validFieldsFormatted([
               ...validApiStatusOptions,
@@ -69,7 +69,7 @@ export function apiValidator(route: string) {
           ),
         query("monitoring")
           .optional()
-          .isIn([...validApiMonitoringOptions, "All"])
+          .isIn([...validApiMonitoringOptions, "All", undefined])
           .withMessage(
             `Invalid monitoring search, must be one of: ${validFieldsFormatted([
               ...validApiMonitoringOptions,

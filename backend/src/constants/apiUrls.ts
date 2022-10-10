@@ -8,11 +8,11 @@ const registerUserUrl = `/register`;
 const loginUserUrl = `/login`;
 const authUserUrl = `/user`;
 
-const createApiUrl = ``;
-const getAllApisUrl = ``;
+const createApiUrl = `/create`;
+const getAllApisUrl = `/list`;
 const getAllApisStatsUrl = `/stats`;
 const deleteApiUrl = ``;
-const editApiUrl = ``;
+const editApiUrl = `/edit`;
 const getApiUrl = ``;
 const pingAllApisUrl = `/ping/all`;
 const pingOneApiUrl = `/ping`;

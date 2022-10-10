@@ -6,7 +6,7 @@ function checkIfDuplicateExists(arr: Array<string | number>): boolean {
   return new Set(arr).size !== arr.length;
 }
 
-export function validFieldsFormatted(validFields: string[] | number[]) {
+export function validFieldsFormatted(validFields: any[]) {
   return `${validFields}`.replace(/,/g, ", ");
 }
 

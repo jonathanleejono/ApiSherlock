@@ -33,21 +33,21 @@ function apiValidator(route) {
             return [
                 (0, express_validator_1.query)("host")
                     .optional()
-                    .isIn([...apis_1.validApiHostOptions, "All"])
+                    .isIn([...apis_1.validApiHostOptions, "All", undefined])
                     .withMessage(`Invalid host search, must be one of: ${(0, validateKeysValues_1.validFieldsFormatted)([
                     ...apis_1.validApiHostOptions,
                     "All",
                 ])}`),
                 (0, express_validator_1.query)("status")
                     .optional()
-                    .isIn([...apis_1.validApiStatusOptions, "All"])
+                    .isIn([...apis_1.validApiStatusOptions, "All", undefined])
                     .withMessage(`Invalid status search, must be one of: ${(0, validateKeysValues_1.validFieldsFormatted)([
                     ...apis_1.validApiStatusOptions,
                     "All",
                 ])}`),
                 (0, express_validator_1.query)("monitoring")
                     .optional()
-                    .isIn([...apis_1.validApiMonitoringOptions, "All"])
+                    .isIn([...apis_1.validApiMonitoringOptions, "All", undefined])
                     .withMessage(`Invalid monitoring search, must be one of: ${(0, validateKeysValues_1.validFieldsFormatted)([
                     ...apis_1.validApiMonitoringOptions,
                     "All",
