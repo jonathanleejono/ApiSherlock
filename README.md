@@ -6,8 +6,6 @@ ApiSherlock is the new version of a past project, [IssueSherlock](https://github
 
 Shoutouts to [John Smilga/Coding Addict](https://www.youtube.com/c/CodingAddict/videos) and [Kent C. Dodds](https://github.com/kentcdodds) for the tutorials and informational content, including MERN, Redux, and Javascript/Typescript testing.
 
-See the live app here: https://apisherlock.vercel.app/landing
-
 ## Backend:
 - Node
 - Express
