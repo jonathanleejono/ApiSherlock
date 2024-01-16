@@ -4,7 +4,7 @@ This is a fullstack TypeScript MERN (MongoDB, Express, React, Node) app that let
 
 ApiSherlock is the new version of a past project, [IssueSherlock](https://github.com/jonathanleejono/IssueSherlock) (which is the first fullstack app I worked on!). IssueSherlock is an issue/bug tracker written in JavaScript front and back, but the project's functionality is limited. As well as, IssueSherlock used static frontend build files along with the backend, but ApiSherlock separates the backend from the frontend. I wanted to create a new project that I could use in real life, and ApiSherlock can be used to help keep project API links organized (I actually caught an error with one of my project's API with ApiSherlock!). It's possible to simply use Postman to manage APIs, however there is a downside of a lack of mobile responsive design with the Postman web app, but Postman overall can be used too as it has some other great features. ApiSherlock was also made to expand my knowledge of TypeScript and testing with JavaScript/TypeScript libraries.
 
-Shoutouts to [John Smilga/Coding Addict](https://www.youtube.com/c/CodingAddict/videos) and [Kent C. Dodds](https://github.com/kentcdodds) for the tutorials and informational content, including MERN, Redux, and Javascript/TypeScript testing.
+Shoutouts to [John Smilga/Coding Addict](https://www.youtube.com/c/CodingAddict/videos) and [Kent C. Dodds](https://github.com/kentcdodds) for the tutorials and informational content, including MERN, Redux, and JavaScript/TypeScript testing.
 
 ## Backend:
 
@@ -16,7 +16,7 @@ Shoutouts to [John Smilga/Coding Addict](https://www.youtube.com/c/CodingAddict/
 
 ## Frontend:
 
-- React (Typescript)
+- React (TypeScript)
 - Redux (Toolkit)
 - React Testing Library
 - MSW (Mock Service Worker)
