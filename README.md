@@ -12,7 +12,7 @@ Shoutouts to [John Smilga/Coding Addict](https://www.youtube.com/c/CodingAddict/
 - Express
 - MongoDB + Mongoose
 - Jest + Supertest (Unit/Integration testing)
-- BullMQ (Message queue) + Redis
+- BullMQ (Messaging queue) + Redis
 
 ## Frontend:
 
