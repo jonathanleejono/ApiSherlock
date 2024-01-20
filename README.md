@@ -17,7 +17,7 @@ Shoutouts to [John Smilga/Coding Addict](https://www.youtube.com/c/CodingAddict/
 ## Frontend:
 
 - React (TypeScript)
-- Redux (Toolkit)
+- Redux Toolkit
 - React Testing Library
 - MSW (Mock Service Worker)
 
